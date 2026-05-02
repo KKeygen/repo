@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.example</groupId>
+        <artifactId>Dismai</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+
+    <artifactId>dismai-server</artifactId>
+    <packaging>pom</packaging>
+
+    <name>server</name>
+    <description>服务模块</description>
+
+    <modules>
+        <module>dismai-order-service</module>
+        <module>dismai-gateway-service</module>
+        <module>dismai-base-data-service</module>
+        <module>dismai-user-service</module>
+        <module>dismai-admin-service</module>
+        <module>dismai-customize-service</module>
+        <module>dismai-program-service</module>
+        <module>dismai-pay-service</module>
+        <module>dismai-mybatis-plus-service</module>
+    </modules>
+</project>
