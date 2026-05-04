@@ -1,0 +1,79 @@
+﻿spring:
+  cloud:
+    gateway:
+      enabled: true
+      discovery:
+        locator:
+          enabled: true
+      routes:
+        - id: ${prefix.distinction.name:Dismai}-base-data-service
+          uri: lb://${prefix.distinction.name:Dismai}-base-data-service
+          predicates:
+            - Path=/Dismai/basedata/**
+          filters:
+            - StripPrefix=2
+          metadata:
+            title: 基础数据服务
+
+        - id: ${prefix.distinction.name:Dismai}-customize-service
+          uri: lb://${prefix.distinction.name:Dismai}-customize-service
+          predicates:
+            - Path=/Dismai/customize/**
+          filters:
+            - StripPrefix=2
+          metadata:
+            title: 定制化服务
+
+        - id: ${prefix.distinction.name:Dismai}-job-service
+          uri: lb://${prefix.distinction.name:Dismai}-job-service
+          predicates:
+            - Path=/Dismai/job/**
+          filters:
+            - StripPrefix=2
+          metadata:
+            title: 任务执行服务
+
+        - id: ${prefix.distinction.name:Dismai}-order-service
+          uri: lb://${prefix.distinction.name:Dismai}-order-service
+          predicates:
+            - Path=/Dismai/order/**
+          filters:
+            - StripPrefix=2
+          metadata:
+            title: 订单服务
+
+        - id: ${prefix.distinction.name:Dismai}-pay-service
+          uri: lb://${prefix.distinction.name:Dismai}-pay-service
+          predicates:
+            - Path=/Dismai/pay/**
+          filters:
+            - StripPrefix=2
+          metadata:
+            title: 支付服务
+
+        - id: ${prefix.distinction.name:Dismai}-program-service
+          uri: lb://${prefix.distinction.name:Dismai}-program-service
+          predicates:
+            - Path=/Dismai/program/**
+          filters:
+            - StripPrefix=2
+          metadata:
+            title: 节目服务
+
+        - id: ${prefix.distinction.name:Dismai}-user-service
+          uri: lb://${prefix.distinction.name:Dismai}-user-service
+          predicates:
+            - Path=/Dismai/user/**
+          filters:
+            - StripPrefix=2
+          metadata:
+            title: 用户服务
+            
+        - id: ${prefix.distinction.name:Dismai}-admin-service
+          uri: lb://${prefix.distinction.name:Dismai}-admin-service
+          predicates:
+            - Path=/Dismai/admin/**
+          filters:
+            - StripPrefix=2
+          metadata:
+            title: 监听服务    
