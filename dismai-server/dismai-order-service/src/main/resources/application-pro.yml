@@ -1,0 +1,4 @@
+﻿# 支付宝回调地址
+orderPayNotifyUrl: http://dismai-dismai.example.com:6085/Dismai/order/order/alipay/notify
+# 支付成功页面
+orderPayReturnUrl: http://dismai-dismai.example.com/order/paySuccess
