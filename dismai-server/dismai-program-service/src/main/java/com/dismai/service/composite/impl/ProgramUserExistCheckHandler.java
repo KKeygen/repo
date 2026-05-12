@@ -70,11 +70,25 @@ public class ProgramUserExistCheckHandler extends AbstractProgramCheckHandler {
         }
         Map<Long, TicketUserVo> ticketUserVoMap = ticketUserVoList.stream()
                 .collect(Collectors.toMap(TicketUserVo::getId, ticketUserVo -> ticketUserVo, (v1, v2) -> v2));
+        List<String> idNumberList = new java.util.ArrayList<>();
         for (Long ticketUserId : programOrderCreateDto.getTicketUserIdList()) {
-            if (Objects.isNull(ticketUserVoMap.get(ticketUserId))) {
+            TicketUserVo tu = ticketUserVoMap.get(ticketUserId);
+            if (Objects.isNull(tu)) {
                 throw new DismaiFrameException(BaseCode.TICKET_USER_EMPTY);
             }
+            String idNumber = tu.getIdNumber();
+            String riskKey = "ID_CARD_BRUSH_RISK:" + idNumber;
+            Long reqCount = redisCache.incrBy(riskKey, 1);
+            if (reqCount == 1) {
+                redisCache.expire(riskKey, 10, java.util.concurrent.TimeUnit.SECONDS);
+            }
+            if (reqCount > 5) {
+                log.warn("风控警告: 身份证 {} 触发高频刷票行为！", idNumber);
+                throw new DismaiFrameException(BaseCode.SYSTEM_ERROR); // 使用 SYSTEM_ERROR 或其他自定义code
+            }
+            idNumberList.add(idNumber);
         }
+        programOrderCreateDto.setIdNumberList(idNumberList);
         ProgramGetDto programGetDto = new ProgramGetDto();
         programGetDto.setId(programOrderCreateDto.getProgramId());
         ProgramVo programVo = programService.detailV2(programGetDto);

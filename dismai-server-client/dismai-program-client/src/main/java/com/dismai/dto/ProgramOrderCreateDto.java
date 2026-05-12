@@ -23,6 +23,9 @@ public class ProgramOrderCreateDto {
     @NotNull
     private List<Long> ticketUserIdList;
     
+    @Schema(name ="idNumberList", type ="List<String>", description ="购票人身份证号集合")
+    private List<String> idNumberList;
+    
     @Schema(name ="seatDtoList", type ="List<SeatDto>", description = "座位")
     private List<SeatDto> seatDtoList;
     
