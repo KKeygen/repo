@@ -1,0 +1,39 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+*.iml
+*.iws
+*.ipr
+
+# Build output
+**/target/
+**/build/
+**/dist/
+
+# Node
+**/node_modules/
+
+# Logs
+**/*.log
+**/logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose*.yml
+Dockerfile
+.dockerignore
+
+# Misc
+*.hprof
+*.flattened-pom.xml
+cookasyncagent/
+spotless/
+LICENSE
+README.md

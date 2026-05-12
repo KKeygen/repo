@@ -1,0 +1,15 @@
+# Force LF line endings for shell scripts (critical for Docker)
+*.sh text eol=lf
+*.bash text eol=lf
+
+# Docker files
+Dockerfile text eol=lf
+*.dockerfile text eol=lf
+docker-compose*.yml text eol=lf
+
+# Nginx config
+*.conf text eol=lf
+
+# Keep Windows line endings for batch files
+*.bat text eol=crlf
+*.cmd text eol=crlf
