@@ -202,7 +202,7 @@ public class ProgramOrderService {
         Long programId = programOrderCreateDto.getProgramId();
         List<SeatDto> seatDtoList = programOrderCreateDto.getSeatDtoList();
         List<String> keys = new ArrayList<>();
-        String[] data = new String[2];
+        // String[] data initialization moved to before invocation
         JSONArray jsonArray = new JSONArray();
         JSONArray addSeatDatajsonArray = new JSONArray();
         if (CollectionUtil.isNotEmpty(seatDtoList)) {
@@ -241,8 +241,10 @@ public class ProgramOrderService {
         keys.add(RedisKeyBuild.getRedisKey(RedisKeyManage.PROGRAM_SEAT_NO_SOLD_RESOLUTION_HASH));
         keys.add(RedisKeyBuild.getRedisKey(RedisKeyManage.PROGRAM_SEAT_LOCK_RESOLUTION_HASH));
         keys.add(String.valueOf(programOrderCreateDto.getProgramId()));
+        String[] data = new String[3];
         data[0] = JSON.toJSONString(jsonArray);
         data[1] = JSON.toJSONString(addSeatDatajsonArray);
+        data[2] = JSON.toJSONString(Optional.ofNullable(programOrderCreateDto.getIdNumberList()).orElse(new ArrayList<>()));
         ProgramCacheCreateOrderData programCacheCreateOrderData = 
                 programCacheCreateOrderResolutionOperate.programCacheOperate(keys, data);
         if (!Objects.equals(programCacheCreateOrderData.getCode(), BaseCode.SUCCESS.getCode())) {

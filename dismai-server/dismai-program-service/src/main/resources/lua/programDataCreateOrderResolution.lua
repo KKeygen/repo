@@ -3,6 +3,24 @@ local placeholder_seat_no_sold_hash_key = KEYS[2]
 local placeholder_seat_lock_hash_key = KEYS[3]
 local program_id = KEYS[4]
 local ticket_count_list = cjson.decode(ARGV[1])
+
+if ARGV[3] and ARGV[3] ~= "" then
+    local id_number_list = cjson.decode(ARGV[3])
+    local program_id_card_hash_key = "PROGRAM_ID_CARD:" .. tostring(program_id)
+    local seen_ids = {}
+    for _, id_number in ipairs(id_number_list) do
+        if seen_ids[id_number] then
+            return string.format('{"%s": %d}', 'code', 40012)
+        end
+        seen_ids[id_number] = true
+        
+        local exists = redis.call('hexists', program_id_card_hash_key, id_number)
+        if exists == 1 then
+            return string.format('{"%s": %d}', 'code', 40012)
+        end
+    end
+end
+
 local purchase_seat_list = {}
 local total_seat_dto_price = 0
 local total_seat_vo_price = 0
@@ -134,4 +152,13 @@ end
 for ticket_category_id, seat_data_array in pairs(seat_data_list) do
     redis.call('hmset',string.format(placeholder_seat_lock_hash_key,program_id,tostring(ticket_category_id)),unpack(seat_data_array))    
 end
+
+if ARGV[3] and ARGV[3] ~= "" then
+    local id_number_list = cjson.decode(ARGV[3])
+    local program_id_card_hash_key = "PROGRAM_ID_CARD:" .. tostring(program_id)
+    for _, id_number in ipairs(id_number_list) do
+        redis.call('hset', program_id_card_hash_key, tostring(id_number), "1")
+    end
+end
+
 return string.format('{"%s": %d, "%s": %s}', 'code', 0, 'purchaseSeatList', cjson.encode(purchase_seat_list))
