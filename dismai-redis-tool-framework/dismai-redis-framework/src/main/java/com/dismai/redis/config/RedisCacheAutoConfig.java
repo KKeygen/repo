@@ -1,4 +1,4 @@
-﻿package com.dismai.redis.config;
+package com.dismai.redis.config;
 
 import com.dismai.redis.RedisCacheImpl;
 import org.springframework.beans.factory.annotation.Qualifier;

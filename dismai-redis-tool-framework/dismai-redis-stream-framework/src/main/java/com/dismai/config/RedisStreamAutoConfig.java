@@ -1,4 +1,4 @@
-﻿package com.dismai.config;
+package com.dismai.config;
 
 import com.dismai.MessageConsumer;
 import com.dismai.RedisStreamConfigProperties;
@@ -54,7 +54,8 @@ public class RedisStreamAutoConfig {
             RedisConnectionFactory redisConnectionFactory, 
             RedisStreamConfigProperties redisStreamConfigProperties, 
             RedisStreamHandler redisStreamHandler, 
-            MessageConsumer messageConsumer) {
+            MessageConsumer messageConsumer,
+            StringRedisTemplate stringRedisTemplate) {
         StreamMessageListenerContainer.StreamMessageListenerContainerOptions<String, ObjectRecord<String, String>> 
                 options = StreamMessageListenerContainer.StreamMessageListenerContainerOptions.builder()
                     .pollTimeout(Duration.ofSeconds(5))

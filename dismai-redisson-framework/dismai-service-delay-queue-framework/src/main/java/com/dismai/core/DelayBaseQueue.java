@@ -1,4 +1,4 @@
-﻿package com.dismai.core;
+package com.dismai.core;
 
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBlockingQueue;

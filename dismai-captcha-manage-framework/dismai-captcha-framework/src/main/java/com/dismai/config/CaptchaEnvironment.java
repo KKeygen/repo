@@ -1,4 +1,4 @@
-﻿package com.dismai.config;
+package com.dismai.config;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.env.EnvironmentPostProcessor;

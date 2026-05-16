@@ -1,4 +1,4 @@
-﻿package com.dismai.service.init;
+package com.dismai.service.init;
 
 import com.dismai.BusinessThreadPool;
 import com.dismai.initialize.base.AbstractApplicationPostConstructHandler;

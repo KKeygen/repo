@@ -1,4 +1,4 @@
-﻿package com.dismai.mybatisplus;
+package com.dismai.mybatisplus;
 
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;

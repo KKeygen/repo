@@ -1,4 +1,4 @@
-﻿package com.dismai.core;
+package com.dismai.core;
 
 import lombok.Getter;
 
@@ -79,7 +79,9 @@ public enum RedisKeyManage {
     
     LOGIN_USER_EMAIL_ERROR("d_mai_login_user_email_error_%s","登录错误的用户邮箱key","登录错误的用户邮箱次数","k"),
     
-    AREA_PROVINCE_LIST("d_mai_area_province_list","省地区集合","省地区集合数据","k")
+    AREA_PROVINCE_LIST("d_mai_area_province_list","省地区集合","省地区集合数据","k"),
+    
+    ID_CARD_BRUSH_RISK("d_mai_id_card_brush_risk_%s","身份证刷票风控key","身份证刷票风控次数","k")
     ;
 
     /**

@@ -1,4 +1,4 @@
-﻿package com.dismai.initialize.execute;
+package com.dismai.initialize.execute;
 
 import com.dismai.initialize.execute.base.AbstractApplicationExecute;
 import org.springframework.context.ConfigurableApplicationContext;

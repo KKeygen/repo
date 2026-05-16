@@ -1,4 +1,4 @@
-﻿package com.dismai.util;
+package com.dismai.util;
 
 import java.util.Arrays;
 

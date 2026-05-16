@@ -1,4 +1,4 @@
-﻿package com.dismai.lock;
+package com.dismai.lock;
 
 @FunctionalInterface
 public interface LockTask<V> {

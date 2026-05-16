@@ -1,4 +1,4 @@
-﻿package com.dismai.service.cache.local;
+package com.dismai.service.cache.local;
 
 import com.dismai.core.RedisKeyManage;
 import com.dismai.redis.RedisCache;

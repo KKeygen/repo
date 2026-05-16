@@ -1,4 +1,4 @@
-﻿package com.dismai.service.lua;
+package com.dismai.service.lua;
 
 import com.dismai.vo.SeatVo;
 import lombok.Data;

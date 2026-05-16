@@ -1,4 +1,4 @@
-﻿package com.dismai.filter;
+package com.dismai.filter;
 
 import com.dismai.threadlocal.BaseParameterHolder;
 import com.dismai.util.StringUtil;

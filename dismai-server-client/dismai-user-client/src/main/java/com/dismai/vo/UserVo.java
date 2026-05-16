@@ -1,4 +1,4 @@
-﻿package com.dismai.vo;
+package com.dismai.vo;
 
 import cn.hutool.core.util.DesensitizedUtil;
 import com.dismai.util.StringUtil;

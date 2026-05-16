@@ -1,4 +1,4 @@
-﻿package com.dismai.toolkit;
+package com.dismai.toolkit;
 
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;

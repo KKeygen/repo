@@ -1,4 +1,4 @@
-﻿package com.dismai.service;
+package com.dismai.service;
 
 import com.dismai.captcha.model.common.ResponseModel;
 import com.dismai.captcha.model.vo.CaptchaVO;

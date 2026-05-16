@@ -1,4 +1,4 @@
-﻿package com.dismai.kafka;
+package com.dismai.kafka;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;

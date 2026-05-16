@@ -1,4 +1,4 @@
-﻿package com.dismai.vo;
+package com.dismai.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode;

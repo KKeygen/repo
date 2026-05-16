@@ -1,4 +1,4 @@
-﻿package com.dismai.handle;
+package com.dismai.handle;
 
 import lombok.AllArgsConstructor;
 import org.redisson.api.RedissonClient;

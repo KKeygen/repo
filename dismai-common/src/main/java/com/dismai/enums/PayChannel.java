@@ -1,4 +1,4 @@
-﻿package com.dismai.enums;
+package com.dismai.enums;
 
 public enum PayChannel {
     /**

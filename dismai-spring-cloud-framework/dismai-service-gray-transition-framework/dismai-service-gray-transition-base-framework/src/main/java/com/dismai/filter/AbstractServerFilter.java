@@ -1,4 +1,4 @@
-﻿package com.dismai.filter;
+package com.dismai.filter;
 
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.core.Ordered;

@@ -1,4 +1,4 @@
-﻿package com.dismai.controller;
+package com.dismai.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

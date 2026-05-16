@@ -1,4 +1,4 @@
-﻿package com.dismai.service.tool;
+package com.dismai.service.tool;
 
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;

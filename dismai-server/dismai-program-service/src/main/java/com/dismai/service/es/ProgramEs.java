@@ -1,4 +1,4 @@
-﻿package com.dismai.service.es;
+package com.dismai.service.es;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.dismai.core.SpringUtil;

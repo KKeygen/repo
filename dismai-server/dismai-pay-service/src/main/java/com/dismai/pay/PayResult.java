@@ -1,4 +1,4 @@
-﻿package com.dismai.pay;
+package com.dismai.pay;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

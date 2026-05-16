@@ -1,4 +1,4 @@
-﻿package com.dismai.service.tool;
+package com.dismai.service.tool;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.dismai.vo.SeatVo;

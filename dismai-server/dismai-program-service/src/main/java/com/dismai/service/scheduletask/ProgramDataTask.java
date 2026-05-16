@@ -1,4 +1,4 @@
-﻿package com.dismai.service.scheduletask;
+package com.dismai.service.scheduletask;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.dismai.BusinessThreadPool;

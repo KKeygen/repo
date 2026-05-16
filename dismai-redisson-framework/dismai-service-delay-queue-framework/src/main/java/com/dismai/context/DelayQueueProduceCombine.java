@@ -1,4 +1,4 @@
-﻿package com.dismai.context;
+package com.dismai.context;
 
 import com.dismai.core.DelayProduceQueue;
 import com.dismai.core.IsolationRegionSelector;

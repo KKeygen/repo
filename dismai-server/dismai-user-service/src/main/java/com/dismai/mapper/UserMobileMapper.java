@@ -1,4 +1,4 @@
-﻿package com.dismai.mapper;
+package com.dismai.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.dismai.entity.UserMobile;

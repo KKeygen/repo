@@ -1,4 +1,4 @@
-﻿package com.dismai.base;
+package com.dismai.base;
 
 import com.dismai.threadlocal.BaseParameterHolder;
 import org.slf4j.MDC;

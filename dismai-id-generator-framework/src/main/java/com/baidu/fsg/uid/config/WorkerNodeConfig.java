@@ -1,4 +1,4 @@
-﻿package com.baidu.fsg.uid.config;
+package com.baidu.fsg.uid.config;
 
 import com.baidu.fsg.uid.UidGenerator;
 import com.baidu.fsg.uid.impl.CachedUidGenerator;

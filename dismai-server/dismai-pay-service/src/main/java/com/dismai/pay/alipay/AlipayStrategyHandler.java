@@ -1,4 +1,4 @@
-﻿package com.dismai.pay.alipay;
+package com.dismai.pay.alipay;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;

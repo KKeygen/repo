@@ -1,4 +1,4 @@
-﻿package com.dismai.servicelock.impl;
+package com.dismai.servicelock.impl;
 
 import com.dismai.servicelock.ServiceLocker;
 import lombok.AllArgsConstructor;

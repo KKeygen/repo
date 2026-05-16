@@ -1,4 +1,4 @@
-﻿package com.dismai.monitor;
+package com.dismai.monitor;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.nacos.common.utils.StringUtils;
