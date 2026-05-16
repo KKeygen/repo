@@ -13,7 +13,7 @@ public class IsolationRegionSelector {
 	}
 
 	public synchronized int getIndex() {
-		int cur = count.getAndUpdate(c -> c >= thresholdValue ? 1 : c + 1);
-		return cur - 1;
+		int cur = count.getAndUpdate(c -> c >= thresholdValue - 1 ? 0 : c + 1);
+		return cur;
 	}
 }
