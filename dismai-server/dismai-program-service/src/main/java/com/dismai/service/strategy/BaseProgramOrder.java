@@ -40,15 +40,11 @@ public class BaseProgramOrder {
             ReentrantLock localLock = localLockCache.getLock(lockKey,false);
             localLockList.add(localLock);
         }
-        for (ReentrantLock reentrantLock : localLockList) {
-            try {
-                reentrantLock.lock();
-            }catch (Throwable t) {
-                break;
-            }
-            localLockSuccessList.add(reentrantLock);
-        }
         try {
+            for (ReentrantLock reentrantLock : localLockList) {
+                reentrantLock.lock();
+                localLockSuccessList.add(reentrantLock);
+            }
             return lockTask.execute();
         }finally {
             for (int i = localLockSuccessList.size() - 1; i >= 0; i--) {
