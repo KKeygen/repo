@@ -1,4 +1,4 @@
-﻿package com.dismai.pay;
+package com.dismai.pay;
 
 import com.dismai.initialize.base.AbstractApplicationInitializingBeanHandler;
 import lombok.AllArgsConstructor;

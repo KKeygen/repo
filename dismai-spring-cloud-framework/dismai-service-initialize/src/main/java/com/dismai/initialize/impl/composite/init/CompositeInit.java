@@ -1,4 +1,4 @@
-﻿package com.dismai.initialize.impl.composite.init;
+package com.dismai.initialize.impl.composite.init;
 
 import com.dismai.initialize.base.AbstractApplicationStartEventListenerHandler;
 import com.dismai.initialize.impl.composite.CompositeContainer;

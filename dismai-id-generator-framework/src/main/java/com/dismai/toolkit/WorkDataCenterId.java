@@ -1,4 +1,4 @@
-﻿package com.dismai.toolkit;
+package com.dismai.toolkit;
 
 import lombok.Data;
 

@@ -1,4 +1,4 @@
-﻿package com.dismai.lockinfo.impl;
+package com.dismai.lockinfo.impl;
 
 import com.dismai.lockinfo.AbstractLockInfoHandle;
 

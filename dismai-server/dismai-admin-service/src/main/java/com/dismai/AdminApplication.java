@@ -1,4 +1,4 @@
-﻿package com.dismai;
+package com.dismai;
 
 import com.dismai.config.DismaiCommonAutoConfig;
 import de.codecentric.boot.admin.server.config.EnableAdminServer;

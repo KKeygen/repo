@@ -1,4 +1,4 @@
-﻿package com.dismai.property;
+package com.dismai.property;
 
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;

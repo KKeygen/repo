@@ -1,4 +1,4 @@
-﻿package com.dismai.namefactory;
+package com.dismai.namefactory;
 
 public class BusinessNameThreadFactory extends AbstractNameThreadFactory {
 

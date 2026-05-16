@@ -1,4 +1,4 @@
-﻿package com.dismai.captcha.util;
+package com.dismai.captcha.util;
 
 import java.security.MessageDigest;
 

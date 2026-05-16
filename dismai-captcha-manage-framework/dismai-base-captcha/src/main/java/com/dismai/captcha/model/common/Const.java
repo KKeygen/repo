@@ -1,4 +1,4 @@
-﻿package com.dismai.captcha.model.common;
+package com.dismai.captcha.model.common;
 
 public interface Const {
 

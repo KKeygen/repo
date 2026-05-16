@@ -1,4 +1,4 @@
-﻿package com.dismai;
+package com.dismai;
 
 import com.dismai.constant.RedisStreamConstant;
 import lombok.Data;

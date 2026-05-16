@@ -1,4 +1,4 @@
-﻿package com.dismai.config;
+package com.dismai.config;
 
 import com.dismai.monitor.DingTalkMessage;
 import com.dismai.monitor.MonitorServer;

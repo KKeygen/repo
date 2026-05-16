@@ -1,4 +1,4 @@
-﻿package com.dismai.initialize.config;
+package com.dismai.initialize.config;
 
 import com.dismai.initialize.execute.ApplicationCommandLineRunnerExecute;
 import com.dismai.initialize.execute.ApplicationInitializingBeanExecute;

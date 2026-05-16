@@ -1,4 +1,4 @@
-﻿package com.dismai.service.composite.impl;
+package com.dismai.service.composite.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSON;
@@ -77,7 +77,7 @@ public class ProgramUserExistCheckHandler extends AbstractProgramCheckHandler {
                 throw new DismaiFrameException(BaseCode.TICKET_USER_EMPTY);
             }
             String idNumber = tu.getIdNumber();
-            String riskKey = "ID_CARD_BRUSH_RISK:" + idNumber;
+            RedisKeyBuild riskKey = RedisKeyBuild.createRedisKey(RedisKeyManage.ID_CARD_BRUSH_RISK, idNumber);
             Long reqCount = redisCache.incrBy(riskKey, 1);
             if (reqCount == 1) {
                 redisCache.expire(riskKey, 10, java.util.concurrent.TimeUnit.SECONDS);

@@ -1,4 +1,4 @@
-﻿package com.dismai.lockinfo.factory;
+package com.dismai.lockinfo.factory;
 
 import com.dismai.lockinfo.LockInfoHandle;
 import org.springframework.beans.BeansException;

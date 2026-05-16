@@ -1,4 +1,4 @@
-﻿package com.dismai.core;
+package com.dismai.core;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

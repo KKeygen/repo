@@ -1,4 +1,4 @@
-﻿package com.dismai.service.lua;
+package com.dismai.service.lua;
 
 import com.dismai.initialize.base.AbstractApplicationPostConstructHandler;
 import com.dismai.redis.RedisCache;

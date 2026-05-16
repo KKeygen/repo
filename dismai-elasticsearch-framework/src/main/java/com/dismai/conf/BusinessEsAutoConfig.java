@@ -1,4 +1,4 @@
-﻿package com.dismai.conf;
+package com.dismai.conf;
 
 import com.dismai.util.StringUtil;
 import com.dismai.util.BusinessEsHandle;

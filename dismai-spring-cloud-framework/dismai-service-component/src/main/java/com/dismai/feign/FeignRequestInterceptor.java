@@ -1,4 +1,4 @@
-﻿package com.dismai.feign;
+package com.dismai.feign;
 
 import com.dismai.util.StringUtil;
 import feign.RequestInterceptor;

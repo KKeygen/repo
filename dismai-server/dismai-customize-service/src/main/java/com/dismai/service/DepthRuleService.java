@@ -1,4 +1,4 @@
-﻿package com.dismai.service;
+package com.dismai.service;
 
 import cn.hutool.core.date.DateUtil;
 import com.baidu.fsg.uid.UidGenerator;

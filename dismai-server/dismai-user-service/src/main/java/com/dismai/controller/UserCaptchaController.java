@@ -1,4 +1,4 @@
-﻿package com.dismai.controller;
+package com.dismai.controller;
 
 import com.dismai.captcha.model.common.ResponseModel;
 import com.dismai.captcha.model.vo.CaptchaVO;

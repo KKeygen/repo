@@ -1,4 +1,4 @@
-﻿package com.dismai.initialize.base;
+package com.dismai.initialize.base;
 
 import org.springframework.context.ConfigurableApplicationContext;
 

@@ -1,4 +1,4 @@
-﻿package com.dismai.lockinfo;
+package com.dismai.lockinfo;
 
 import com.dismai.core.SpringUtil;
 import com.dismai.parser.ExtParameterNameDiscoverer;

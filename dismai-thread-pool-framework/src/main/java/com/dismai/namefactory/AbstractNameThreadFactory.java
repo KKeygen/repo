@@ -1,4 +1,4 @@
-﻿package com.dismai.namefactory;
+package com.dismai.namefactory;
 
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;

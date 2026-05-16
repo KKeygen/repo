@@ -1,4 +1,4 @@
-﻿package com.dismai.initialize.execute.base;
+package com.dismai.initialize.execute.base;
 
 import com.dismai.initialize.base.InitializeHandler;
 import lombok.AllArgsConstructor;

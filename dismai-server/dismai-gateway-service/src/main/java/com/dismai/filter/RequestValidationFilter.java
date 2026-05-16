@@ -1,4 +1,4 @@
-﻿package com.dismai.filter;
+package com.dismai.filter;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSON;

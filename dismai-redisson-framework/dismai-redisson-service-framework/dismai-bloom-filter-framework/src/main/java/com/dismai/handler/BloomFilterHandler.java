@@ -1,4 +1,4 @@
-﻿package com.dismai.handler;
+package com.dismai.handler;
 
 import com.dismai.config.BloomFilterProperties;
 import com.dismai.core.SpringUtil;
