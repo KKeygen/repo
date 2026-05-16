@@ -49,7 +49,7 @@ public class CreateOrderConsumer {
                 
                 if (currentTimeTimestamp - createOrderTimeTimestamp > MESSAGE_DELAY_TIME) {
                     log.info("消费到kafka的创建订单消息延迟时间大于了 {} 毫秒 此订单消息被丢弃 订单号 : {}",
-                            delayTime,orderCreateDto.getOrderNumber());
+                            MESSAGE_DELAY_TIME,orderCreateDto.getOrderNumber());
                     Map<Long, List<OrderTicketUserCreateDto>> orderTicketUserSeatList =
                             orderCreateDto.getOrderTicketUserCreateDtoList().stream().collect(Collectors.groupingBy(OrderTicketUserCreateDto::getTicketCategoryId));
                     Map<Long,List<Long>> seatMap = new HashMap<>(orderTicketUserSeatList.size());
