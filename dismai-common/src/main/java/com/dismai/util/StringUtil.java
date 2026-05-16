@@ -68,6 +68,9 @@ public class StringUtil {
 	 * */
 	public static Map<String, String> convertQueryStringToMap(String queryString) {
 		Map<String, String> resultMap = new HashMap<>(256);
+		if (StringUtil.isEmpty(queryString)) {
+			return resultMap;
+		}
 		String[] params = queryString.split("&");
 		for (String param : params) {
 			String[] keyValue = param.split("=");

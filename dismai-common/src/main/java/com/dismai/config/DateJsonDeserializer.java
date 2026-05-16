@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 
 public class DateJsonDeserializer extends JsonDeserializer<Date> {
 	
-	private static final Pattern P = Pattern.compile("^[0-9]*");
+	private static final Pattern P = Pattern.compile("^[0-9]+$");
 	private static final List<String> FORMAT = new ArrayList<>(4);
 	static {
 		FORMAT.add("yyyy-MM");
