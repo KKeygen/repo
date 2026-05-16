@@ -36,7 +36,8 @@ public class GatewayDefaultExceptionHandler implements ErrorWebExceptionHandler 
             if (responseStatusException.getStatusCode() == HttpStatus.NOT_FOUND) {
                 String path = exchange.getRequest().getPath().value();
                 String methodValue = exchange.getRequest().getMethod().name();
-                ApiResponse.error(BaseCode.NOT_FOUND.getCode(),String.format(BaseCode.NOT_FOUND.getMsg(),methodValue,path));
+                requestTemporaryWrapper.setApiResponse(ApiResponse.error(BaseCode.NOT_FOUND.getCode(),String.format(BaseCode.NOT_FOUND.getMsg(),methodValue,path)));
+                exceptionFlag = true;
             }
         }else if (ex instanceof DismaiFrameException) {
             DismaiFrameException DismaiFrameException = (DismaiFrameException)ex;

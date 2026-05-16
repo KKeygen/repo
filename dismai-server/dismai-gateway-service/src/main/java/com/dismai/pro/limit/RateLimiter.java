@@ -10,6 +10,7 @@ public class RateLimiter {
     
     private final Semaphore semaphore;
     private final TimeUnit timeUnit;
+    private final ThreadLocal<Boolean> acquired = ThreadLocal.withInitial(() -> false);
     
     public RateLimiter(int maxPermitsPerSecond) {
         this.timeUnit = TimeUnit.SECONDS;
@@ -20,9 +21,13 @@ public class RateLimiter {
         if (!semaphore.tryAcquire(1, timeUnit)) {
             throw new DismaiFrameException(BaseCode.OPERATION_IS_TOO_FREQUENT_PLEASE_TRY_AGAIN_LATER);
         }
+        acquired.set(true);
     }
     
     public void release() {
-        semaphore.release();
+        if (acquired.get()) {
+            semaphore.release();
+            acquired.set(false);
+        }
     }
 }
