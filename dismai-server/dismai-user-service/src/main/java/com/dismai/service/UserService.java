@@ -153,34 +153,29 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         if (StringUtil.isEmpty(mobile) && StringUtil.isEmpty(email)) {
             throw new DismaiFrameException(BaseCode.USER_MOBILE_AND_EMAIL_NOT_EXIST);
         }
+        boolean useMobile = StringUtil.isNotEmpty(mobile);
         Long userId;
-        if (StringUtil.isNotEmpty(mobile)) {
-            String errorCountStr = 
-                    redisCache.get(RedisKeyBuild.createRedisKey(RedisKeyManage.LOGIN_USER_MOBILE_ERROR, mobile), String.class);
-            if (StringUtil.isNotEmpty(errorCountStr) && Integer.parseInt(errorCountStr) >= ERROR_COUNT_THRESHOLD) {
+        if (useMobile) {
+            if (isLoginErrorLimit(RedisKeyBuild.createRedisKey(RedisKeyManage.LOGIN_USER_MOBILE_ERROR, mobile))) {
                 throw new DismaiFrameException(BaseCode.MOBILE_ERROR_COUNT_TOO_MANY);
             }
             LambdaQueryWrapper<UserMobile> queryWrapper = Wrappers.lambdaQuery(UserMobile.class)
                     .eq(UserMobile::getMobile, mobile);
             UserMobile userMobile = userMobileMapper.selectOne(queryWrapper);
             if (Objects.isNull(userMobile)) {
-                redisCache.incrBy(RedisKeyBuild.createRedisKey(RedisKeyManage.LOGIN_USER_MOBILE_ERROR,mobile),1);
-                redisCache.expire(RedisKeyBuild.createRedisKey(RedisKeyManage.LOGIN_USER_MOBILE_ERROR,mobile),1,TimeUnit.MINUTES);
+                countLoginError(RedisKeyBuild.createRedisKey(RedisKeyManage.LOGIN_USER_MOBILE_ERROR, mobile));
                 throw new DismaiFrameException(BaseCode.USER_MOBILE_EMPTY);
             }
             userId = userMobile.getUserId();
         }else {
-            String errorCountStr = 
-                    redisCache.get(RedisKeyBuild.createRedisKey(RedisKeyManage.LOGIN_USER_EMAIL_ERROR, email), String.class);
-            if (StringUtil.isNotEmpty(errorCountStr) && Integer.parseInt(errorCountStr) >= ERROR_COUNT_THRESHOLD) {
+            if (isLoginErrorLimit(RedisKeyBuild.createRedisKey(RedisKeyManage.LOGIN_USER_EMAIL_ERROR, email))) {
                 throw new DismaiFrameException(BaseCode.EMAIL_ERROR_COUNT_TOO_MANY);
             }
             LambdaQueryWrapper<UserEmail> queryWrapper = Wrappers.lambdaQuery(UserEmail.class)
                     .eq(UserEmail::getEmail, email);
             UserEmail userEmail = userEmailMapper.selectOne(queryWrapper);
             if (Objects.isNull(userEmail)) {
-                redisCache.incrBy(RedisKeyBuild.createRedisKey(RedisKeyManage.LOGIN_USER_EMAIL_ERROR,email),1);
-                redisCache.expire(RedisKeyBuild.createRedisKey(RedisKeyManage.LOGIN_USER_EMAIL_ERROR,email),1,TimeUnit.MINUTES);
+                countLoginError(RedisKeyBuild.createRedisKey(RedisKeyManage.LOGIN_USER_EMAIL_ERROR, email));
                 throw new DismaiFrameException(BaseCode.USER_EMAIL_NOT_EXIST);
             }
             userId = userEmail.getUserId();
@@ -189,13 +184,33 @@ public class UserService extends ServiceImpl<UserMapper, User> {
                 .eq(User::getId, userId).eq(User::getPassword, password);
         User user = userMapper.selectOne(queryUserWrapper);
         if (Objects.isNull(user)) {
+            if (useMobile) {
+                countLoginError(RedisKeyBuild.createRedisKey(RedisKeyManage.LOGIN_USER_MOBILE_ERROR, mobile));
+            } else {
+                countLoginError(RedisKeyBuild.createRedisKey(RedisKeyManage.LOGIN_USER_EMAIL_ERROR, email));
+            }
             throw new DismaiFrameException(BaseCode.NAME_PASSWORD_ERROR);
+        }
+        if (useMobile) {
+            redisCache.del(RedisKeyBuild.createRedisKey(RedisKeyManage.LOGIN_USER_MOBILE_ERROR, mobile));
+        } else {
+            redisCache.del(RedisKeyBuild.createRedisKey(RedisKeyManage.LOGIN_USER_EMAIL_ERROR, email));
         }
         redisCache.set(RedisKeyBuild.createRedisKey(RedisKeyManage.USER_LOGIN,code,user.getId()),user,
                 tokenExpireTime,TimeUnit.MINUTES);
         userLoginVo.setUserId(userId);
         userLoginVo.setToken(createToken(user.getId(),getChannelDataByCode(code).getTokenSecret()));
         return userLoginVo;
+    }
+    
+    private boolean isLoginErrorLimit(RedisKeyBuild key) {
+        String errorCountStr = redisCache.get(key, String.class);
+        return StringUtil.isNotEmpty(errorCountStr) && Integer.parseInt(errorCountStr) >= ERROR_COUNT_THRESHOLD;
+    }
+    
+    private void countLoginError(RedisKeyBuild key) {
+        redisCache.incrBy(key, 1);
+        redisCache.expire(key, 1, TimeUnit.MINUTES);
     }
     
     private GetChannelDataVo getChannelDataByRedis(String code){
