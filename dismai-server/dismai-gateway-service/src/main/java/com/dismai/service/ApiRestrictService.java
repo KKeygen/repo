@@ -242,7 +242,11 @@ public class ApiRestrictService {
             ip = headers.getFirst("X-Real-IP");
         }
         if (ip == null || ip.length() == 0 || unknown.equalsIgnoreCase(ip)) {
-            ip = Objects.requireNonNull(request.getRemoteAddress()).getAddress().getHostAddress();
+            if (request.getRemoteAddress() != null) {
+                ip = request.getRemoteAddress().getAddress().getHostAddress();
+            } else {
+                ip = unknown;
+            }
         }
         return ip;
     }
