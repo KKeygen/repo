@@ -5,6 +5,9 @@ import eventBus from '@/utils/eventBus'
 
 const AUTH_EXPIRED_CODES = [10055, 516]
 const LOGIN_PATH = '/login'
+const REQUEST_ID_HEADER = 'X-Request-Id'
+const CLIENT_TIME_HEADER = 'X-Client-Timestamp'
+const CLIENT_ROUTE_HEADER = 'X-Client-Route'
 
 let isRedirectingToLogin = false
 
@@ -16,6 +19,14 @@ const service = axios.create({
 
 function isPlainObject(value) {
   return Object.prototype.toString.call(value) === '[object Object]'
+}
+
+function createRequestId() {
+  if (window.crypto?.randomUUID) {
+    return window.crypto.randomUUID()
+  }
+
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`
 }
 
 function signBody(body) {
@@ -63,6 +74,10 @@ service.interceptors.request.use(
     if (token) {
       config.headers.Authorization = token
     }
+
+    config.headers[REQUEST_ID_HEADER] = config.headers[REQUEST_ID_HEADER] || createRequestId()
+    config.headers[CLIENT_TIME_HEADER] = new Date().toISOString()
+    config.headers[CLIENT_ROUTE_HEADER] = window.location.pathname
 
     if (config.method?.toLowerCase() === 'post' && config.data) {
       config.data = signBody(config.data)

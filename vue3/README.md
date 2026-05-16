@@ -53,6 +53,7 @@ npm run preview
 
 - 页面文案、默认城市和兜底分类优先放到 `src/constants/`，避免散落在页面里。
 - 接口统一通过 `src/utils/request.js`，不要在页面中直接创建新的 Axios 实例。
+- 每次接口请求会自动携带 `X-Request-Id`、`X-Client-Timestamp` 和 `X-Client-Route`，用于网关与各微服务日志串联，排查分布式调用链路问题。
 - 列表图片使用懒加载和兜底图，避免接口图片为空时破坏页面排版。
 - 页面样式遵循 `src/styles/global.scss` 中的设计变量，新增样式优先复用现有色彩、圆角、阴影和间距。
 - 需要登录的页面在路由 `meta.requiresAuth` 标记，由路由守卫统一处理跳转。
