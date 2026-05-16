@@ -155,7 +155,7 @@ public class ProgramOrderService {
                 parameterOrderPrice = parameterOrderPrice.add(seatDto.getPrice());
                 databaseOrderPrice = databaseOrderPrice.add(seatVo.getPrice());
             }
-            if (parameterOrderPrice.compareTo(databaseOrderPrice) > 0) {
+            if (parameterOrderPrice.compareTo(databaseOrderPrice) != 0) {
                 throw new DismaiFrameException(BaseCode.PRICE_ERROR);
             }
         }else {
