@@ -3,6 +3,9 @@ import { KJUR } from 'jsrsasign'
 import { getToken, removeToken } from '@/utils/auth'
 import eventBus from '@/utils/eventBus'
 
+const AUTH_EXPIRED_CODES = [10055, 516]
+const LOGIN_PATH = '/login'
+
 let isRedirectingToLogin = false
 
 const service = axios.create({
@@ -11,10 +14,14 @@ const service = axios.create({
   headers: { 'Content-Type': 'application/json' }
 })
 
-// RSA signing helper
+function isPlainObject(value) {
+  return Object.prototype.toString.call(value) === '[object Object]'
+}
+
 function signBody(body) {
-  const signFlag = import.meta.env.VITE_SIGN_FLAG
-  if (signFlag !== '1') return body
+  if (import.meta.env.VITE_SIGN_FLAG !== '1' || !isPlainObject(body)) {
+    return body
+  }
 
   const code = import.meta.env.VITE_CODE
   const privateKey = import.meta.env.VITE_SIGN_SECRET_KEY
@@ -24,59 +31,67 @@ function signBody(body) {
   const sig = new KJUR.crypto.Signature({ alg: 'SHA256withRSA' })
   sig.init({ d: privateKey, isPrivate: true })
   sig.updateString(signContent)
-  const sign = sig.sign()
 
   return {
     code,
     businessBody,
-    sign
+    sign: sig.sign()
   }
 }
 
-// Request interceptor
+function redirectToLogin() {
+  if (isRedirectingToLogin) return
+
+  isRedirectingToLogin = true
+  removeToken()
+  eventBus.emit('toast', { message: '登录已过期，请重新登录', type: 'warning' })
+
+  const redirect = window.location.pathname + window.location.search
+  const nextUrl = redirect && redirect !== LOGIN_PATH
+    ? `${LOGIN_PATH}?redirect=${encodeURIComponent(redirect)}`
+    : LOGIN_PATH
+
+  window.setTimeout(() => {
+    window.location.href = nextUrl
+    isRedirectingToLogin = false
+  }, 800)
+}
+
 service.interceptors.request.use(
   (config) => {
     const token = getToken()
     if (token) {
-      config.headers['Authorization'] = token
+      config.headers.Authorization = token
     }
 
-    if (config.method === 'post' && config.data) {
+    if (config.method?.toLowerCase() === 'post' && config.data) {
       config.data = signBody(config.data)
     }
 
     return config
   },
-  (error) => {
-    return Promise.reject(error)
-  }
+  (error) => Promise.reject(error)
 )
 
-// Response interceptor
 service.interceptors.response.use(
   (response) => {
     const res = response.data
-    const code = res.code
 
-    // Token expired — toast once + redirect
-    if (code === 10055 || code === 516) {
-      if (!isRedirectingToLogin) {
-        isRedirectingToLogin = true
-        removeToken()
-        eventBus.emit('toast', { message: '登录已过期，请重新登录', type: 'warning' })
-        setTimeout(() => {
-          window.location.href = '/login'
-          isRedirectingToLogin = false
-        }, 800)
-      }
+    if (AUTH_EXPIRED_CODES.includes(res?.code)) {
+      redirectToLogin()
       return Promise.reject(new Error('登录已过期'))
     }
 
-    // Return the unwrapped data for views to handle
     return res
   },
   (error) => {
-    const msg = error.response?.data?.msg || error.message || '网络错误'
+    const status = error.response?.status
+    if (status === 401) {
+      redirectToLogin()
+      return Promise.reject(new Error('登录已过期'))
+    }
+
+    const msg = error.response?.data?.msg || error.response?.data?.message || error.message || '网络错误'
     return Promise.reject(new Error(msg))
   }
 )
