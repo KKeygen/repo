@@ -1,4 +1,4 @@
-﻿package com.dismai.service.delaysend;
+package com.dismai.service.delaysend;
 
 import com.dismai.context.DelayQueueContext;
 import com.dismai.core.SpringUtil;

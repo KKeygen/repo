@@ -1,4 +1,4 @@
-﻿package com.dismai.service.cache.local;
+package com.dismai.service.cache.local;
 
 import com.dismai.entity.ProgramCategory;
 import com.github.benmanes.caffeine.cache.Cache;

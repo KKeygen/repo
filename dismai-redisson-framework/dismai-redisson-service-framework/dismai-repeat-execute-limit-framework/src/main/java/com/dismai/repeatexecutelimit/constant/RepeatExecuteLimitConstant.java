@@ -1,4 +1,4 @@
-﻿package com.dismai.repeatexecutelimit.constant;
+package com.dismai.repeatexecutelimit.constant;
 
 public class RepeatExecuteLimitConstant {
     

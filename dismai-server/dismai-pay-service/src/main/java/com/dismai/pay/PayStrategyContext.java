@@ -1,4 +1,4 @@
-﻿package com.dismai.pay;
+package com.dismai.pay;
 
 import com.dismai.enums.BaseCode;
 import com.dismai.exception.DismaiFrameException;

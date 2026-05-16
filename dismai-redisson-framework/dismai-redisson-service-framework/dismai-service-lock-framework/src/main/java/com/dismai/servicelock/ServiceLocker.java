@@ -1,4 +1,4 @@
-﻿package com.dismai.servicelock;
+package com.dismai.servicelock;
 
 import org.redisson.api.RLock;
 

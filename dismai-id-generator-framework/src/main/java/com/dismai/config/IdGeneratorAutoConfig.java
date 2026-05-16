@@ -1,4 +1,4 @@
-﻿package com.dismai.config;
+package com.dismai.config;
 
 import com.dismai.toolkit.SnowflakeIdGenerator;
 import com.dismai.toolkit.WorkAndDataCenterIdHandler;

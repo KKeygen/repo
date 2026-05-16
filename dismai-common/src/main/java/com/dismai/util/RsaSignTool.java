@@ -1,4 +1,4 @@
-﻿package com.dismai.util;
+package com.dismai.util;
 
 import cn.hutool.crypto.asymmetric.SignAlgorithm;
 import com.alibaba.fastjson.JSON;

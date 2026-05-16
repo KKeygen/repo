@@ -1,4 +1,4 @@
-﻿package com.dismai.initialize.constant;
+package com.dismai.initialize.constant;
 
 public class InitializeHandlerType {
     

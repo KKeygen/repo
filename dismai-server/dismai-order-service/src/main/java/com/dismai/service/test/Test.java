@@ -1,4 +1,4 @@
-﻿package com.dismai.service.test;
+package com.dismai.service.test;
 
 import com.alibaba.fastjson2.JSON;
 import com.dismai.core.ConsumerTask;

@@ -1,4 +1,4 @@
-﻿package com.dismai.service.composite.impl;
+package com.dismai.service.composite.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.dismai.dto.ProgramOrderCreateDto;
@@ -21,7 +21,7 @@ public class ProgramOrderCreateParamCheckHandler extends AbstractProgramCheckHan
         List<SeatDto> seatDtoList = programOrderCreateDto.getSeatDtoList();
         List<Long> ticketUserIdList = programOrderCreateDto.getTicketUserIdList();
         if (CollectionUtil.isEmpty(ticketUserIdList)) {
-            throw new DismaiFrameException(BaseCode.TICKET_USER_ID_EMPTY);
+            throw new DismaiFrameException(BaseCode.TICKET_USER_EMPTY);
         }
         Map<Long, List<Long>> ticketUserIdMap = 
                 ticketUserIdList.stream().collect(Collectors.groupingBy(ticketUserId -> ticketUserId));

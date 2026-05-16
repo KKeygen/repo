@@ -1,4 +1,4 @@
-﻿package com.dismai.entity;
+package com.dismai.entity;
 
 import lombok.Data;
 

@@ -1,4 +1,4 @@
-﻿package com.dismai.captcha.util;
+package com.dismai.captcha.util;
 
 import com.dismai.captcha.model.vo.PointVO;
 import org.slf4j.Logger;

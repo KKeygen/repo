@@ -1,4 +1,4 @@
-﻿package com.dismai.parser;
+package com.dismai.parser;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

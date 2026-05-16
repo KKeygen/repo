@@ -1,4 +1,4 @@
-﻿package com.dismai.config;
+package com.dismai.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;

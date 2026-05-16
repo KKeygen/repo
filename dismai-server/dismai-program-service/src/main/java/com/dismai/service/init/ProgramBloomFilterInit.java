@@ -1,4 +1,4 @@
-﻿package com.dismai.service.init;
+package com.dismai.service.init;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.dismai.handler.BloomFilterHandler;

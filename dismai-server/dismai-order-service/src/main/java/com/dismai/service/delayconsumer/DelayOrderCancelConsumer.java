@@ -1,4 +1,4 @@
-﻿package com.dismai.service.delayconsumer;
+package com.dismai.service.delayconsumer;
 
 import com.alibaba.fastjson.JSON;
 import com.dismai.core.SpringUtil;

@@ -1,4 +1,4 @@
-﻿package com.dismai.dto;
+package com.dismai.dto;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;

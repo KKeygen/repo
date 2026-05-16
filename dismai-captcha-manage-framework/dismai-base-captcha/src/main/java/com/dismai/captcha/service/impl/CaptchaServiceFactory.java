@@ -1,4 +1,4 @@
-﻿package com.dismai.captcha.service.impl;
+package com.dismai.captcha.service.impl;
 
 import com.dismai.captcha.model.common.Const;
 import com.dismai.captcha.service.CaptchaCacheService;

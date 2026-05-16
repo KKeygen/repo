@@ -1,4 +1,4 @@
-﻿package com.dismai.util;
+package com.dismai.util;
 
 @FunctionalInterface
 public interface TaskRun {

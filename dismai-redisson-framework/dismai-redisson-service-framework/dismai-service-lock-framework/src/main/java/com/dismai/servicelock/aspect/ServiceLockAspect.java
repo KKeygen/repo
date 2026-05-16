@@ -1,4 +1,4 @@
-﻿package com.dismai.servicelock.aspect;
+package com.dismai.servicelock.aspect;
 
 import com.dismai.constant.LockInfoType;
 import com.dismai.util.StringUtil;

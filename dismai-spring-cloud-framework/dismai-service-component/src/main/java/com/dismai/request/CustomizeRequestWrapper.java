@@ -1,4 +1,4 @@
-﻿package com.dismai.request;
+package com.dismai.request;
 
 import com.dismai.util.StringUtil;
 

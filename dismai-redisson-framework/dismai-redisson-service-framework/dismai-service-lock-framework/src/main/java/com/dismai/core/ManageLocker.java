@@ -1,4 +1,4 @@
-﻿package com.dismai.core;
+package com.dismai.core;
 
 import com.dismai.servicelock.LockType;
 import com.dismai.servicelock.ServiceLocker;

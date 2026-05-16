@@ -1,4 +1,4 @@
-﻿package com.dismai.redis;
+package com.dismai.redis;
 
 import com.dismai.core.RedisKeyManage;
 import com.dismai.core.SpringUtil;

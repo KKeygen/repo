@@ -1,4 +1,4 @@
-﻿package com.dismai.constant;
+package com.dismai.constant;
 
 public class GatewayConstant {
     

@@ -1,4 +1,4 @@
-﻿package com.dismai.util;
+package com.dismai.util;
 
 import com.dismai.enums.BaseCode;
 import com.dismai.exception.DismaiFrameException;

@@ -1,4 +1,4 @@
-﻿package com.dismai.jwt;
+package com.dismai.jwt;
 
 import com.alibaba.fastjson.JSONObject;
 import com.dismai.enums.BaseCode;

@@ -1,4 +1,4 @@
-﻿package com.dismai.servicelock.annotion;
+package com.dismai.servicelock.annotion;
 
 import com.dismai.servicelock.LockType;
 import com.dismai.servicelock.info.LockTimeOutStrategy;

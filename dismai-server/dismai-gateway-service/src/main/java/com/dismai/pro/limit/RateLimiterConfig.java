@@ -1,4 +1,4 @@
-﻿package com.dismai.pro.limit;
+package com.dismai.pro.limit;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,4 +1,4 @@
-﻿package com.dismai.config;
+package com.dismai.config;
 
 import com.dismai.properties.AjCaptchaProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

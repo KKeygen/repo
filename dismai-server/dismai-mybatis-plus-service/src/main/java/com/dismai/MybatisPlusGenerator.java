@@ -1,4 +1,4 @@
-﻿package com.dismai;
+package com.dismai;
 
 import com.baomidou.mybatisplus.generator.FastAutoGenerator;
 import com.baomidou.mybatisplus.generator.config.OutputFile;

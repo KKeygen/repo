@@ -1,4 +1,4 @@
-﻿package com.dismai;
+package com.dismai;
 
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;

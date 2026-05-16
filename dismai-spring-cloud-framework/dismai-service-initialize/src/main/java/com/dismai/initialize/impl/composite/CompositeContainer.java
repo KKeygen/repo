@@ -1,4 +1,4 @@
-﻿package com.dismai.initialize.impl.composite;
+package com.dismai.initialize.impl.composite;
 
 import com.dismai.enums.BaseCode;
 import com.dismai.exception.DismaiFrameException;
