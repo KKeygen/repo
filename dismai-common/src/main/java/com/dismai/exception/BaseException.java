@@ -1,4 +1,4 @@
-﻿package com.dismai.exception;
+package com.dismai.exception;
 
 public class BaseException extends RuntimeException{
 	

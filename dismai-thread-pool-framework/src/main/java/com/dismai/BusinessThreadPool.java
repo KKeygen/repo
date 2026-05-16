@@ -1,4 +1,4 @@
-﻿package com.dismai;
+package com.dismai;
 
 import com.dismai.base.BaseThreadPool;
 import com.dismai.namefactory.BusinessNameThreadFactory;

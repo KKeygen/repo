@@ -1,4 +1,4 @@
-﻿package com.baidu.fsg.uid.config;
+package com.baidu.fsg.uid.config;
 
 import com.baidu.fsg.uid.worker.WorkerIdAssigner;
 import com.dismai.enums.BaseCode;

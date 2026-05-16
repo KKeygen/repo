@@ -1,4 +1,4 @@
-﻿package com.dismai.servicelock.factory;
+package com.dismai.servicelock.factory;
 
 import com.dismai.core.ManageLocker;
 import com.dismai.servicelock.LockType;

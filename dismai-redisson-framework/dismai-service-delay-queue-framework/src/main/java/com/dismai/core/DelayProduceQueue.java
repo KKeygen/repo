@@ -1,4 +1,4 @@
-﻿package com.dismai.core;
+package com.dismai.core;
 
 import org.redisson.api.RDelayedQueue;
 import org.redisson.api.RedissonClient;

@@ -1,4 +1,4 @@
-﻿package com.dismai.redis;
+package com.dismai.redis;
 
 import org.springframework.data.redis.connection.DataType;
 import org.springframework.data.redis.core.Cursor;

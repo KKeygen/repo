@@ -1,4 +1,4 @@
-﻿package com.dismai.redis;
+package com.dismai.redis;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;

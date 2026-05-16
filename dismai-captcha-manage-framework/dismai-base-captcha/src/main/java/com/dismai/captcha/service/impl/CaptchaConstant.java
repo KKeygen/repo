@@ -1,4 +1,4 @@
-﻿package com.dismai.captcha.service.impl;
+package com.dismai.captcha.service.impl;
 
 public class CaptchaConstant {
     

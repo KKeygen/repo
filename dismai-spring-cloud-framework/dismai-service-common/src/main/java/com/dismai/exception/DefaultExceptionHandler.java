@@ -1,4 +1,4 @@
-﻿package com.dismai.exception;
+package com.dismai.exception;
 
 import com.dismai.common.ApiResponse;
 import com.dismai.enums.BaseCode;

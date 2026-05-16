@@ -1,4 +1,4 @@
-﻿package com.dismai.service;
+package com.dismai.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.dismai.core.RedisKeyManage;

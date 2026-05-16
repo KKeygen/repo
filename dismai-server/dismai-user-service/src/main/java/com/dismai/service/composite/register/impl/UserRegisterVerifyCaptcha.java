@@ -1,4 +1,4 @@
-﻿package com.dismai.service.composite.register.impl;
+package com.dismai.service.composite.register.impl;
 
 import com.dismai.captcha.model.common.ResponseModel;
 import com.dismai.captcha.model.vo.CaptchaVO;

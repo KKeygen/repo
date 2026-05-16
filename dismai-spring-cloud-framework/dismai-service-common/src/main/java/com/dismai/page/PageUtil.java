@@ -1,4 +1,4 @@
-﻿package com.dismai.page;
+package com.dismai.page;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;

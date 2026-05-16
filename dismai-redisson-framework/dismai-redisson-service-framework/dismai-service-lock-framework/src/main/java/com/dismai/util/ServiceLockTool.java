@@ -1,4 +1,4 @@
-﻿package com.dismai.util;
+package com.dismai.util;
 
 import com.dismai.constant.LockInfoType;
 import com.dismai.lockinfo.LockInfoHandle;

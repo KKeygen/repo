@@ -1,4 +1,4 @@
-﻿package com.dismai.dto;
+package com.dismai.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

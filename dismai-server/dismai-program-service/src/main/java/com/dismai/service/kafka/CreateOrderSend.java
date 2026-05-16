@@ -1,4 +1,4 @@
-﻿package com.dismai.service.kafka;
+package com.dismai.service.kafka;
 
 import com.dismai.core.SpringUtil;
 import com.dismai.mq.callback.FailureCallback;

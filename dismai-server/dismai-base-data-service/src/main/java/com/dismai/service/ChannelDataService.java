@@ -1,4 +1,4 @@
-﻿package com.dismai.service;
+package com.dismai.service;
 
 import com.baidu.fsg.uid.UidGenerator;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;

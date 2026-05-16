@@ -1,4 +1,4 @@
-﻿package com.dismai.threadlocal;
+package com.dismai.threadlocal;
 
 import java.util.HashMap;
 import java.util.Map;

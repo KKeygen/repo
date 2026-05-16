@@ -1,4 +1,4 @@
-﻿package com.dismai.fiterbalance;
+package com.dismai.fiterbalance;
 
 import com.dismai.balance.FilterLoadBalance;
 import com.dismai.filter.AbstractServerFilter;

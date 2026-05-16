@@ -1,4 +1,4 @@
-﻿package com.dismai.common;
+package com.dismai.common;
 
 import com.dismai.enums.BaseCode;
 import io.swagger.v3.oas.annotations.media.Schema;

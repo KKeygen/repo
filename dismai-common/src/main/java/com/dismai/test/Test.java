@@ -1,4 +1,4 @@
-﻿package com.dismai.test;
+package com.dismai.test;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;

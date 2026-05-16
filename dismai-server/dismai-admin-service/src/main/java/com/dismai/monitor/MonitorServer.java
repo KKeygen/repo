@@ -1,4 +1,4 @@
-﻿package com.dismai.monitor;
+package com.dismai.monitor;
 
 import de.codecentric.boot.admin.server.domain.entities.Instance;
 import de.codecentric.boot.admin.server.domain.entities.InstanceRepository;

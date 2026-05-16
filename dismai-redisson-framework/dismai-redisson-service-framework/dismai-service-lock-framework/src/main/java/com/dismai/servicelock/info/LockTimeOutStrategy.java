@@ -1,4 +1,4 @@
-﻿package com.dismai.servicelock.info;
+package com.dismai.servicelock.info;
 
 public enum LockTimeOutStrategy implements LockTimeOutHandler{
     /**

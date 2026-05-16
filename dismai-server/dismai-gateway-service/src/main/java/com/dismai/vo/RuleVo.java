@@ -1,4 +1,4 @@
-﻿package com.dismai.vo;
+package com.dismai.vo;
 
 import lombok.Data;
 

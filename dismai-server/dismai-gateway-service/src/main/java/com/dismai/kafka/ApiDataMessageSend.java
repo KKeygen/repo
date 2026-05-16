@@ -1,4 +1,4 @@
-﻿package com.dismai.kafka;
+package com.dismai.kafka;
 
 import com.dismai.core.SpringUtil;
 import lombok.AllArgsConstructor;

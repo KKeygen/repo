@@ -1,4 +1,4 @@
-﻿package com.dismai.kafka;
+package com.dismai.kafka;
 
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;

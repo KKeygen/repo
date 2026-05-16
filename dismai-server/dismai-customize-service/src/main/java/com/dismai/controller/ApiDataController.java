@@ -1,4 +1,4 @@
-﻿package com.dismai.controller;
+package com.dismai.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.dismai.common.ApiResponse;

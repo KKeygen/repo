@@ -1,4 +1,4 @@
-﻿package com.dismai.service.lua;
+package com.dismai.service.lua;
 
 import com.alibaba.fastjson.JSON;
 import com.dismai.redis.RedisCache;

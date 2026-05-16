@@ -1,4 +1,4 @@
-﻿package com.dismai.mq.callback;
+package com.dismai.mq.callback;
 
 @FunctionalInterface
 public interface FailureCallback {

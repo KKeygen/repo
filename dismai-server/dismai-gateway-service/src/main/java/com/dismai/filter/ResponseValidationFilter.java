@@ -1,4 +1,4 @@
-﻿package com.dismai.filter;
+package com.dismai.filter;
 
 import com.alibaba.fastjson.JSON;
 import com.dismai.common.ApiResponse;

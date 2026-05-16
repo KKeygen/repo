@@ -1,4 +1,4 @@
-﻿package com.dismai.initialize.impl.composite;
+package com.dismai.initialize.impl.composite;
 
 import com.dismai.initialize.impl.composite.init.CompositeInit;
 import org.springframework.context.annotation.Bean;

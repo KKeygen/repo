@@ -1,4 +1,4 @@
-﻿package com.dismai.balance.config;
+package com.dismai.balance.config;
 
 import com.dismai.context.ContextHandler;
 import com.dismai.enhance.config.EnhanceLoadBalancerClientConfiguration;

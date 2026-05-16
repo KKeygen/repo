@@ -1,4 +1,4 @@
-﻿package com.dismai.service.init;
+package com.dismai.service.init;
 
 import com.dismai.core.SpringUtil;
 import com.dismai.initialize.base.AbstractApplicationPostConstructHandler;

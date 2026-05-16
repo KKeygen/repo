@@ -1,4 +1,4 @@
-﻿package com.dismai.initialize.impl.composite;
+package com.dismai.initialize.impl.composite;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

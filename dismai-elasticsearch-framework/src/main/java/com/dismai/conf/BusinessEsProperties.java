@@ -1,4 +1,4 @@
-﻿package com.dismai.conf;
+package com.dismai.conf;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

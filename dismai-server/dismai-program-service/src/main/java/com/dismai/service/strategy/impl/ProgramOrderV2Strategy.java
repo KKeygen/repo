@@ -1,4 +1,4 @@
-﻿package com.dismai.service.strategy.impl;
+package com.dismai.service.strategy.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
@@ -78,7 +78,12 @@ public class ProgramOrderV2Strategy implements ProgramOrderStrategy {
                 localLockSuccessList.add(reentrantLock);
             }
             for (RLock rLock : serviceLockList) {
-                if (!rLock.tryLock(5, TimeUnit.SECONDS)) {
+                try {
+                    if (!rLock.tryLock(5, TimeUnit.SECONDS)) {
+                        throw new DismaiFrameException(BaseCode.SERVICE_LOCK_FAIL);
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                     throw new DismaiFrameException(BaseCode.SERVICE_LOCK_FAIL);
                 }
                 serviceLockSuccessList.add(rLock);

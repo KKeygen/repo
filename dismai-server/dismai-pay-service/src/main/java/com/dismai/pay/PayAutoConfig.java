@@ -1,4 +1,4 @@
-﻿package com.dismai.pay;
+package com.dismai.pay;
 
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.AlipayClient;

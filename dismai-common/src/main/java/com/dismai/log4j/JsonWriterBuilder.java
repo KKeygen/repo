@@ -1,4 +1,4 @@
-﻿package com.dismai.log4j;
+package com.dismai.log4j;
 
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
