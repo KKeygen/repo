@@ -229,7 +229,7 @@ onMounted(async () => {
 
   const queryId = route.query.id
   if (queryId) {
-    activeCategoryId.value = queryId
+    activeCategoryId.value = Number(queryId)
     await loadSubCategories(queryId)
   } else if (categories.value.length > 0) {
     activeCategoryId.value = categories.value[0].id
@@ -241,7 +241,7 @@ onMounted(async () => {
 
 watch(() => route.query, (newQuery) => {
   if (newQuery.id && newQuery.id !== activeCategoryId.value) {
-    activeCategoryId.value = newQuery.id
+    activeCategoryId.value = Number(newQuery.id)
     activeSubCategoryId.value = null
     currentPage.value = 1
     loadSubCategories(newQuery.id)

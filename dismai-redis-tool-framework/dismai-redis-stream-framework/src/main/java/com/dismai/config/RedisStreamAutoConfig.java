@@ -65,11 +65,12 @@ public class RedisStreamAutoConfig {
         StreamMessageListenerContainer<String, ObjectRecord<String, String>> container = 
                 StreamMessageListenerContainer.create(redisConnectionFactory, options);
         checkConsumerType(redisStreamConfigProperties.getConsumerType());
-        RedisStreamListener redisStreamListener = new RedisStreamListener(messageConsumer);
+        RedisStreamListener redisStreamListener = new RedisStreamListener(messageConsumer, stringRedisTemplate,
+                redisStreamConfigProperties.getConsumerGroup());
         if (RedisStreamConstant.GROUP.equals(redisStreamConfigProperties.getConsumerType())) {
             redisStreamHandler.streamBindingGroup(redisStreamConfigProperties.getStreamName(), 
                     redisStreamConfigProperties.getConsumerGroup());
-            container.receiveAutoAck(Consumer.from(redisStreamConfigProperties.getConsumerGroup(), 
+            container.receive(Consumer.from(redisStreamConfigProperties.getConsumerGroup(), 
                     redisStreamConfigProperties.getConsumerName()), 
                     StreamOffset.create(redisStreamConfigProperties.getStreamName(), ReadOffset.lastConsumed()), 
                     redisStreamListener);

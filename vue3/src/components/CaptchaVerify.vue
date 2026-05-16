@@ -37,9 +37,11 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onBeforeUnmount } from 'vue'
 
 const emit = defineEmits(['success', 'close'])
+
+const cleanupListeners = ref(null)
 
 const sliderProgress = ref(0)
 const pieceLeft = ref(10)
@@ -81,7 +83,20 @@ function startDrag(e) {
   document.addEventListener('mouseup', onEnd)
   document.addEventListener('touchmove', onMove)
   document.addEventListener('touchend', onEnd)
+  cleanupListeners.value = () => {
+    document.removeEventListener('mousemove', onMove)
+    document.removeEventListener('mouseup', onEnd)
+    document.removeEventListener('touchmove', onMove)
+    document.removeEventListener('touchend', onEnd)
+    isDragging.value = false
+  }
 }
+
+onBeforeUnmount(() => {
+  if (cleanupListeners.value) {
+    cleanupListeners.value()
+  }
+})
 </script>
 
 <style scoped lang="scss">

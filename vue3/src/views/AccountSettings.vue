@@ -82,7 +82,7 @@ const layoutComponent = computed(() => route.meta.layout === 'account' ? Account
 const loading = ref(true)
 const userInfo = reactive({ email: '', mobile: '', isAuthenticated: false })
 
-const maskPhone = (phone) => { if (!phone || phone.length < 7) return phone; return phone.slice(0, 3) + '****' + phone.slice(-4) }
+const maskPhone = (phone) => { const p = String(phone || ''); if (p.length < 7) return p; return p.slice(0, 3) + '****' + p.slice(-4) }
 
 onMounted(async () => {
   try {
@@ -90,7 +90,7 @@ onMounted(async () => {
     if (res.code === 0) {
       const data = res.data
       userInfo.email = data.email || ''; userInfo.mobile = data.mobile || ''
-      userInfo.isAuthenticated = !!data.relName || !!data.isAuthenticated
+      userInfo.isAuthenticated = !!data.isAuthenticated
     }
   } catch (e) { console.error('Load user info failed:', e) }
   finally { loading.value = false }

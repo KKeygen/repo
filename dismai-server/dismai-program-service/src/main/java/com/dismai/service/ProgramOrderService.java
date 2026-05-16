@@ -294,6 +294,9 @@ public class ProgramOrderService {
         orderCreateDto.setCreateOrderTime(DateUtils.now());
         
         List<Long> ticketUserIdList = programOrderCreateDto.getTicketUserIdList();
+        if (ticketUserIdList.size() != purchaseSeatList.size()) {
+            throw new DismaiFrameException(BaseCode.TICKET_USER_COUNT_UNEQUAL_SEAT_COUNT);
+        }
         List<OrderTicketUserCreateDto> orderTicketUserCreateDtoList = new ArrayList<>();
         for (int i = 0; i < ticketUserIdList.size(); i++) {
             Long ticketUserId = ticketUserIdList.get(i);
@@ -332,10 +335,13 @@ public class ProgramOrderService {
         CreateOrderMqDomain createOrderMqDomain = new CreateOrderMqDomain();
         CountDownLatch latch = new CountDownLatch(1);
         createOrderSend.sendMessage(JSON.toJSONString(orderCreateDto),sendResult -> {
-            createOrderMqDomain.orderNumber = String.valueOf(orderCreateDto.getOrderNumber());
-            assert sendResult != null;
-            log.info("创建订单kafka发送消息成功 topic : {}",sendResult.getRecordMetadata().topic());
-            latch.countDown();
+            try {
+                createOrderMqDomain.orderNumber = String.valueOf(orderCreateDto.getOrderNumber());
+                assert sendResult != null;
+                log.info("创建订单kafka发送消息成功 topic : {}",sendResult.getRecordMetadata().topic());
+            } finally {
+                latch.countDown();
+            }
         },ex -> {
             log.error("创建订单kafka发送消息失败 error",ex);
             log.error("创建订单失败 需人工处理 orderCreateDto : {}",JSON.toJSONString(orderCreateDto));
