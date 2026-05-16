@@ -1,12 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import NProgress from 'nprogress'
 import { getToken } from '@/utils/auth'
+import { SITE_NAME } from '@/constants/site'
 
 const routes = [
-  {
-    path: '/',
-    redirect: '/index'
-  },
+  { path: '/', redirect: '/index' },
   {
     path: '/login',
     name: 'Login',
@@ -125,21 +123,16 @@ const router = createRouter({
   }
 })
 
-// Navigation guards
 router.beforeEach((to, from, next) => {
   NProgress.start()
-  document.title = to.meta.title ? `${to.meta.title} - 万花筒网` : '万花筒网'
+  document.title = to.meta.title ? `${to.meta.title} - ${SITE_NAME}` : SITE_NAME
 
-  if (to.meta.requiresAuth) {
-    const token = getToken()
-    if (!token) {
-      next({ path: '/login', query: { redirect: to.fullPath } })
-    } else {
-      next()
-    }
-  } else {
+  if (!to.meta.requiresAuth || getToken()) {
     next()
+    return
   }
+
+  next({ path: '/login', query: { redirect: to.fullPath } })
 })
 
 router.afterEach(() => {
