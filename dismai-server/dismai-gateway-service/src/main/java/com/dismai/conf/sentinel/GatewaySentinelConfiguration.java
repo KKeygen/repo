@@ -13,6 +13,7 @@ import org.springframework.web.reactive.result.view.ViewResolver;
 import java.util.Collections;
 import java.util.List;
 
+@org.springframework.context.annotation.Configuration
 public class GatewaySentinelConfiguration {
 
     private final List<ViewResolver> viewResolvers;

@@ -12,18 +12,8 @@ public class IsolationRegionSelector {
 		this.thresholdValue = thresholdValue;
 	}
 
-	private int reset() {
-		count.set(0);
-		return count.get();
-	}
-	
 	public synchronized int getIndex() {
-		int cur = count.get();
-		if (cur >= thresholdValue) {
-			cur = reset();
-		} else {
-			count.incrementAndGet();
-		}
-		return cur;
+		int cur = count.getAndUpdate(c -> c >= thresholdValue ? 1 : c + 1);
+		return cur - 1;
 	}
 }

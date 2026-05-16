@@ -114,15 +114,11 @@ public class Aes {
 		}
 		String resultString = null;
 		try {
-			int sixteen = 16;
 			KeyGenerator kg = KeyGenerator.getInstance("AES");
 			kg.init(128, new SecureRandom(key.getBytes()));
 			SecretKey sk = kg.generateKey();
 			byte[] b = sk.getEncoded();
 			resultString = byteToHexString(b);
-			if(StringUtil.isNotEmpty(resultString) && resultString.length() > sixteen) {
-				resultString = resultString.substring(sixteen);
-			}
 		} catch (NoSuchAlgorithmException e) {
 			log.error("没有此算法",e);
 		}

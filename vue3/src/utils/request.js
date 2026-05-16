@@ -72,7 +72,7 @@ service.interceptors.request.use(
   (config) => {
     const token = getToken()
     if (token) {
-      config.headers.Authorization = token
+      config.headers['Authorization'] = 'Bearer ' + token
     }
 
     config.headers[REQUEST_ID_HEADER] = config.headers[REQUEST_ID_HEADER] || createRequestId()

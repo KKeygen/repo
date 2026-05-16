@@ -19,7 +19,11 @@ public class RedisStreamHandler {
     private final StringRedisTemplate stringRedisTemplate;
     
     public void addGroup(String streamName, String groupName){
-        stringRedisTemplate.opsForStream().createGroup(streamName,groupName);
+        try {
+            stringRedisTemplate.opsForStream().createGroup(streamName,groupName);
+        } catch (Exception e) {
+            log.warn("Redis stream group already exists streamName : {} groupName : {}", streamName, groupName);
+        }
     }
     
     public Boolean hasKey(String key){

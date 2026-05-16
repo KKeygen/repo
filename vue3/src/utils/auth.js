@@ -9,7 +9,7 @@ export function getToken() {
 }
 
 export function setToken(token) {
-  return Cookies.set(TOKEN_KEY, token)
+  return Cookies.set(TOKEN_KEY, token, { sameSite: 'Strict' })
 }
 
 export function removeToken() {

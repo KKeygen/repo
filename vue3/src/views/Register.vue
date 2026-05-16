@@ -156,6 +156,7 @@ const validate = () => {
 
 const handleSubmit = async () => {
   if (!validate()) return
+  if (submitting.value) return
 
   submitting.value = true
   try {
@@ -167,11 +168,12 @@ const handleSubmit = async () => {
     }
     await doRegister()
   } catch (e) {
-    await doRegister()
+    submitting.value = false
   }
 }
 
 const onCaptchaSuccess = () => {
+  if (submitting.value) return
   showCaptcha.value = false
   doRegister()
 }

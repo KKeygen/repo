@@ -137,7 +137,10 @@ public class RequestValidationFilter implements GlobalFilter, Ordered {
             request.mutate().headers(httpHeaders -> {
                 map.forEach(httpHeaders::add);
             });
-            return chain.filter(exchange);
+            return chain.filter(exchange).doFinally(signalType -> {
+                MDC.clear();
+                BaseParameterHolder.removeParameterMap();
+            });
         }
     } 
 
@@ -162,6 +165,10 @@ public class RequestValidationFilter implements GlobalFilter, Ordered {
                 .then(Mono.defer(() -> chain.filter(
                         exchange.mutate().request(decorateHead(exchange, headers, outputMessage, requestTemporaryWrapper, headMap)).build()
                 )))
+                .doFinally(signalType -> {
+                    MDC.clear();
+                    BaseParameterHolder.removeParameterMap();
+                })
                 .onErrorResume((Function<Throwable, Mono<Void>>) throwable -> Mono.error(throwable));
     }
     

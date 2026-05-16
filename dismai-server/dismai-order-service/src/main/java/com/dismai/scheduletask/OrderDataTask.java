@@ -19,7 +19,9 @@ public class OrderDataTask {
         BusinessThreadPool.execute( () -> {
             try {
                 log.warn("订单服务定时任务重置执行");
-                orderService.delOrderAndOrderTicketUser();
+                // FIXME: 当前实现会删除所有有效订单(order_status=1,2,3,4)，导致每日数据丢失
+                // 需要改为只删除已标记删除或超过保留期的订单
+                // orderService.delOrderAndOrderTicketUser();
             }catch (Exception e) {
                 log.error("executeTask error",e);
             }

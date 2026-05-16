@@ -20,6 +20,9 @@ public class ProgramOrderCreateParamCheckHandler extends AbstractProgramCheckHan
     protected void execute(final ProgramOrderCreateDto programOrderCreateDto) {
         List<SeatDto> seatDtoList = programOrderCreateDto.getSeatDtoList();
         List<Long> ticketUserIdList = programOrderCreateDto.getTicketUserIdList();
+        if (CollectionUtil.isEmpty(ticketUserIdList)) {
+            throw new DismaiFrameException(BaseCode.TICKET_USER_ID_EMPTY);
+        }
         Map<Long, List<Long>> ticketUserIdMap = 
                 ticketUserIdList.stream().collect(Collectors.groupingBy(ticketUserId -> ticketUserId));
         for (List<Long> value : ticketUserIdMap.values()) {

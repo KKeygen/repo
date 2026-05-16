@@ -40,7 +40,7 @@ public class LocalCacheProgram {
                         if (value.getShowTime() == null) {
                             return Long.MAX_VALUE;
                         }
-                        return TimeUnit.MILLISECONDS.toNanos(DateUtils.countBetweenSecond(DateUtils.now(),value.getShowTime()));
+                        return TimeUnit.SECONDS.toNanos(DateUtils.countBetweenSecond(DateUtils.now(),value.getShowTime()));
                     }
                     
                     @Override

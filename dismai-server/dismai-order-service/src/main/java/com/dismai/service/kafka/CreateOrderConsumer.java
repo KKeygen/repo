@@ -64,6 +64,7 @@ public class CreateOrderConsumer {
             });
         }catch (Exception e) {
             log.error("处理消费到kafka的创建订单消息失败 error",e);
+            throw new RuntimeException("Kafka order message processing failed, will retry", e);
         }
     }
 }
