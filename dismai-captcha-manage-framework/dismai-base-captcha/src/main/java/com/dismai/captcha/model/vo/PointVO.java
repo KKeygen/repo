@@ -1,8 +1,9 @@
 ﻿package com.dismai.captcha.model.vo;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -58,19 +59,39 @@ public class PointVO {
     }
 
     public PointVO parse(String jsonStr) {
-        Map<String, Object> m = new HashMap(64);
-        Arrays.stream(jsonStr
-                .replaceFirst(",\\{", "\\{")
-                .replaceFirst("\\{", "")
-                .replaceFirst("\\}", "")
-                .replaceAll("\"", "")
-                .split(",")).forEach(item -> {
-            m.put(item.split(":")[0], item.split(":")[1]);
-        });
-        //PointVO d = new PointVO();
-        setX(Double.valueOf(String.valueOf(m.getOrDefault("x","0"))).intValue());
-        setY(Double.valueOf(String.valueOf(m.getOrDefault("y","0"))).intValue());
-        setSecretKey(String.valueOf(m.getOrDefault("secretKey", "")));
+        if (jsonStr == null || jsonStr.trim().isEmpty()) {
+            return this;
+        }
+        try {
+            JSONObject obj = JSON.parseObject(jsonStr);
+            if (obj != null) {
+                setX(obj.getIntValue("x"));
+                setY(obj.getIntValue("y"));
+                setSecretKey(obj.getString("secretKey"));
+                return this;
+            }
+        } catch (Exception ignored) {
+        }
+
+        // Fallback: tolerant parse of simple key:value pairs
+        try {
+            Map<String, Object> m = new HashMap<>(4);
+            String s = jsonStr.replaceFirst(",\\{", "\\{")
+                    .replaceFirst("\\{", "")
+                    .replaceFirst("\\}", "")
+                    .replaceAll("\"", "");
+            String[] parts = s.split(",");
+            for (String item : parts) {
+                String[] kv = item.split(":", 2);
+                if (kv.length >= 2) {
+                    m.put(kv[0], kv[1]);
+                }
+            }
+            setX(Double.valueOf(String.valueOf(m.getOrDefault("x", "0"))).intValue());
+            setY(Double.valueOf(String.valueOf(m.getOrDefault("y", "0"))).intValue());
+            setSecretKey(String.valueOf(m.getOrDefault("secretKey", "")));
+        } catch (Exception ignored) {
+        }
         return this;
     }
 
