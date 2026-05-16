@@ -1,18 +1,16 @@
 import { defineStore } from 'pinia'
 import { getCategoryTypes } from '@/api/program'
+import { DEFAULT_CITY } from '@/constants/site'
 
 export const useAppStore = defineStore('app', {
   state: () => ({
-    currentCity: {
-      id: '',
-      name: '全国'
-    },
+    currentCity: { ...DEFAULT_CITY },
     categories: []
   }),
 
   actions: {
     setCity(city) {
-      this.currentCity = { ...city }
+      this.currentCity = { ...DEFAULT_CITY, ...city }
     },
 
     async loadCategories() {
