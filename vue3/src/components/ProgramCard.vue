@@ -1,7 +1,20 @@
 <template>
-  <div class="program-card" @click="goDetail">
+  <article
+    class="program-card"
+    role="link"
+    tabindex="0"
+    :aria-label="`查看${displayTitle}详情`"
+    @click="goDetail"
+    @keyup.enter="goDetail"
+  >
     <div class="program-card__image">
-      <img :src="program.itemPicture" :alt="program.title" loading="lazy" />
+      <img
+        :src="imageSrc"
+        :alt="displayTitle"
+        loading="lazy"
+        decoding="async"
+        @error="handleImageError"
+      />
       <div class="program-card__overlay"></div>
       <div v-if="program.minPrice" class="program-card__price">
         <span class="price-symbol">¥</span>{{ program.minPrice }}<span class="price-suffix">起</span>
@@ -11,7 +24,7 @@
       </div>
     </div>
     <div class="program-card__body">
-      <h3 class="program-card__title">{{ program.title }}</h3>
+      <h3 class="program-card__title">{{ displayTitle }}</h3>
       <p v-if="program.place" class="program-card__venue">
         {{ program.place }}
       </p>
@@ -19,11 +32,13 @@
         {{ program.showTime }}
       </p>
     </div>
-  </div>
+  </article>
 </template>
 
 <script setup>
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import fallbackPoster from '@/assets/section/detail.jpg'
 
 const props = defineProps({
   program: {
@@ -33,14 +48,34 @@ const props = defineProps({
 })
 
 const router = useRouter()
+const imageFailed = ref(false)
+
+const displayTitle = computed(() => props.program.title || '演出项目')
+const imageSrc = computed(() => {
+  if (imageFailed.value) return fallbackPoster
+  return props.program.itemPicture || props.program.picture || fallbackPoster
+})
+
+watch(
+  () => props.program.itemPicture,
+  () => {
+    imageFailed.value = false
+  }
+)
+
+function handleImageError() {
+  imageFailed.value = true
+}
 
 function goDetail() {
+  if (!props.program.id) return
   router.push(`/contentDetail/${props.program.id}`)
 }
 </script>
 
 <style scoped lang="scss">
 .program-card {
+  display: block;
   background: var(--color-card-bg);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -51,31 +86,33 @@ function goDetail() {
   cursor: pointer;
   transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
 
-  &:hover {
+  &:hover,
+  &:focus-visible {
     transform: translateY(-6px);
     box-shadow: var(--shadow-card-hover);
     border-color: rgba(212, 168, 83, 0.3);
+    outline: none;
   }
 }
 
 .program-card__image {
   position: relative;
   width: 100%;
-  padding-top: 133%;
+  aspect-ratio: 3 / 4;
   overflow: hidden;
   background: var(--color-surface);
 
   img {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
     transition: transform 0.4s ease;
   }
 
-  .program-card:hover & img {
+  .program-card:hover & img,
+  .program-card:focus-visible & img {
     transform: scale(1.05);
   }
 }
@@ -119,6 +156,7 @@ function goDetail() {
   position: absolute;
   top: 10px;
   left: 10px;
+  max-width: calc(100% - 20px);
   background: rgba(198, 40, 40, 0.85);
   color: var(--color-text);
   font-size: 10px;
