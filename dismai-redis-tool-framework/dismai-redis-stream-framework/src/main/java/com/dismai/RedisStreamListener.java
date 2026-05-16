@@ -24,7 +24,9 @@ public class RedisStreamListener implements org.springframework.data.redis.strea
             log.info("redis stream 消费到了数据 messageId : {}, streamName : {}, message : {}", 
                     messageId, streamName, value);
             messageConsumer.accept(message);
-            stringRedisTemplate.opsForStream().acknowledge(consumerGroup, streamName, messageId);
+            if (consumerGroup != null && !consumerGroup.isEmpty()) {
+                stringRedisTemplate.opsForStream().acknowledge(consumerGroup, streamName, messageId);
+            }
         }catch (Exception e){
             log.error("onMessage error messageId : {}, streamName : {}", messageId, streamName, e);
         }

@@ -78,7 +78,9 @@ public class ProgramOrderV2Strategy implements ProgramOrderStrategy {
                 localLockSuccessList.add(reentrantLock);
             }
             for (RLock rLock : serviceLockList) {
-                rLock.lock(5, TimeUnit.SECONDS);
+                if (!rLock.tryLock(5, TimeUnit.SECONDS)) {
+                    throw new DismaiFrameException(BaseCode.SERVICE_LOCK_FAIL);
+                }
                 serviceLockSuccessList.add(rLock);
             }
             return programOrderService.create(programOrderCreateDto);
