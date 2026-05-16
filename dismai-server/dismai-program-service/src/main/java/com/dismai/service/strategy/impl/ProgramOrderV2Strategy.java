@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
@@ -77,7 +78,7 @@ public class ProgramOrderV2Strategy implements ProgramOrderStrategy {
                 localLockSuccessList.add(reentrantLock);
             }
             for (RLock rLock : serviceLockList) {
-                rLock.lock();
+                rLock.lock(5, TimeUnit.SECONDS);
                 serviceLockSuccessList.add(rLock);
             }
             return programOrderService.create(programOrderCreateDto);

@@ -188,7 +188,7 @@ public class PayService {
         return tradeCheckVo;
     }
     
-    @Transactional(rollbackFor = Exception.class)
+    @ServiceLock(name = "REFUND_LOCK", keys = {"#refundDto.orderNumber"})
     public String refund(RefundDto refundDto) {
         PayBill payBill = payBillMapper.selectOne(Wrappers.lambdaQuery(PayBill.class)
                 .eq(PayBill::getOutOrderNo, refundDto.getOrderNumber()));
@@ -208,23 +208,28 @@ public class PayService {
         RefundResult refundResult = 
                 payStrategyHandler.refund(refundDto.getOrderNumber(), refundDto.getAmount(), refundDto.getReason());
         if (refundResult.isSuccess()) {
-            PayBill updatePayBill = new PayBill();
-            updatePayBill.setId(payBill.getId());
-            updatePayBill.setPayBillStatus(PayBillStatus.REFUND.getCode());
-            payBillMapper.updateById(updatePayBill);
-            RefundBill refundBill = new RefundBill();
-            refundBill.setId(uidGenerator.getUid());
-            refundBill.setOutOrderNo(payBill.getOutOrderNo());
-            refundBill.setPayBillId(payBill.getId());
-            refundBill.setRefundAmount(refundDto.getAmount());
-            refundBill.setRefundStatus(2);
-            refundBill.setRefundTime(DateUtils.now());
-            refundBill.setReason(refundDto.getReason());
-            refundBillMapper.insert(refundBill);
-            return refundBill.getOutOrderNo();
+            updateRefundBill(payBill, refundDto);
         }else {
             throw new DismaiFrameException(refundResult.getMessage());
         }
+        return refundDto.getOrderNumber();
+    }
+    
+    @Transactional(rollbackFor = Exception.class)
+    public void updateRefundBill(PayBill payBill, RefundDto refundDto) {
+        PayBill updatePayBill = new PayBill();
+        updatePayBill.setId(payBill.getId());
+        updatePayBill.setPayBillStatus(PayBillStatus.REFUND.getCode());
+        payBillMapper.updateById(updatePayBill);
+        RefundBill refundBill = new RefundBill();
+        refundBill.setId(uidGenerator.getUid());
+        refundBill.setOutOrderNo(payBill.getOutOrderNo());
+        refundBill.setPayBillId(payBill.getId());
+        refundBill.setRefundAmount(refundDto.getAmount());
+        refundBill.setRefundStatus(2);
+        refundBill.setRefundTime(DateUtils.now());
+        refundBill.setReason(refundDto.getReason());
+        refundBillMapper.insert(refundBill);
     }
     
     public PayBillVo detail(PayBillDto payBillDto) {

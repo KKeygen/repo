@@ -170,6 +170,7 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
         return true;
     }
     
+    @ServiceLock(name = UPDATE_ORDER_STATUS_LOCK, keys = {"#orderPayDto.orderNumber"})
     public String pay(OrderPayDto orderPayDto) {
         Long orderNumber = orderPayDto.getOrderNumber();
         LambdaQueryWrapper<Order> orderLambdaQueryWrapper =
@@ -259,16 +260,12 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
             Integer orderStatus = order.getOrderStatus();
             if (!Objects.equals(orderStatus, payBillStatus)) {
                 orderPayCheckVo.setOrderStatus(payBillStatus);
-                try {
-                    if (Objects.equals(payBillStatus, PayBillStatus.PAY.getCode())) {
-                        orderPayCheckVo.setPayOrderTime(DateUtils.now());
-                        orderService.updateOrderRelatedData(order.getOrderNumber(),OrderStatus.PAY);
-                    }else if (Objects.equals(payBillStatus, PayBillStatus.CANCEL.getCode())) {
-                        orderPayCheckVo.setCancelOrderTime(DateUtils.now());
-                        orderService.updateOrderRelatedData(order.getOrderNumber(),OrderStatus.CANCEL);
-                    }
-                }catch (Exception e) {
-                    log.warn("updateOrderRelatedData warn message",e);
+                if (Objects.equals(payBillStatus, PayBillStatus.PAY.getCode())) {
+                    orderPayCheckVo.setPayOrderTime(DateUtils.now());
+                    orderService.updateOrderRelatedData(order.getOrderNumber(),OrderStatus.PAY);
+                }else if (Objects.equals(payBillStatus, PayBillStatus.CANCEL.getCode())) {
+                    orderPayCheckVo.setCancelOrderTime(DateUtils.now());
+                    orderService.updateOrderRelatedData(order.getOrderNumber(),OrderStatus.CANCEL);
                 }
             }
         }else {
@@ -326,12 +323,8 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
                 throw new DismaiFrameException(notifyResponse);
             }
             if (ALIPAY_NOTIFY_SUCCESS_RESULT.equals(notifyResponse.getData().getPayResult())) {
-                try {
-                    orderService.updateOrderRelatedData(Long.parseLong(notifyResponse.getData().getOutTradeNo())
-                            ,OrderStatus.PAY);
-                }catch (Exception e) {
-                    log.warn("updateOrderRelatedData warn message",e);
-                }
+                orderService.updateOrderRelatedData(Long.parseLong(notifyResponse.getData().getOutTradeNo())
+                        ,OrderStatus.PAY);
             }
             return notifyResponse.getData().getPayResult();
         }finally {

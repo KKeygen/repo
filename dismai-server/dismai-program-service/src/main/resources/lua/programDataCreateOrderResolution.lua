@@ -91,7 +91,7 @@ if (type == 1) then
             table.insert(purchase_seat_list,seat_vo)
             total_seat_dto_price = total_seat_dto_price + seat_dto_price
             total_seat_vo_price = total_seat_vo_price + seat_vo.price
-            if (total_seat_dto_price > total_seat_vo_price) then
+            if (total_seat_dto_price ~= total_seat_vo_price) then
                 return string.format('{"%s": %d}', 'code', 40008)
             end
         end

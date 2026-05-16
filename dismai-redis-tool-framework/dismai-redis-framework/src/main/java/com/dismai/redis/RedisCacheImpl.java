@@ -93,9 +93,7 @@ public class RedisCacheImpl implements RedisCache {
     public List<String> getKeys(List<RedisKeyBuild> keyList) {
         CacheUtil.checkNotEmpty(keyList);
         List<String> batchKey = CacheUtil.getBatchKey(keyList);
-        List<String> list = redisTemplate.opsForValue().multiGet(batchKey);
-        
-        return CacheUtil.optimizeRedisList(redisTemplate.opsForValue().multiGet(CacheUtil.optimizeRedisList(list)));
+        return CacheUtil.optimizeRedisList(redisTemplate.opsForValue().multiGet(batchKey));
     }
 
     @Override
@@ -420,7 +418,7 @@ public class RedisCacheImpl implements RedisCache {
         CacheUtil.checkNotEmpty(pivot);
         CacheUtil.checkNotEmpty(value);
         String key = redisKeyBuild.getRelKey();
-        String jsonPivot = value instanceof String ? (String) pivot : JSON.toJSONString(pivot);
+        String jsonPivot = pivot instanceof String ? (String) pivot : JSON.toJSONString(pivot);
         String jsonValue = value instanceof String ? (String) value : JSON.toJSONString(value);
         return redisTemplate.opsForList().leftPush(key, jsonPivot, jsonValue);
     }
@@ -462,7 +460,7 @@ public class RedisCacheImpl implements RedisCache {
         CacheUtil.checkNotEmpty(pivot);
         CacheUtil.checkNotEmpty(value);
         String key = redisKeyBuild.getRelKey();
-        String jsonPivot = value instanceof String ? (String) pivot : JSON.toJSONString(pivot);
+        String jsonPivot = pivot instanceof String ? (String) pivot : JSON.toJSONString(pivot);
         String jsonValue = value instanceof String ? (String) value : JSON.toJSONString(value);
         return redisTemplate.opsForList().rightPush(key, jsonPivot, jsonValue);
     }

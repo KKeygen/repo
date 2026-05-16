@@ -37,7 +37,10 @@ public class LocalCacheProgramGroup {
                     @Override
                     public long expireAfterCreate(@NonNull final String key, @NonNull final ProgramGroupVo value,
                                                   final long currentTime) {
-                        return TimeUnit.MILLISECONDS.toNanos
+                        if (value.getRecentShowTime() == null) {
+                            return Long.MAX_VALUE;
+                        }
+                        return TimeUnit.SECONDS.toNanos
                                 (DateUtils.countBetweenSecond(DateUtils.now(),value.getRecentShowTime()));
                     }
                     

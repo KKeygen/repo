@@ -111,7 +111,7 @@ public class SnowflakeIdGenerator {
             long offset = lastTimestamp - timestamp;
             if (offset <= five) {
                 try {
-                    wait(offset << 1);
+                    Thread.sleep(offset << 1);
                     timestamp = timeGen();
                     if (timestamp < lastTimestamp) {
                         throw new RuntimeException(String.format("Clock moved backwards.  Refusing to generate id for %d milliseconds", offset));
