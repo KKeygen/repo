@@ -1,37 +1,33 @@
 <template>
   <component :is="layoutComponent">
     <div class="home">
-      <!-- Hero Section -->
       <section class="hero">
         <div class="hero__bg"></div>
         <div class="hero__spotlight"></div>
         <div class="hero__particles"></div>
         <div class="hero__content">
-          <p class="hero__eyebrow child-stagger-1">✦ 华彩流光 ✦</p>
+          <p class="hero__eyebrow child-stagger-1">华彩流光</p>
           <h1 class="hero__title font-display child-stagger-2">发现精彩演出</h1>
-          <p class="hero__subtitle child-stagger-3">在光影交织中，探寻属于你的璀璨时刻</p>
+          <p class="hero__subtitle child-stagger-3">在光影交织中，探索属于你的璀璨时刻</p>
           <div class="hero__search child-stagger-4">
-            <div class="hero__search-icon">
+            <div class="hero__search-icon" aria-hidden="true">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
               </svg>
             </div>
             <input
               v-model="searchKeyword"
-              type="text"
+              type="search"
               class="hero__search-input"
               placeholder="搜索演出、场馆、艺人"
               @keyup.enter="handleSearch"
             />
-            <button class="hero__search-btn" @click="handleSearch">
-              搜索
-            </button>
+            <button class="hero__search-btn" @click="handleSearch">搜索</button>
           </div>
         </div>
       </section>
 
-      <!-- Category Quick Links -->
-      <section class="categories container">
+      <section class="categories container" aria-label="演出分类">
         <div class="categories__list">
           <button
             v-for="cat in categoryChips"
@@ -45,16 +41,14 @@
         </div>
       </section>
 
-      <!-- Loading State -->
       <div v-if="loading" class="loading-container">
         <div class="spinner"></div>
-        <p class="text-muted" style="margin-top: 12px;">加载中...</p>
+        <p class="text-muted mt-3">正在加载精彩演出...</p>
       </div>
 
-      <!-- Program Sections -->
       <div v-else class="sections container">
         <section
-          v-for="(section, sIdx) in programSections"
+          v-for="section in programSections"
           :key="section.categoryId"
           class="program-section"
         >
@@ -69,7 +63,7 @@
             >
               查看更多
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <path d="M5 12h14M12 5l7 7-7 7"/>
+                <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
             </router-link>
           </div>
@@ -83,7 +77,7 @@
         </section>
 
         <div v-if="programSections.length === 0" class="empty-state">
-          <p class="text-muted">暂无演出信息</p>
+          <p class="text-muted">暂无演出信息，请稍后再来看看</p>
         </div>
       </div>
     </div>
@@ -99,6 +93,7 @@ import ProgramCard from '@/components/ProgramCard.vue'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import AccountLayout from '@/layouts/AccountLayout.vue'
 import eventBus from '@/utils/eventBus'
+import { FALLBACK_CATEGORIES } from '@/constants/site'
 
 const router = useRouter()
 const route = useRoute()
@@ -112,24 +107,12 @@ const searchKeyword = ref('')
 const loading = ref(true)
 const activeCategoryId = ref(null)
 const programSections = ref([])
-
-const categoryChips = ref([
-  { name: '演唱会', id: '' },
-  { name: '话剧歌剧', id: '' },
-  { name: '体育', id: '' },
-  { name: '儿童亲子', id: '' },
-  { name: '展览休闲', id: '' },
-  { name: '音乐会', id: '' },
-  { name: '曲苑杂坛', id: '' },
-  { name: '舞蹈芭蕾', id: '' },
-  { name: '动漫', id: '' },
-  { name: '旅游展览', id: '' }
-])
+const categoryChips = ref([...FALLBACK_CATEGORIES])
 
 const handleSearch = () => {
-  if (searchKeyword.value.trim()) {
-    router.push({ path: '/allType', query: { name: searchKeyword.value.trim() } })
-  }
+  const keyword = searchKeyword.value.trim()
+  if (!keyword) return
+  router.push({ path: '/allType', query: { keyword } })
 }
 
 const navigateToCategory = (cat) => {
@@ -142,15 +125,16 @@ const loadData = async () => {
     const catRes = await getCategoryTypes({ type: 1 })
     if (catRes.code === 0) {
       const categories = catRes.data || []
-      categoryChips.value = categories.slice(0, 10).map(c => ({
-        name: c.name,
-        id: c.id
-      }))
+      if (categories.length > 0) {
+        categoryChips.value = categories.slice(0, 10).map(c => ({
+          name: c.name,
+          id: c.id
+        }))
+      }
     }
 
     const areaId = appStore.currentCity?.id || 0
     const categoryIds = categoryChips.value.map(c => c.id).filter(Boolean)
-
     const homeRes = await getHomeList({
       areaId,
       parentProgramCategoryIds: categoryIds.join(',')
@@ -166,6 +150,7 @@ const loadData = async () => {
     }
   } catch (e) {
     console.error('Failed to load home data:', e)
+    programSections.value = []
   } finally {
     loading.value = false
   }
@@ -191,7 +176,6 @@ onUnmounted(() => {
   background: var(--color-bg);
 }
 
-/* ── Hero ─────────────────────────────────── */
 .hero {
   position: relative;
   padding: 100px 20px 80px;
@@ -208,7 +192,7 @@ onUnmounted(() => {
     background:
       radial-gradient(ellipse 80% 60% at 50% 40%, rgba(212, 168, 83, 0.12) 0%, transparent 70%),
       radial-gradient(ellipse 50% 80% at 20% 80%, rgba(198, 40, 40, 0.06) 0%, transparent 60%),
-      linear-gradient(180deg, #0D0D0F 0%, #141418 100%);
+      linear-gradient(180deg, #0d0d0f 0%, #141418 100%);
   }
 
   &__spotlight {
@@ -248,7 +232,6 @@ onUnmounted(() => {
     letter-spacing: 6px;
     color: var(--color-primary);
     margin-bottom: 16px;
-    text-transform: uppercase;
     animation: fadeInUp 0.6s ease both;
   }
 
@@ -298,6 +281,7 @@ onUnmounted(() => {
 
   &__search-input {
     flex: 1;
+    min-width: 0;
     border: none;
     padding: 15px 16px;
     font-size: 15px;
@@ -308,10 +292,6 @@ onUnmounted(() => {
     &::placeholder {
       color: var(--color-muted);
     }
-
-    &:focus {
-      outline: none;
-    }
   }
 
   &__search-btn {
@@ -319,13 +299,9 @@ onUnmounted(() => {
     margin: 5px 5px 5px 0;
     background: var(--gradient-primary);
     color: var(--color-bg);
-    border: none;
     border-radius: 50px;
     font-size: 14px;
     font-weight: 600;
-    font-family: var(--font-body);
-    cursor: pointer;
-    letter-spacing: 1px;
     transition: transform var(--transition), box-shadow var(--transition);
 
     &:hover {
@@ -335,7 +311,6 @@ onUnmounted(() => {
   }
 }
 
-/* ── Categories ───────────────────────────── */
 .categories {
   padding: 36px 20px 20px;
 
@@ -354,15 +329,14 @@ onUnmounted(() => {
     color: var(--color-muted);
     font-size: 14px;
     font-weight: 500;
-    font-family: var(--font-body);
-    cursor: pointer;
     transition: all var(--transition);
-    letter-spacing: 0.5px;
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
       border-color: var(--color-primary);
       color: var(--color-primary);
       background: rgba(212, 168, 83, 0.06);
+      outline: none;
     }
 
     &--active {
@@ -374,7 +348,6 @@ onUnmounted(() => {
   }
 }
 
-/* ── Loading ──────────────────────────────── */
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -382,7 +355,6 @@ onUnmounted(() => {
   padding: 80px 20px;
 }
 
-/* ── Sections ─────────────────────────────── */
 .sections {
   padding: 32px 20px 80px;
 }
@@ -395,6 +367,7 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 16px;
     margin-bottom: 24px;
     padding-bottom: 16px;
     border-bottom: 1px solid var(--color-border);
@@ -404,6 +377,7 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     gap: 12px;
+    min-width: 0;
   }
 
   &__accent {
@@ -424,23 +398,18 @@ onUnmounted(() => {
     display: inline-flex;
     align-items: center;
     gap: 4px;
+    flex-shrink: 0;
     font-size: 13px;
     color: var(--color-primary);
     font-weight: 500;
-    letter-spacing: 0.5px;
     transition: all var(--transition);
-    text-decoration: none;
 
     svg {
       transition: transform var(--transition);
     }
 
-    &:hover {
-      color: var(--color-gold);
-
-      svg {
-        transform: translateX(3px);
-      }
+    &:hover svg {
+      transform: translateX(3px);
     }
   }
 
@@ -457,7 +426,6 @@ onUnmounted(() => {
   font-size: 16px;
 }
 
-/* ── Responsive ───────────────────────────── */
 @media (max-width: 640px) {
   .hero {
     padding: 70px 16px 50px;
