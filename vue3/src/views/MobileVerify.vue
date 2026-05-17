@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <component :is="layoutComponent">
     <div class="mobile-verify">
       <h2 class="page-title">手机验证</h2>
@@ -40,6 +40,7 @@
 <script setup>
 import { ref, reactive, computed, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user'
 import { updateMobile } from '@/api/user'
 import { useToast } from '@/components/Toast.vue'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
@@ -47,6 +48,7 @@ import AccountLayout from '@/layouts/AccountLayout.vue'
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 const toast = useToast()
 
 const layoutComponent = computed(() => route.meta.layout === 'account' ? AccountLayout : DefaultLayout)
@@ -81,8 +83,8 @@ const handleSubmit = async () => {
   if (!formData.code) { toast.error('请输入验证码'); return }
   saving.value = true
   try {
-    const res = await updateMobile({ mobile: formData.mobile, code: formData.code })
-    if (res.code === 0) { toast.success('手机号绑定成功'); router.push('/accountSettings') }
+    const res = await updateMobile({ id: userStore.userId, mobile: formData.mobile })
+    if (res.code == 0) { toast.success('手机号绑定成功'); router.push('/accountSettings') }
     else toast.error(res.msg || '绑定失败')
   } catch (e) { toast.error('网络错误') }
   finally { saving.value = false }

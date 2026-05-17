@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <component :is="layoutComponent">
     <div class="authentication">
       <h2 class="page-title">实名认证</h2>
@@ -52,6 +52,7 @@
 <script setup>
 import { ref, reactive, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user'
 import { authenticate } from '@/api/user'
 import { useToast } from '@/components/Toast.vue'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
@@ -59,6 +60,7 @@ import AccountLayout from '@/layouts/AccountLayout.vue'
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 const toast = useToast()
 
 const layoutComponent = computed(() => route.meta.layout === 'account' ? AccountLayout : DefaultLayout)
@@ -85,8 +87,8 @@ const handleSubmit = async () => {
   if (!validate()) return
   saving.value = true
   try {
-    const res = await authenticate({ relName: formData.relName, idType: formData.idType, idNumber: formData.idNumber, code: '0001' })
-    if (res.code === 0) { toast.success('认证成功'); router.push('/accountSettings') }
+    const res = await authenticate({ id: userStore.userId, relName: formData.relName, idNumber: formData.idNumber })
+    if (res.code == 0) { toast.success('认证成功'); router.push('/accountSettings') }
     else toast.error(res.msg || '认证失败')
   } catch (e) { toast.error('网络错误') }
   finally { saving.value = false }

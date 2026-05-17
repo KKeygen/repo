@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <component :is="layoutComponent">
     <div class="ticket-users">
       <div class="ticket-users__header">
@@ -115,7 +115,7 @@ const maskId = (id) => { if (!id || id.length < 6) return id || ''; return id.sl
 const loadUsers = async () => {
   try {
     const res = await getTicketUserList({ userId: userStore.userId })
-    if (res.code === 0) users.value = res.data || []
+    if (res.code == 0) users.value = res.data || []
   } catch (e) { console.error('Load ticket users failed:', e) }
   finally { loading.value = false }
 }
@@ -124,8 +124,8 @@ const handleAdd = async () => {
   if (!newUser.relName.trim() || !newUser.relIdNumber.trim()) { toast.error('请填写完整信息'); return }
   addLoading.value = true
   try {
-    const res = await addTicketUser({ userId: userStore.userId, relName: newUser.relName, relIdType: newUser.relIdType, relIdNumber: newUser.relIdNumber })
-    if (res.code === 0) {
+    const res = await addTicketUser({ userId: userStore.userId, relName: newUser.relName, idType: newUser.relIdType, idNumber: newUser.relIdNumber })
+    if (res.code == 0) {
       toast.success('添加成功'); showModal.value = false
       newUser.relName = ''; newUser.relIdNumber = ''; newUser.relIdType = 1
       await loadUsers()
@@ -140,7 +140,7 @@ const confirmDelete = async () => {
   if (!deleteTarget.value) return
   try {
     const res = await deleteTicketUser({ id: deleteTarget.value.id })
-    if (res.code === 0) { toast.success('删除成功'); users.value = users.value.filter(u => u.id !== deleteTarget.value.id) }
+    if (res.code == 0) { toast.success('删除成功'); users.value = users.value.filter(u => u.id !== deleteTarget.value.id) }
     else toast.error(res.msg || '删除失败')
   } catch (e) { toast.error('网络错误') }
   finally { showDeleteDialog.value = false; deleteTarget.value = null }

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <component :is="layoutComponent">
     <div class="edit-password">
       <h2 class="page-title">修改密码</h2>
@@ -45,6 +45,7 @@
 <script setup>
 import { ref, reactive, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user'
 import { updatePassword } from '@/api/user'
 import { useToast } from '@/components/Toast.vue'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
@@ -52,6 +53,7 @@ import AccountLayout from '@/layouts/AccountLayout.vue'
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 const toast = useToast()
 
 const layoutComponent = computed(() => route.meta.layout === 'account' ? AccountLayout : DefaultLayout)
@@ -77,8 +79,8 @@ const handleSave = async () => {
   if (!validate()) return
   saving.value = true
   try {
-    const res = await updatePassword({ oldPassword: formData.oldPassword, newPassword: formData.newPassword, code: '0001' })
-    if (res.code === 0) { toast.success('密码修改成功'); router.push('/accountSettings') }
+    const res = await updatePassword({ id: userStore.userId, password: formData.newPassword })
+    if (res.code == 0) { toast.success('密码修改成功'); router.push('/accountSettings') }
     else toast.error(res.msg || '修改失败')
   } catch (e) { toast.error('网络错误') }
   finally { saving.value = false }

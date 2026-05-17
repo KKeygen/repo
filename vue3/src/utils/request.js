@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { KJUR } from 'jsrsasign'
 import { getToken, removeToken } from '@/utils/auth'
 import eventBus from '@/utils/eventBus'
 
@@ -14,7 +13,9 @@ let isRedirectingToLogin = false
 const service = axios.create({
   baseURL: import.meta.env.VITE_APP_BASE_API,
   timeout: 30000,
-  headers: { 'Content-Type': 'application/json' }
+  headers: import.meta.env.VITE_SIGN_FLAG == 1
+    ? { 'Content-Type': 'application/json;charset=utf-8', 'no_verify': false }
+    : { 'Content-Type': 'application/json;charset=utf-8', 'no_verify': true }
 })
 
 function isPlainObject(value) {
@@ -29,24 +30,64 @@ function createRequestId() {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`
 }
 
-function signBody(body) {
+function base64ToArrayBuffer(base64) {
+  const binary = atob(base64)
+  const bytes = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i)
+  }
+  return bytes.buffer
+}
+
+function arrayBufferToBase64(buffer) {
+  const bytes = new Uint8Array(buffer)
+  let binary = ''
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i])
+  }
+  return btoa(binary)
+}
+
+async function signBody(body) {
   if (import.meta.env.VITE_SIGN_FLAG !== '1' || !isPlainObject(body)) {
     return body
   }
 
   const code = import.meta.env.VITE_CODE
-  const privateKey = import.meta.env.VITE_SIGN_SECRET_KEY
+  const privateKeyB64 = import.meta.env.VITE_SIGN_SECRET_KEY
   const businessBody = JSON.stringify(body)
-  const signContent = code + businessBody
 
-  const sig = new KJUR.crypto.Signature({ alg: 'SHA256withRSA' })
-  sig.init({ d: privateKey, isPrivate: true })
-  sig.updateString(signContent)
+  const signParams = { code, businessBody }
+  const sortedKeys = Object.keys(signParams).sort()
+  const signContent = sortedKeys.map(k => k + '=' + signParams[k]).join('&')
 
-  return {
-    code,
-    businessBody,
-    sign: sig.sign()
+  try {
+    const encoder = new TextEncoder()
+
+    // Use browser's native Web Crypto API (same algorithm as Java backend)
+    const keyData = base64ToArrayBuffer(privateKeyB64)
+    const cryptoKey = await crypto.subtle.importKey(
+      'pkcs8',
+      keyData,
+      { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+      false,
+      ['sign']
+    )
+
+    const signature = await crypto.subtle.sign(
+      'RSASSA-PKCS1-v1_5',
+      cryptoKey,
+      encoder.encode(signContent)
+    )
+
+    return {
+      code,
+      businessBody,
+      sign: arrayBufferToBase64(signature)
+    }
+  } catch (e) {
+    console.error('signBody failed:', e)
+    return body
   }
 }
 
@@ -69,10 +110,10 @@ function redirectToLogin() {
 }
 
 service.interceptors.request.use(
-  (config) => {
+  async (config) => {
     const token = getToken()
     if (token) {
-      config.headers['Authorization'] = 'Bearer ' + token
+      config.headers['token'] = token
     }
 
     config.headers[REQUEST_ID_HEADER] = config.headers[REQUEST_ID_HEADER] || createRequestId()
@@ -80,7 +121,7 @@ service.interceptors.request.use(
     config.headers[CLIENT_ROUTE_HEADER] = window.location.pathname
 
     if (config.method?.toLowerCase() === 'post' && config.data) {
-      config.data = signBody(config.data)
+      config.data = await signBody(config.data)
     }
 
     return config
@@ -90,6 +131,11 @@ service.interceptors.request.use(
 
 service.interceptors.response.use(
   (response) => {
+    const url = response.config.url
+    if ('/Dismai/user/user/logout' === url) {
+      return response.data
+    }
+
     const res = response.data
 
     if (AUTH_EXPIRED_CODES.includes(res?.code)) {

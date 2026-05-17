@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <component :is="layoutComponent">
     <div class="account-settings">
       <div class="page-header">
@@ -87,7 +87,7 @@ const maskPhone = (phone) => { const p = String(phone || ''); if (p.length < 7) 
 onMounted(async () => {
   try {
     const res = await getUserInfo({ id: userStore.userId })
-    if (res.code === 0) {
+    if (res.code == 0) {
       const data = res.data
       userInfo.email = data.email || ''; userInfo.mobile = data.mobile || ''
       userInfo.isAuthenticated = !!data.isAuthenticated
