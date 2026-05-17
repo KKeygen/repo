@@ -55,6 +55,10 @@ public class ProgramElasticsearchInitData extends AbstractApplicationPostConstru
         
         for (Long programId : allProgramIdList) {
             ProgramVo programVo = programService.getDetailFromDb(programId);
+            if (programVo == null) {
+                log.warn("initElasticsearchData skip null ProgramVo for id:{}", programId);
+                continue;
+            }
             Map<String,Object> map = new HashMap<>(32);
             map.put(ProgramDocumentParamName.ID,programVo.getId());
             map.put(ProgramDocumentParamName.PROGRAM_GROUP_ID,programVo.getProgramGroupId());
