@@ -1,6 +1,8 @@
 package com.dismai.service.es;
 
 import cn.hutool.core.collection.CollectionUtil;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.dismai.core.SpringUtil;
 import com.dismai.dto.EsDataQueryDto;
 import com.dismai.dto.ProgramListDto;
@@ -23,6 +25,7 @@ import org.elasticsearch.index.query.MatchAllQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.script.Script;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.sort.FieldSortBuilder;
@@ -46,43 +49,72 @@ public class ProgramEs {
     
     public List<ProgramHomeVo> selectHomeList(ProgramListDto programListDto) {
         List<ProgramHomeVo> programHomeVoList = new ArrayList<>();
-        
+
         try {
-            //按照父节目id集合来进行循环从es中查询，主页页面是4个父节目，也就是循环4次
-            for (Long parentProgramCategoryId : programListDto.getParentProgramCategoryIds()) {
-                List<EsDataQueryDto> programEsQueryDto = new ArrayList<>();
-                if (Objects.nonNull(programListDto.getAreaId())) {
-                    //地区id
-                    EsDataQueryDto areaIdQueryDto = new EsDataQueryDto();
-                    areaIdQueryDto.setParamName(ProgramDocumentParamName.AREA_ID);
-                    areaIdQueryDto.setParamValue(programListDto.getAreaId());
-                    programEsQueryDto.add(areaIdQueryDto);
-                }else {
-                    EsDataQueryDto primeQueryDto = new EsDataQueryDto();
-                    primeQueryDto.setParamName(ProgramDocumentParamName.PRIME);
-                    primeQueryDto.setParamValue(BusinessStatus.YES.getCode());
-                    programEsQueryDto.add(primeQueryDto);
+            String indexName = SpringUtil.getPrefixDistinctionName() + "-" + 
+                    ProgramDocumentParamName.INDEX_NAME;
+
+            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+            if (Objects.nonNull(programListDto.getAreaId())) {
+                boolQuery.must(QueryBuilders.termQuery(
+                        ProgramDocumentParamName.AREA_ID, programListDto.getAreaId()));
+            } else {
+                boolQuery.must(QueryBuilders.termQuery(
+                        ProgramDocumentParamName.PRIME, BusinessStatus.YES.getCode()));
+            }
+
+            SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+            sourceBuilder.query(boolQuery);
+            sourceBuilder.size(0);
+            sourceBuilder.trackTotalHits(false);
+
+            // terms aggregation on parentProgramCategoryId with top_hits sub-aggregation
+            sourceBuilder.aggregation(AggregationBuilders
+                    .terms("by_category")
+                    .field(ProgramDocumentParamName.PARENT_PROGRAM_CATEGORY_ID)
+                    .size(programListDto.getParentProgramCategoryIds().size())
+                    .subAggregation(AggregationBuilders
+                            .topHits("top_programs")
+                            .size(7)
+                            .sort(ProgramDocumentParamName.HIGH_HEAT, SortOrder.DESC)));
+
+            JSONObject result = businessEsHandle.executeQueryRaw(indexName, sourceBuilder);
+            JSONObject aggs = result.getJSONObject("aggregations");
+            if (aggs == null) return programHomeVoList;
+
+            JSONArray buckets = aggs.getJSONObject("by_category").getJSONArray("buckets");
+            if (buckets == null || buckets.isEmpty()) return programHomeVoList;
+
+            for (int i = 0; i < buckets.size(); i++) {
+                JSONObject bucket = buckets.getJSONObject(i);
+                JSONObject topHits = bucket.getJSONObject("top_programs");
+                if (topHits == null) continue;
+
+                JSONObject hitsObj = topHits.getJSONObject("hits");
+                if (hitsObj == null) continue;
+
+                JSONArray hitsArr = hitsObj.getJSONArray("hits");
+                if (hitsArr == null || hitsArr.isEmpty()) continue;
+
+                List<ProgramListVo> voList = new ArrayList<>();
+                for (int j = 0; j < hitsArr.size(); j++) {
+                    JSONObject hit = hitsArr.getJSONObject(j);
+                    JSONObject source = hit.getJSONObject("_source");
+                    if (source != null) {
+                        ProgramListVo vo = source.toJavaObject(ProgramListVo.class);
+                        voList.add(vo);
+                    }
                 }
-                
-                //父节目类型id集合
-                EsDataQueryDto parentProgramCategoryIdQueryDto = new EsDataQueryDto();
-                parentProgramCategoryIdQueryDto.setParamName(ProgramDocumentParamName.PARENT_PROGRAM_CATEGORY_ID);
-                parentProgramCategoryIdQueryDto.setParamValue(parentProgramCategoryId);
-                programEsQueryDto.add(parentProgramCategoryIdQueryDto);
-                //查询前7条
-                PageInfo<ProgramListVo> pageInfo = businessEsHandle.queryPage(
-                        SpringUtil.getPrefixDistinctionName() + "-" + ProgramDocumentParamName.INDEX_NAME,
-                        ProgramDocumentParamName.INDEX_TYPE, programEsQueryDto, 1, 7, ProgramListVo.class);
-                if (!pageInfo.getList().isEmpty()) {
-                    ProgramHomeVo programHomeVo = new ProgramHomeVo();
-                    programHomeVo.setCategoryName(pageInfo.getList().get(0).getParentProgramCategoryName());
-                    programHomeVo.setCategoryId(pageInfo.getList().get(0).getParentProgramCategoryId());
-                    programHomeVo.setProgramListVoList(pageInfo.getList());
-                    programHomeVoList.add(programHomeVo);
+                if (!voList.isEmpty()) {
+                    ProgramHomeVo homeVo = new ProgramHomeVo();
+                    homeVo.setCategoryName(voList.get(0).getParentProgramCategoryName());
+                    homeVo.setCategoryId(voList.get(0).getParentProgramCategoryId());
+                    homeVo.setProgramListVoList(voList);
+                    programHomeVoList.add(homeVo);
                 }
             }
-        }catch (Exception e) {
-            log.error("businessEsHandle.queryPage error",e);
+        } catch (Exception e) {
+            log.error("selectHomeList error", e);
         }
         return programHomeVoList;
     }
