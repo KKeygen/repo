@@ -1,0 +1,3 @@
+com.dismai.captcha.service.impl.BlockPuzzleCaptchaServiceImpl
+com.dismai.captcha.service.impl.ClickWordCaptchaServiceImpl
+com.dismai.captcha.service.impl.DefaultCaptchaServiceImpl
