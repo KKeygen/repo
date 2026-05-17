@@ -560,6 +560,23 @@ public class BusinessEsHandle {
         }
     }
     
+    public JSONObject executeQueryRaw(String indexName, SearchSourceBuilder sourceBuilder) throws IOException {
+        if (!esSwitch) {
+            return new JSONObject();
+        }
+        String dsl = sourceBuilder.toString();
+        log.info("query execute dsl : {}", dsl);
+        Request request = new Request("POST", "/" + indexName + "/_search");
+        request.setEntity(new NStringEntity(dsl, ContentType.APPLICATION_JSON));
+        request.addParameters(Collections.emptyMap());
+        Response response = restClient.performRequest(request);
+        String result = EntityUtils.toString(response.getEntity());
+        if (StringUtil.isEmpty(result)) {
+            return new JSONObject();
+        }
+        return JSONObject.parseObject(result);
+    }
+
     public void deleteByDocumentId(String index,String documentId) {
         if (!esSwitch) {
             return;
