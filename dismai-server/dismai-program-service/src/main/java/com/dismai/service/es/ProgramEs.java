@@ -266,7 +266,13 @@ public class ProgramEs {
     public HighlightBuilder getHighlightBuilder(List<String> fieldNameList){
         // 创建一个HighlightBuilder
         HighlightBuilder highlightBuilder = new HighlightBuilder();
+        if (fieldNameList == null || fieldNameList.isEmpty()) {
+            return highlightBuilder;
+        }
         for (String fieldName : fieldNameList) {
+            if (StringUtil.isEmpty(fieldName)) {
+                continue;
+            }
             // 为特定字段添加高亮设置
             HighlightBuilder.Field highlightTitle = new HighlightBuilder.Field(fieldName);
             highlightTitle.preTags("<em>");
