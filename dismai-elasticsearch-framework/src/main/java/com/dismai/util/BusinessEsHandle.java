@@ -223,7 +223,29 @@ public class BusinessEsHandle {
         }
         return false;
     }
-    
+
+    /**
+     * 批量添加文档
+     */
+    public void bulkAdd(String indexName, String indexType, List<Map<String, Object>> docList) {
+        if (!esSwitch || CollectionUtil.isEmpty(docList)) {
+            return;
+        }
+        try {
+            StringBuilder sb = new StringBuilder();
+            for (Map<String, Object> doc : docList) {
+                sb.append("{\"index\":{\"_index\":\"").append(indexName).append("\"}}\n");
+                sb.append(JSON.toJSONString(doc)).append("\n");
+            }
+            Request request = new Request("POST", "/_bulk");
+            request.setEntity(new NStringEntity(sb.toString(), ContentType.create("application/x-ndjson")));
+            request.addParameters(Collections.emptyMap());
+            restClient.performRequest(request);
+        } catch (Exception e) {
+            log.error("bulkAdd error", e);
+        }
+    }
+
     /**
      * 查询
      *
