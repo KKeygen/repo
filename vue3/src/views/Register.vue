@@ -160,7 +160,6 @@ const handleSubmit = async () => {
   submitting.value = true
   try {
     const captchaRes = await checkCaptchaNeed()
-    // Always capture captchaId from the response (required by backend)
     captchaId.value = captchaRes.data?.captchaId || null
 
     if (captchaRes.code == 0 && captchaRes.data?.verifyCaptcha) {
@@ -187,14 +186,12 @@ const doRegister = async (captchaData) => {
       mobile: formData.mobile,
       password: formData.password,
       confirmPassword: formData.confirmPassword,
+      captchaId: captchaId.value,
       code: '0001'
     }
 
     if (captchaData?.captchaVerification) {
       payload.captchaVerification = captchaData.captchaVerification
-    }
-    if (captchaId.value) {
-      payload.captchaId = String(captchaId.value)
     }
 
     const res = await register(payload)

@@ -7,6 +7,9 @@ const LOGIN_PATH = '/login'
 const REQUEST_ID_HEADER = 'X-Request-Id'
 const CLIENT_TIME_HEADER = 'X-Client-Timestamp'
 const CLIENT_ROUTE_HEADER = 'X-Client-Route'
+const NO_VERIFY_HEADER = 'no_verify'
+const SIGN_ENABLED = import.meta.env.VITE_SIGN_FLAG === '1'
+const NUMERIC_CODE_PATTERN = /^-?\d+$/
 
 let isRedirectingToLogin = false
 
@@ -26,7 +29,6 @@ function createRequestId() {
   if (window.crypto?.randomUUID) {
     return window.crypto.randomUUID()
   }
-
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`
 }
 
@@ -48,8 +50,21 @@ function arrayBufferToBase64(buffer) {
   return btoa(binary)
 }
 
+function normalizeResponse(res) {
+  if (!res || typeof res !== 'object') {
+    return res
+  }
+  if (typeof res.code === 'string' && NUMERIC_CODE_PATTERN.test(res.code)) {
+    res.code = Number(res.code)
+  }
+  if (res.msg === undefined && res.message !== undefined) {
+    res.msg = res.message
+  }
+  return res
+}
+
 async function signBody(body) {
-  if (import.meta.env.VITE_SIGN_FLAG !== '1' || !isPlainObject(body)) {
+  if (!SIGN_ENABLED || !isPlainObject(body)) {
     return body
   }
 
@@ -64,7 +79,6 @@ async function signBody(body) {
   try {
     const encoder = new TextEncoder()
 
-    // Use browser's native Web Crypto API (same algorithm as Java backend)
     const keyData = base64ToArrayBuffer(privateKeyB64)
     const cryptoKey = await crypto.subtle.importKey(
       'pkcs8',
@@ -119,6 +133,11 @@ service.interceptors.request.use(
     config.headers[REQUEST_ID_HEADER] = config.headers[REQUEST_ID_HEADER] || createRequestId()
     config.headers[CLIENT_TIME_HEADER] = new Date().toISOString()
     config.headers[CLIENT_ROUTE_HEADER] = window.location.pathname
+    if (SIGN_ENABLED) {
+      delete config.headers[NO_VERIFY_HEADER]
+    } else {
+      config.headers[NO_VERIFY_HEADER] = 'true'
+    }
 
     if (config.method?.toLowerCase() === 'post' && config.data) {
       config.data = await signBody(config.data)
@@ -136,7 +155,7 @@ service.interceptors.response.use(
       return response.data
     }
 
-    const res = response.data
+    const res = normalizeResponse(response.data)
 
     if (AUTH_EXPIRED_CODES.includes(res?.code)) {
       redirectToLogin()
