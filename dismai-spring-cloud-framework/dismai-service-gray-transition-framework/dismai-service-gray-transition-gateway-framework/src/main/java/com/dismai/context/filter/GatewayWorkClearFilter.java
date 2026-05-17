@@ -10,8 +10,7 @@ import reactor.core.publisher.Mono;
 public class GatewayWorkClearFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(final ServerWebExchange exchange, final GatewayFilterChain chain) {
-        GatewayContextHolder.removeCurrentGatewayContext();
-        return chain.filter(exchange);
+        return chain.filter(exchange).doFinally(signalType -> GatewayContextHolder.removeCurrentGatewayContext());
     }
     
     @Override
