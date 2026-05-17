@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <component :is="layoutComponent">
     <div class="pay-method-page">
       <div class="container">
@@ -71,6 +71,7 @@ const layoutComponent = computed(() => route.meta.layout === 'account' ? Account
 
 const orderNumber = ref('')
 const orderAmount = ref('0.00')
+const orderTitle = ref('')
 const paying = ref(false)
 const polling = ref(false)
 const countdown = ref(15 * 60)
@@ -95,8 +96,15 @@ const handlePay = async () => {
   if (paying.value || countdown.value <= 0) return
   paying.value = true
   try {
-    const res = await payOrder({ orderNumber: orderNumber.value })
-    if (res.code === 0) { polling.value = true; startPolling() }
+    const res = await payOrder({
+      platform: 3,
+      orderNumber: orderNumber.value,
+      subject: orderTitle.value,
+      price: parseFloat(orderAmount.value),
+      channel: 'alipay',
+      payBillType: 1
+    })
+    if (res.code == 0) { polling.value = true; startPolling() }
     else toast.error(res.msg || '支付发起失败')
   } catch (e) { toast.error('网络错误') }
   finally { paying.value = false }
@@ -108,8 +116,8 @@ const startPolling = () => {
     pollCount++
     if (pollCount > 60) { clearInterval(pollTimer); polling.value = false; toast.error('支付超时，请检查支付状态'); return }
     try {
-      const res = await checkPayStatus({ orderNumber: orderNumber.value })
-      if (res.code === 0 && res.data?.paid) {
+      const res = await checkPayStatus({ orderNumber: orderNumber.value, payChannelType: 1 })
+      if (res.code == 0 && res.data?.paid) {
         clearInterval(pollTimer); polling.value = false; toast.success('支付成功！')
         router.push({ path: '/order/paySuccess', query: { orderNumber: orderNumber.value } })
       }
@@ -122,9 +130,10 @@ onMounted(async () => {
   if (orderNumber.value) {
     try {
       const res = await getOrderDetail({ orderNumber: orderNumber.value })
-      if (res.code === 0) {
+      if (res.code == 0) {
         const data = res.data
         orderAmount.value = data.orderPrice || data.totalAmount || '0.00'
+        orderTitle.value = data.programTitle || data.subject || ''
         if (data.createTime) {
           const elapsed = Math.floor((Date.now() - new Date(data.createTime).getTime()) / 1000)
           countdown.value = Math.max(0, 15 * 60 - elapsed)

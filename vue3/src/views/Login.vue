@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="login-page">
     <!-- Background ambient effects -->
     <div class="login-page__ambient"></div>
@@ -82,8 +82,6 @@
 import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { login } from '@/api/user'
-import { setToken, setUserId, setUserName } from '@/utils/auth'
 import { useToast } from '@/components/Toast.vue'
 
 const router = useRouter()
@@ -137,27 +135,20 @@ const handleLogin = async () => {
 
   submitting.value = true
   try {
-    const params = { password: formData.password, code: '0001' }
+    const credentials = { password: formData.password, code: '0001' }
 
     if (phonePattern.test(formData.account)) {
-      params.mobile = formData.account
+      credentials.mobile = formData.account
     } else {
-      params.email = formData.account
+      credentials.email = formData.account
     }
 
-    const res = await login(params)
-    if (res.code === 0) {
-      const data = res.data
-      userStore.token = data.token
-      userStore.userId = data.userId
-      userStore.userName = data.userName || data.name || ''
-      setToken(data.token)
-      setUserId(data.userId)
-      setUserName(data.userName || data.name || '')
+    const res = await userStore.login(credentials)
+    if (res.code == 0) {
       toast.success('登录成功')
       router.push('/')
     } else {
-      toast.error(res.msg || '登录失败，请检查账号和密码')
+      toast.error(res.message || '登录失败，请检查账号和密码')
     }
   } catch (e) {
     toast.error('网络错误，请稍后重试')

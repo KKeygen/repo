@@ -28,7 +28,9 @@ export const useUserStore = defineStore('user', {
 
     async logout() {
       try {
-        await logoutApi({ userId: this.userId })
+        if (this.token) {
+          await logoutApi({ code: '0001', token: this.token })
+        }
       } catch (e) {
         // ignore logout API errors
       }

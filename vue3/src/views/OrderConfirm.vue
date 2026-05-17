@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <component :is="layoutComponent">
     <div class="order-confirm-page">
       <div class="container">
@@ -162,7 +162,7 @@ const maskId = (id) => { if (!id || id.length < 6) return id || ''; return id.sl
 const loadTicketUsers = async () => {
   try {
     const res = await getTicketUserList({ userId: userStore.userId })
-    if (res.code === 0) {
+    if (res.code == 0) {
       ticketUsers.value = res.data || []
       if (ticketUsers.value.length > 0 && !selectedUserId.value) selectedUserId.value = ticketUsers.value[0].id
     }
@@ -172,8 +172,8 @@ const loadTicketUsers = async () => {
 const handleAddUser = async () => {
   if (!newUser.relName.trim() || !newUser.relIdNumber.trim()) { toast.error('请填写完整信息'); return }
   try {
-    const res = await addTicketUser({ userId: userStore.userId, relName: newUser.relName, relIdType: newUser.relIdType, relIdNumber: newUser.relIdNumber })
-    if (res.code === 0) {
+    const res = await addTicketUser({ userId: userStore.userId, relName: newUser.relName, idType: newUser.relIdType, idNumber: newUser.relIdNumber })
+    if (res.code == 0) {
       toast.success('添加成功'); showAddForm.value = false; newUser.relName = ''; newUser.relIdNumber = ''; newUser.relIdType = 1
       await loadTicketUsers()
     } else { toast.error(res.msg || '添加失败') }
@@ -185,16 +185,27 @@ const handleSubmit = async () => {
   submitting.value = true
   const selectedUser = ticketUsers.value.find(u => u.id === selectedUserId.value)
   const params = {
-    programId: programInfo.id, ticketCategoryId: programInfo.ticketCategoryId, count: count.value,
-    ticketUserId: selectedUserId.value, relName: selectedUser?.relName || '',
-    relIdNumber: selectedUser?.relIdNumber || '', relIdType: selectedUser?.relIdType || 1
+    programId: programInfo.id,
+    userId: userStore.userId,
+    ticketUserIdList: [selectedUserId.value]
   }
-  if (selectedSeats.value.length > 0) params.selectedSeats = selectedSeats.value.map(s => ({ row: s.row, col: s.col, price: s.price }))
+  if (selectedSeats.value.length > 0) {
+    params.seatDtoList = selectedSeats.value.map(s => ({
+      id: s.id,
+      ticketCategoryId: s.ticketCategoryId || programInfo.ticketCategoryId,
+      rowCode: s.rowCode || s.row,
+      colCode: s.colCode || s.col,
+      price: s.price
+    }))
+  } else {
+    params.ticketCategoryId = programInfo.ticketCategoryId
+    params.ticketCount = count.value
+  }
   try {
     const version = import.meta.env.VITE_CREATE_ORDER_VERSION || '4'
     const createOrder = { '1': createOrderV1, '2': createOrderV2, '3': createOrderV3 }[version] || createOrderV4
     const res = await createOrder(params)
-    if (res.code === 0) {
+    if (res.code == 0) {
       toast.success('订单创建成功')
       router.push({ path: '/order/payMethod', query: { orderNumber: res.data.orderNumber || res.data.id } })
     } else { toast.error(res.msg || '创建订单失败') }
@@ -213,7 +224,7 @@ onMounted(async () => {
   }
   try {
     const [programRes] = await Promise.all([getProgramDetail({ id: programId }), loadTicketUsers()])
-    if (programRes?.code === 0) {
+    if (programRes?.code == 0) {
       const data = programRes.data
       programInfo.title = data.title; programInfo.showTime = data.showTime || data.time || ''
       programInfo.venue = data.place || data.venue || ''; userPhone.value = data.mobile || ''
@@ -222,7 +233,7 @@ onMounted(async () => {
     }
     try {
       const cacheRes = await getOrderCache({ programId, ticketCategoryId })
-      if (cacheRes.code === 0 && cacheRes.data?.ticketUserId) selectedUserId.value = cacheRes.data.ticketUserId
+      if (cacheRes.code == 0 && cacheRes.data?.ticketUserId) selectedUserId.value = cacheRes.data.ticketUserId
     } catch (e) { /* ignore */ }
   } catch (e) { console.error('Load order data failed:', e) }
   finally { loading.value = false }

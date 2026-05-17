@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <component :is="layoutComponent">
     <div class="home">
       <section class="hero">
@@ -123,7 +123,7 @@ const loadData = async () => {
   loading.value = true
   try {
     const catRes = await getCategoryTypes({ type: 1 })
-    if (catRes.code === 0) {
+    if (catRes.code == 0) {
       const categories = catRes.data || []
       if (categories.length > 0) {
         categoryChips.value = categories.slice(0, 10).map(c => ({
@@ -137,10 +137,10 @@ const loadData = async () => {
     const categoryIds = categoryChips.value.map(c => c.id).filter(Boolean)
     const homeRes = await getHomeList({
       areaId,
-      parentProgramCategoryIds: categoryIds.join(',')
+      parentProgramCategoryIds: categoryIds
     })
 
-    if (homeRes.code === 0) {
+    if (homeRes.code == 0) {
       const data = homeRes.data || []
       programSections.value = data.map(item => ({
         categoryId: item.categoryId || item.id,

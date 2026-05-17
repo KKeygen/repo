@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <component :is="layoutComponent">
     <div class="seat-select-page">
       <!-- Top Bar -->
@@ -168,20 +168,20 @@ onMounted(async () => {
   if (!programId || !ticketCategoryId) { toast.error('参数错误'); loading.value = false; return }
   try {
     const res = await getSeatInfo({ programId, ticketCategoryId })
-    if (res.code === 0) {
+    if (res.code == 0) {
       const data = res.data || {}
       showTime.value = data.showTime || ''
       const seatList = data.seatList || data.seats || []
       const priceSet = new Map()
       const rowMap = new Map()
       seatList.forEach(seat => {
-        const row = seat.rowNo || seat.row
-        const col = seat.colNo || seat.col
+        const row = seat.rowCode || seat.rowNo || seat.row
+        const col = seat.colCode || seat.colNo || seat.col
         const price = seat.price || 0
-        const status = seat.status === 1 || seat.status === 'sold' ? 'sold' : 'available'
+        const status = seat.status === 1 || seat.status === 'sold' || seat.sellStatus !== '1' ? 'sold' : 'available'
         if (!priceSet.has(price)) priceSet.set(price, tierColors[priceSet.size % tierColors.length])
         if (!rowMap.has(row)) rowMap.set(row, [])
-        rowMap.get(row).push({ row, col, price, status })
+        rowMap.get(row).push({ ...seat, row, col, price, status })
       })
       seatRows.value = Array.from(rowMap.entries())
         .sort((a, b) => typeof a[0] === 'number' && typeof b[0] === 'number' ? a[0] - b[0] : String(a[0]).localeCompare(String(b[0])))

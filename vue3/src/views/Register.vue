@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="register-page">
     <!-- Background ambient effects -->
     <div class="register-page__ambient"></div>
@@ -73,17 +73,15 @@
         </button>
       </form>
 
-      <!-- Captcha Modal -->
-      <div v-if="showCaptcha" class="captcha-overlay" @click.self="showCaptcha = false">
-        <CaptchaVerify @success="onCaptchaSuccess" @close="showCaptcha = false" />
-      </div>
-
       <!-- Footer -->
       <div class="register-card__footer child-stagger-7">
         <span class="text-muted">已有账号？</span>
         <router-link to="/login">立即登录</router-link>
       </div>
     </div>
+
+    <!-- Captcha Modal (outside register-card to avoid backdrop-filter containment) -->
+    <CaptchaVerify v-if="showCaptcha" @success="onCaptchaSuccess" @close="showCaptcha = false" />
   </div>
 </template>
 
@@ -114,6 +112,7 @@ const errors = reactive({
 })
 const submitting = ref(false)
 const showCaptcha = ref(false)
+const captchaId = ref(null)
 
 const validate = () => {
   errors.mobile = ''
@@ -160,8 +159,11 @@ const handleSubmit = async () => {
 
   submitting.value = true
   try {
-    const captchaRes = await checkCaptchaNeed({ mobile: formData.mobile })
-    if (captchaRes.code === 0 && captchaRes.data?.verifyCaptcha) {
+    const captchaRes = await checkCaptchaNeed()
+    // Always capture captchaId from the response (required by backend)
+    captchaId.value = captchaRes.data?.captchaId || null
+
+    if (captchaRes.code == 0 && captchaRes.data?.verifyCaptcha) {
       showCaptcha.value = true
       submitting.value = false
       return
@@ -172,22 +174,32 @@ const handleSubmit = async () => {
   }
 }
 
-const onCaptchaSuccess = () => {
+const onCaptchaSuccess = (captchaData) => {
   if (submitting.value) return
   showCaptcha.value = false
-  doRegister()
+  doRegister(captchaData)
 }
 
-const doRegister = async () => {
+const doRegister = async (captchaData) => {
   submitting.value = true
   try {
-    const res = await register({
+    const payload = {
       mobile: formData.mobile,
       password: formData.password,
+      confirmPassword: formData.confirmPassword,
       code: '0001'
-    })
+    }
 
-    if (res.code === 0) {
+    if (captchaData?.captchaVerification) {
+      payload.captchaVerification = captchaData.captchaVerification
+    }
+    if (captchaId.value) {
+      payload.captchaId = String(captchaId.value)
+    }
+
+    const res = await register(payload)
+
+    if (res.code == 0) {
       toast.success('注册成功，请登录')
       router.push('/login')
     } else {
