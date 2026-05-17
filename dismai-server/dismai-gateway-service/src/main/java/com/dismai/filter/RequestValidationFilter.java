@@ -94,15 +94,14 @@ public class RequestValidationFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(final ServerWebExchange exchange, final GatewayFilterChain chain) {
-        if (rateLimiterProperty.getRateSwitch()) {
+        if (Boolean.TRUE.equals(rateLimiterProperty.getRateSwitch())) {
             try {
                 rateLimiter.acquire();
-                return doFilter(exchange,chain);
+                return Mono.defer(() -> doFilter(exchange, chain)).doFinally(signalType -> rateLimiter.release());
             } catch (InterruptedException e) {
                 log.error("interrupted error",e);
+                Thread.currentThread().interrupt();
                 throw new DismaiFrameException(BaseCode.THREAD_INTERRUPTED);
-            } finally {
-                rateLimiter.release();
             }
         }else{
             return doFilter(exchange, chain);
