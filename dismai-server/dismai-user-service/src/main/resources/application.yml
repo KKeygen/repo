@@ -102,7 +102,7 @@ jasypt:
   encryptor:
     password: bgtjkjl!%^sdc
     algorithm: PBEWithMD5AndDES
-always_verify_captcha: 1
+always_verify_captcha: ${ALWAYS_VERIFY_CAPTCHA:0}
 springdoc:
   swagger-ui:
     path: /swagger-ui.html

@@ -203,6 +203,9 @@ public class RequestValidationFilter implements GlobalFilter, Ordered {
             code = bodyContent.get(CODE);
             //token
             token = request.getHeaders().getFirst(TOKEN);
+            if (StringUtil.isEmpty(code) || StringUtil.isEmpty(bodyContent.get(BUSINESS_BODY)) || StringUtil.isEmpty(bodyContent.get("sign"))) {
+                throw new DismaiFrameException(BaseCode.RSA_SIGN_ERROR);
+            }
             
             GetChannelDataVo channelDataVo = channelDataService.getChannelDataByCode(code);
             
