@@ -114,6 +114,7 @@ const errors = reactive({
 })
 const submitting = ref(false)
 const showCaptcha = ref(false)
+const captchaId = ref('')
 
 const validate = () => {
   errors.mobile = ''
@@ -161,6 +162,7 @@ const handleSubmit = async () => {
   submitting.value = true
   try {
     const captchaRes = await checkCaptchaNeed({ mobile: formData.mobile })
+    captchaId.value = captchaRes.data?.captchaId ? String(captchaRes.data.captchaId) : ''
     if (captchaRes.code === 0 && captchaRes.data?.verifyCaptcha) {
       showCaptcha.value = true
       submitting.value = false
@@ -184,6 +186,8 @@ const doRegister = async () => {
     const res = await register({
       mobile: formData.mobile,
       password: formData.password,
+      confirmPassword: formData.confirmPassword,
+      captchaId: captchaId.value,
       code: '0001'
     })
 
