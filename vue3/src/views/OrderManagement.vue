@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <component :is="layoutComponent">
     <div class="order-management">
       <h2 class="page-title">我的订单</h2>
@@ -114,7 +114,7 @@ const confirmCancel = async () => {
   if (!cancelTarget.value) return
   try {
     const res = await cancelOrder({ orderNumber: cancelTarget.value.orderNumber })
-    if (res.code === 0) { toast.success('订单已取消'); cancelTarget.value.orderStatus = 2 }
+    if (res.code == 0) { toast.success('订单已取消'); cancelTarget.value.orderStatus = 2 }
     else toast.error(res.msg || '取消失败')
   } catch (e) { toast.error('网络错误') }
   finally { showCancelDialog.value = false; cancelTarget.value = null }
@@ -125,7 +125,7 @@ const handlePay = (order) => { router.push({ path: '/order/payMethod', query: { 
 onMounted(async () => {
   try {
     const res = await getOrderList({ userId: userStore.userId })
-    if (res.code === 0) orders.value = res.data || []
+    if (res.code == 0) orders.value = res.data || []
   } catch (e) { console.error('Load orders failed:', e) }
   finally { loading.value = false }
 })

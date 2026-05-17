@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <component :is="layoutComponent">
     <div class="person-info">
       <div class="page-header">
@@ -66,7 +66,7 @@ const handleSave = async () => {
   saving.value = true
   try {
     const res = await updateUser({ id: userStore.userId, name: formData.name, relName: formData.relName, gender: formData.gender, idNumber: formData.idNumber })
-    if (res.code === 0) toast.success('保存成功')
+    if (res.code == 0) toast.success('保存成功')
     else toast.error(res.msg || '保存失败')
   } catch (e) { toast.error('网络错误') }
   finally { saving.value = false }
@@ -75,7 +75,7 @@ const handleSave = async () => {
 onMounted(async () => {
   try {
     const res = await getUserInfo({ id: userStore.userId })
-    if (res.code === 0) {
+    if (res.code == 0) {
       const data = res.data
       formData.name = data.name || ''; formData.relName = data.relName || ''
       formData.gender = data.gender ?? 0; formData.idNumber = data.idNumber || ''

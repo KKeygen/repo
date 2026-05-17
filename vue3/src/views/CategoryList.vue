@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <component :is="layoutComponent">
     <div class="category-page">
       <div class="container">
@@ -172,7 +172,7 @@ const goToPage = (page) => {
 const loadCategories = async () => {
   try {
     const res = await getCategoryTypes({ type: 1 })
-    if (res.code === 0) {
+    if (res.code == 0) {
       categories.value = res.data || []
     }
   } catch (e) {
@@ -186,8 +186,8 @@ const loadSubCategories = async (parentId) => {
     return
   }
   try {
-    const res = await getCategoryByParent({ parentId })
-    if (res.code === 0) {
+    const res = await getCategoryByParent({ parentProgramCategoryId: parentId })
+    if (res.code == 0) {
       subCategories.value = res.data || []
     }
   } catch (e) {
@@ -199,7 +199,7 @@ const loadPrograms = async () => {
   loading.value = true
   try {
     const params = {
-      pageNum: currentPage.value,
+      pageNumber: currentPage.value,
       pageSize,
       areaId: appStore.currentCity?.id || 0
     }
@@ -211,7 +211,7 @@ const loadPrograms = async () => {
     }
 
     const res = await getProgramPage(params)
-    if (res.code === 0) {
+    if (res.code == 0) {
       const pageData = res.data || {}
       programs.value = pageData.records || pageData.list || []
       const total = pageData.total || 0

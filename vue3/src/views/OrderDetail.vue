@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <component :is="layoutComponent">
     <div class="order-detail">
       <h2 class="page-title">订单详情</h2>
@@ -88,7 +88,7 @@ const handleCancel = async () => {
   if (!confirm('确定要取消该订单吗？')) return
   try {
     const res = await cancelOrder({ orderNumber: order.value.orderNumber })
-    if (res.code === 0) { toast.success('订单已取消'); order.value.orderStatus = 2 }
+    if (res.code == 0) { toast.success('订单已取消'); order.value.orderStatus = 2 }
     else toast.error(res.msg || '取消失败')
   } catch (e) { toast.error('网络错误') }
 }
@@ -100,7 +100,7 @@ onMounted(async () => {
   if (!orderNumber) { loading.value = false; return }
   try {
     const res = await getOrderDetail({ orderNumber })
-    if (res.code === 0) order.value = res.data
+    if (res.code == 0) order.value = res.data
   } catch (e) { console.error('Load order detail failed:', e) }
   finally { loading.value = false }
 })

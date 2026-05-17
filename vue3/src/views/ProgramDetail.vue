@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <component :is="layoutComponent">
     <div class="program-detail">
       <!-- Loading -->
@@ -222,7 +222,7 @@ onMounted(async () => {
   if (!id) { loading.value = false; return }
   try {
     const res = await getProgramDetail({ id })
-    if (res.code === 0) {
+    if (res.code == 0) {
       program.value = res.data
     }
   } catch (e) {

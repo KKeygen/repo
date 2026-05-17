@@ -12,8 +12,8 @@ export function register(data) {
   return request({ url: '/Dismai/user/user/register', method: 'post', data })
 }
 
-export function checkCaptchaNeed(data) {
-  return request({ url: '/Dismai/user/user/captcha/check/need', method: 'post', data })
+export function checkCaptchaNeed() {
+  return request({ url: '/Dismai/user/user/captcha/check/need', method: 'post' })
 }
 
 export function getUserInfo(data) {

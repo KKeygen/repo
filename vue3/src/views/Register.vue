@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="register-page">
     <!-- Background ambient effects -->
     <div class="register-page__ambient"></div>
