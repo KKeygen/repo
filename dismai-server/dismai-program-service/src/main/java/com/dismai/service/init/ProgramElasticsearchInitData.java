@@ -53,6 +53,7 @@ public class ProgramElasticsearchInitData extends AbstractApplicationPostConstru
         List<Long> allProgramIdList = programService.getAllProgramIdList();
         Map<Long, TicketCategoryAggregate> ticketCategorieMap = programService.selectTicketCategorieMap(allProgramIdList);
         
+        List<Map<String, Object>> allDocs = new ArrayList<>();
         for (Long programId : allProgramIdList) {
             ProgramVo programVo = programService.getDetailFromDb(programId);
             if (programVo == null) {
@@ -84,9 +85,10 @@ public class ProgramElasticsearchInitData extends AbstractApplicationPostConstru
             map.put(ProgramDocumentParamName.MAX_PRICE,
                     Optional.ofNullable(ticketCategorieMap.get(programVo.getId()))
                             .map(TicketCategoryAggregate::getMaxPrice).orElse(null));
-            businessEsHandle.add(SpringUtil.getPrefixDistinctionName() + "-" + 
-                    ProgramDocumentParamName.INDEX_NAME, ProgramDocumentParamName.INDEX_TYPE,map);
+            allDocs.add(map);
         }
+        businessEsHandle.bulkAdd(SpringUtil.getPrefixDistinctionName() + "-" + 
+                ProgramDocumentParamName.INDEX_NAME, ProgramDocumentParamName.INDEX_TYPE, allDocs);
     }
     
     public boolean indexAdd(){
