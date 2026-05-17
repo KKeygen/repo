@@ -34,8 +34,8 @@ x-service-base: &service-base
     <<: *common-env
     SPRING_PROFILES_ACTIVE: local
     # Override hardcoded 127.0.0.1 in application.yml
-    SPRING_CLOUD_NACOS_DISCOVERY_SERVERADDR: nacos:8848
-    SPRING_CLOUD_NACOS_CONFIG_SERVERADDR: nacos:8848
+    SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+    SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR: nacos:8848
     SPRING_DATA_REDIS_HOST: redis
     SPRING_DATA_REDIS_PORT: 6379
 
@@ -219,10 +219,11 @@ services:
     environment:
       <<: *common-env
       SPRING_PROFILES_ACTIVE: local,pro
-      SPRING_CLOUD_NACOS_DISCOVERY_SERVERADDR: nacos:8848
-      SPRING_CLOUD_NACOS_CONFIG_SERVERADDR: nacos:8848
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+      SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR: nacos:8848
       SPRING_DATA_REDIS_HOST: redis
-      SPRING_KAFKA_BOOTSTRAPSERVERS: kafka:9092
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SPRING_CLOUD_SENTINEL_TRANSPORT_DASHBOARD: sentinel:8858
       JAVA_OPTS: "-Xms256m -Xmx256m"
     depends_on:
@@ -232,6 +233,14 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      sentinel:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "bash -ec 'exec 3<>/dev/tcp/127.0.0.1/6085'"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
 
   user:
     <<: *service-base
@@ -247,8 +256,8 @@ services:
     environment:
       <<: *common-env
       SPRING_PROFILES_ACTIVE: local
-      SPRING_CLOUD_NACOS_DISCOVERY_SERVERADDR: nacos:8848
-      SPRING_CLOUD_NACOS_CONFIG_SERVERADDR: nacos:8848
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+      SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR: nacos:8848
       SPRING_DATA_REDIS_HOST: redis
       SHARDING_CONFIG_NAME: shardingsphere-user-local.yaml
       JAVA_OPTS: "-Xms256m -Xmx256m"
@@ -274,10 +283,10 @@ services:
     environment:
       <<: *common-env
       SPRING_PROFILES_ACTIVE: local
-      SPRING_CLOUD_NACOS_DISCOVERY_SERVERADDR: nacos:8848
-      SPRING_CLOUD_NACOS_CONFIG_SERVERADDR: nacos:8848
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+      SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR: nacos:8848
       SPRING_DATA_REDIS_HOST: redis
-      SPRING_KAFKA_BOOTSTRAPSERVERS: kafka:9092
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
       ELASTICSEARCH_IP: elasticsearch:9200
       ELASTICSEARCH_USERNAME: elastic
@@ -310,10 +319,10 @@ services:
     environment:
       <<: *common-env
       SPRING_PROFILES_ACTIVE: local
-      SPRING_CLOUD_NACOS_DISCOVERY_SERVERADDR: nacos:8848
-      SPRING_CLOUD_NACOS_CONFIG_SERVERADDR: nacos:8848
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+      SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR: nacos:8848
       SPRING_DATA_REDIS_HOST: redis
-      SPRING_KAFKA_BOOTSTRAPSERVERS: kafka:9092
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SHARDING_CONFIG_NAME: shardingsphere-order-local.yaml
       JAVA_OPTS: "-Xms256m -Xmx256m"
     depends_on:
@@ -340,8 +349,8 @@ services:
     environment:
       <<: *common-env
       SPRING_PROFILES_ACTIVE: local
-      SPRING_CLOUD_NACOS_DISCOVERY_SERVERADDR: nacos:8848
-      SPRING_CLOUD_NACOS_CONFIG_SERVERADDR: nacos:8848
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+      SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR: nacos:8848
       SPRING_DATA_REDIS_HOST: redis
       SHARDING_CONFIG_NAME: shardingsphere-pay-local.yaml
       JAVA_OPTS: "-Xms256m -Xmx256m"
@@ -367,8 +376,8 @@ services:
     environment:
       <<: *common-env
       SPRING_PROFILES_ACTIVE: local
-      SPRING_CLOUD_NACOS_DISCOVERY_SERVERADDR: nacos:8848
-      SPRING_CLOUD_NACOS_CONFIG_SERVERADDR: nacos:8848
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+      SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR: nacos:8848
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/dismai_base_data?useUnicode=true&characterEncoding=UTF-8&rewriteBatchedStatements=true&allowMultiQueries=true&serverTimezone=Asia/Shanghai
       SPRING_DATASOURCE_USERNAME: root
@@ -396,10 +405,10 @@ services:
     environment:
       <<: *common-env
       SPRING_PROFILES_ACTIVE: local
-      SPRING_CLOUD_NACOS_DISCOVERY_SERVERADDR: nacos:8848
-      SPRING_CLOUD_NACOS_CONFIG_SERVERADDR: nacos:8848
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+      SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR: nacos:8848
       SPRING_DATA_REDIS_HOST: redis
-      SPRING_KAFKA_BOOTSTRAPSERVERS: kafka:9092
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/dismai_customize?useUnicode=true&characterEncoding=UTF-8&rewriteBatchedStatements=true&allowMultiQueries=true&serverTimezone=Asia/Shanghai
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
@@ -427,8 +436,8 @@ services:
       - "10082:10082"
     environment:
       <<: *common-env
-      SPRING_CLOUD_NACOS_DISCOVERY_SERVERADDR: nacos:8848
-      SPRING_CLOUD_NACOS_CONFIG_SERVERADDR: nacos:8848
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+      SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR: nacos:8848
       JAVA_OPTS: "-Xms128m -Xmx128m"
     depends_on:
       nacos:
@@ -449,7 +458,8 @@ services:
     volumes:
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      - gateway
+      gateway:
+        condition: service_healthy
     networks:
       - dismai-network
 
