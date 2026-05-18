@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>后端本地启动流程与今日问题记录</title>
+<style>
+@page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  color: #1f2937;
+  font-family: "Hiragino Sans GB", "STHeiti", "PingFang SC", "Arial Unicode MS", Arial, sans-serif;
+  font-size: 11.5pt;
+  line-height: 1.68;
+}
+h1 {
+  margin: 0 0 18px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #1f2937;
+  font-size: 24pt;
+  line-height: 1.25;
+  color: #111827;
+}
+h2 {
+  margin: 26px 0 10px;
+  padding-top: 8px;
+  border-top: 1px solid #d1d5db;
+  font-size: 16pt;
+  color: #111827;
+  break-after: avoid;
+}
+h3 {
+  margin: 18px 0 8px;
+  font-size: 13pt;
+  color: #111827;
+  break-after: avoid;
+}
+p { margin: 7px 0; }
+ul { margin: 6px 0 12px 20px; padding: 0; }
+li { margin: 3px 0; }
+code {
+  font-family: Menlo, Monaco, "Courier New", monospace;
+  font-size: 9.5pt;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  padding: 1px 4px;
+}
+pre {
+  margin: 8px 0 13px;
+  padding: 10px 12px;
+  background: #111827;
+  color: #f9fafb;
+  border-radius: 6px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  break-inside: avoid;
+}
+pre code {
+  display: block;
+  background: transparent;
+  color: inherit;
+  border: 0;
+  padding: 0;
+  font-size: 9pt;
+  line-height: 1.55;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 9px 0 15px;
+  font-size: 10.5pt;
+}
+th, td {
+  border: 1px solid #d1d5db;
+  padding: 7px 9px;
+  text-align: left;
+  vertical-align: top;
+}
+th { background: #f3f4f6; color: #111827; }
+</style>
+</head>
+<body><h1>后端本地启动流程与今日问题记录</h1><h2>1. IDEA 后端启动服务方法</h2><h3>基础依赖启动</h3><p>本地开发时，后端微服务依赖 MySQL、Redis、Nacos、Kafka、Elasticsearch。建议先通过 Docker Desktop 启动基础设施，再用 IDEA 启动各个 Spring Boot 微服务。</p><p>Apple Silicon 机器需要指定 amd64 平台启动镜像：</p><pre><code class="language-bash">DOCKER_DEFAULT_PLATFORM=linux/amd64 docker compose -f docker-compose.infra.yml up -d</code></pre><p>查看基础设施状态：</p><pre><code class="language-bash">docker compose -f docker-compose.infra.yml ps</code></pre><p>所有容器应为 healthy 或 Up。Nacos 控制台地址：</p><pre><code class="language-text">http://127.0.0.1:8848/nacos</code></pre><p>如果第一次初始化 MySQL 时数据库表缺失，需要确认初始化脚本有执行权限：</p><pre><code class="language-bash">chmod +x docker/mysql/init-databases.sh</code></pre><p>重新初始化数据库时会清空 Docker volume：</p><pre><code class="language-bash">docker compose -f docker-compose.infra.yml down -v
+DOCKER_DEFAULT_PLATFORM=linux/amd64 docker compose -f docker-compose.infra.yml up -d</code></pre><h3>Java 与 Maven 配置</h3><p>项目后端使用 Java 17。IDEA 里需要统一配置为 JDK 17：</p><ul><li><code>Project Structure -&gt; Project -&gt; SDK</code> 选择 JDK 17。</li><li><code>Project Structure -&gt; Project -&gt; Language level</code> 选择 17。</li><li><code>Settings -&gt; Build, Execution, Deployment -&gt; Build Tools -&gt; Maven -&gt; Importing</code> 使用 JDK 17。</li><li><code>Settings -&gt; Build, Execution, Deployment -&gt; Build Tools -&gt; Maven -&gt; Runner</code> 使用 JDK 17。</li></ul><p>不要使用本机默认 JDK 24 启动后端服务，否则可能出现编译、运行或依赖兼容问题。</p><h3>IDEA Spring Boot 启动配置</h3><p>在 IDEA 的 <code>Run/Debug Configurations</code> 中新增 Spring Boot 配置，每个后端服务一个配置。</p><p>已确认需要配置的主入口包括：</p><table><thead><tr><th>服务</th><th>启动类</th></tr></thead><tbody><tr><td>网关服务</td><td><code>com.dismai.GatewayApplication</code></td></tr><tr><td>用户服务</td><td><code>com.dismai.UserApplication</code></td></tr><tr><td>节目/商品服务</td><td><code>com.dismai.ProgramApplication</code></td></tr><tr><td>订单服务</td><td><code>com.dismai.OrderApplication</code></td></tr><tr><td>支付服务</td><td><code>com.dismai.PayApplication</code></td></tr><tr><td>定制服务</td><td><code>com.dismai.CustomizeApplication</code></td></tr><tr><td>基础数据服务</td><td><code>com.dismai.BaseDataApplication</code></td></tr></tbody></table><p>每个启动配置需要注意：</p><ul><li>JDK 选择 Java 17。</li><li>classpath/module 选择对应的服务模块，例如 <code>dismai-gateway-service</code>、<code>dismai-user-service</code>。</li><li>主类选择对应的 <code>Application</code> 启动类。</li><li>本地开发建议统一增加环境变量：</li></ul><pre><code class="language-text">SPRING_KAFKA_BOOTSTRAP_SERVERS=localhost:29092</code></pre><p>用户服务验证码本地开发默认不强制真实验证码。如需强制开启验证码校验，可额外设置：</p><pre><code class="language-text">ALWAYS_VERIFY_CAPTCHA=1</code></pre><h3>一键启动多个服务</h3><p>所有单服务 Spring Boot 配置创建完成后，可以在 IDEA 中创建一个 Compound 配置，将以下服务加入同一个组合：</p><ul><li><code>GatewayApplication</code></li><li><code>UserApplication</code></li><li><code>ProgramApplication</code></li><li><code>OrderApplication</code></li><li><code>PayApplication</code></li><li><code>CustomizeApplication</code></li><li><code>BaseDataApplication</code></li></ul><p>启动 Compound 配置后，所有服务会一起启动，并注册到 Nacos。可在 Nacos 控制台的服务列表中确认服务是否注册成功。</p><h2>2. 今日发现的 Bug 与主要修改位置</h2><h3>MySQL 初始化脚本未执行</h3><p>现象：</p><ul><li>MySQL 容器启动后只有系统库，没有 <code>dismai_base_data</code>、<code>dismai_user_0</code>、<code>dismai_program_0</code> 等业务库。</li><li>后端启动时报 <code>Unknown database 'dismai_base_data'</code>。</li></ul><p>原因：</p><ul><li><code>docker/mysql/init-databases.sh</code> 没有执行权限，MySQL 初始化阶段跳过了业务库和 SQL 导入。</li></ul><p>处理：</p><ul><li>为初始化脚本增加执行权限。</li><li>删除旧 volume 后重新启动基础设施，让 MySQL 重新执行初始化脚本。</li></ul><p>涉及位置：</p><pre><code class="language-text">docker/mysql/init-databases.sh</code></pre><h3>Program 服务 SQL 导入中断</h3><p>现象：</p><ul><li><code>ProgramApplication</code> 启动时报表不存在：</li></ul><p>  - <code>d_program_show_time_0</code> 不存在   - <code>d_program_category</code> 不存在</p><ul><li>MySQL 日志显示 SQL 初始化导入没有完整完成。</li></ul><p>原因：</p><ul><li><code>damai_program_0.sql</code>、<code>damai_program_1.sql</code> 中部分字段长度不足，导入测试数据时可能超过 <code>varchar(100)</code> 限制，导致后续表未导入。</li></ul><p>处理：</p><ul><li>将相关 <code>important_notice</code> 字段长度从 <code>varchar(100)</code> 调整为 <code>varchar(1024)</code>。</li></ul><p>涉及位置：</p><pre><code class="language-text">sql/cloud/damai_program_0.sql
+sql/cloud/damai_program_1.sql</code></pre><h3>Gateway 本地开发验签失败</h3><p>现象：</p><ul><li>前端请求经过网关时报 RSA 验签异常。</li><li>网关日志出现 <code>verifyRsaSign256 error</code>，并伴随 <code>NullPointerException</code>。</li></ul><p>原因：</p><ul><li>本地前端默认未启用签名，但请求没有稳定携带 <code>no_verify: true</code>。</li><li>Gateway 仍按生产验签逻辑读取 <code>sign</code>、<code>code</code>、<code>businessBody</code>，字段缺失时触发异常。</li></ul><p>处理：</p><ul><li>前端请求拦截器在本地未启用签名时统一增加 <code>no_verify: true</code>。</li><li>Gateway 验签前增加必要字段判断，避免空值导致 NPE。</li></ul><p>涉及位置：</p><pre><code class="language-text">vue3/src/utils/request.js
+dismai-server/dismai-gateway-service/src/main/java/com/dismai/filter/RequestValidationFilter.java</code></pre><h3>注册接口缺少后端必填参数</h3><p>现象：</p><ul><li>注册请求到达 user-service 后参数校验失败。</li><li>日志提示 <code>captchaId</code>、<code>confirmPassword</code> 不能为空。</li></ul><p>原因：</p><ul><li>前端注册页提交参数与后端 <code>UserRegisterDto</code> 不一致。</li><li>前端未提交 <code>confirmPassword</code> 和 <code>captchaId</code>。</li></ul><p>处理：</p><ul><li>注册页补充提交 <code>confirmPassword</code>。</li><li>调用验证码检查接口后保存并提交 <code>captchaId</code>。</li><li>本地开发环境下验证码默认不强制真实校验。</li></ul><p>涉及位置：</p><pre><code class="language-text">vue3/src/views/Register.vue
+dismai-server/dismai-user-service/src/main/resources/application.yml</code></pre><h3>登录接口后端成功但前端提示失败</h3><p>现象：</p><ul><li>直接通过 curl 调网关登录接口返回成功：</li></ul><pre><code class="language-json">{"code":"0","message":"","data":{"userId":"...","token":"..."}}</code></pre><ul><li>前端页面仍提示登录失败。</li></ul><p>原因：</p><ul><li>后端返回的 <code>code</code> 是字符串 <code>"0"</code>。</li><li>前端页面使用严格判断 <code>res.code === 0</code>，字符串 <code>"0"</code> 与数字 <code>0</code> 不相等。</li><li>后端返回字段为 <code>message</code>，而前端多处读取 <code>msg</code>。</li></ul><p>处理：</p><ul><li>在前端 axios 响应拦截器中统一规范化响应：</li></ul><p>  - 数字字符串 <code>code</code> 转为 number。   - 如果没有 <code>msg</code>，则用 <code>message</code> 兼容补齐。</p><p>涉及位置：</p><pre><code class="language-text">vue3/src/utils/request.js</code></pre><h3>当前验证情况</h3><ul><li>Docker 基础设施已能正常启动。</li><li>MySQL 业务库和核心业务表已能正常初始化。</li><li>后端各服务可以通过 IDEA 启动并注册到 Nacos。</li><li>网关登录接口通过 curl 验证成功。</li><li>前端构建已通过：</li></ul><pre><code class="language-bash">npm --prefix vue3 run build</code></pre><p>构建过程中仍有 Sass legacy API deprecation warning，但不影响当前构建结果。</p><h2>3. 分支说明</h2><p>今日相关修复已 push 到个人分支：</p><pre><code class="language-text">feature/hyc/personal-branch</code></pre></body>
+</html>
