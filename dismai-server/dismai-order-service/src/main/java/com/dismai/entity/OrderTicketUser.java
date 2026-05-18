@@ -42,6 +42,11 @@ public class OrderTicketUser extends BaseTableData implements Serializable {
     private Long ticketUserId;
 
     /**
+     * 购票人证件号码
+     */
+    private String idNumber;
+
+    /**
      * 座位id
      */
     private Long seatId;

@@ -297,6 +297,10 @@ public class ProgramOrderService {
         if (ticketUserIdList.size() != purchaseSeatList.size()) {
             throw new DismaiFrameException(BaseCode.TICKET_USER_COUNT_UNEQUAL_SEAT_COUNT);
         }
+        List<String> idNumberList = programOrderCreateDto.getIdNumberList();
+        if (CollectionUtil.isEmpty(idNumberList) || idNumberList.size() != ticketUserIdList.size()) {
+            throw new DismaiFrameException(BaseCode.TICKET_USER_COUNT_UNEQUAL_SEAT_COUNT);
+        }
         List<OrderTicketUserCreateDto> orderTicketUserCreateDtoList = new ArrayList<>();
         for (int i = 0; i < ticketUserIdList.size(); i++) {
             Long ticketUserId = ticketUserIdList.get(i);
@@ -305,6 +309,7 @@ public class ProgramOrderService {
             orderTicketUserCreateDto.setProgramId(programOrderCreateDto.getProgramId());
             orderTicketUserCreateDto.setUserId(programOrderCreateDto.getUserId());
             orderTicketUserCreateDto.setTicketUserId(ticketUserId);
+            orderTicketUserCreateDto.setIdNumber(idNumberList.get(i));
             SeatVo seatVo =
                     Optional.ofNullable(purchaseSeatList.get(i))
                             .orElseThrow(() -> new DismaiFrameException(BaseCode.SEAT_NOT_EXIST));

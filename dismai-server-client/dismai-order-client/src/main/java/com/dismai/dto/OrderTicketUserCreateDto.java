@@ -28,6 +28,10 @@ public class OrderTicketUserCreateDto {
     @Schema(name ="ticketUserId", type ="Long", description ="购票人id", requiredMode= RequiredMode.REQUIRED)
     @NotNull
     private Long ticketUserId;
+
+    @Schema(name ="idNumber", type ="String", description ="购票人证件号码", requiredMode= RequiredMode.REQUIRED)
+    @NotBlank
+    private String idNumber;
     
     @Schema(name ="seatId", type ="Long", description ="座位id", requiredMode= RequiredMode.REQUIRED)
     @NotNull
