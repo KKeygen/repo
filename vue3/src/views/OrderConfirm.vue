@@ -122,7 +122,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { getTicketUserList, addTicketUser } from '@/api/ticketUser'
-import { createOrderV1, createOrderV2, createOrderV3, createOrderV4, getOrderCache } from '@/api/order'
+import { createOrderV1, createOrderV2, createOrderV3, createOrderV4 } from '@/api/order'
 import { getProgramDetail } from '@/api/program'
 import { useToast } from '@/components/Toast.vue'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
@@ -207,7 +207,7 @@ const handleSubmit = async () => {
     const res = await createOrder(params)
     if (res.code == 0) {
       toast.success('订单创建成功')
-      router.push({ path: '/order/payMethod', query: { orderNumber: res.data.orderNumber || res.data.id } })
+      router.push({ path: '/order/payMethod', query: { orderNumber: res.data } })
     } else { toast.error(res.msg || '创建订单失败') }
   } catch (e) { toast.error('网络错误，请稍后重试') }
   finally { submitting.value = false }
@@ -231,10 +231,6 @@ onMounted(async () => {
       const ticket = (data.ticketCategoryList || []).find(t => String(t.id) === String(ticketCategoryId))
       if (ticket) { programInfo.ticketName = ticket.name; programInfo.price = ticket.price }
     }
-    try {
-      const cacheRes = await getOrderCache({ programId, ticketCategoryId })
-      if (cacheRes.code == 0 && cacheRes.data?.ticketUserId) selectedUserId.value = cacheRes.data.ticketUserId
-    } catch (e) { /* ignore */ }
   } catch (e) { console.error('Load order data failed:', e) }
   finally { loading.value = false }
 })
