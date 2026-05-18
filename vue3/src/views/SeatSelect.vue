@@ -164,10 +164,10 @@ const confirmSelection = () => {
 }
 
 onMounted(async () => {
-  const { programId, ticketCategoryId } = route.query
-  if (!programId || !ticketCategoryId) { toast.error('参数错误'); loading.value = false; return }
+  const { programId } = route.query
+  if (!programId) { toast.error('参数错误'); loading.value = false; return }
   try {
-    const res = await getSeatInfo({ programId, ticketCategoryId })
+    const res = await getSeatInfo({ programId })
     if (res.code == 0) {
       const data = res.data || {}
       showTime.value = data.showTime || ''
