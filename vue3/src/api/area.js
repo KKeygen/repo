@@ -1,7 +1,7 @@
 import request from '@/utils/request'
 
-export function getCurrentCity(data) {
-  return request({ url: '/Dismai/basedata/area/current', method: 'post', data })
+export function getCurrentCity() {
+  return request({ url: '/Dismai/basedata/area/current', method: 'post' })
 }
 
 export function getHotCities(data) {

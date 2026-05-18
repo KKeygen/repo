@@ -92,7 +92,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useAppStore } from '@/stores/app'
-import { getHotCities } from '@/api/area'
+import { getHotCities, getCurrentCity } from '@/api/area'
 import eventBus from '@/utils/eventBus'
 
 const router = useRouter()
@@ -136,6 +136,12 @@ function handleClickOutside(e) {
 
 onMounted(async () => {
   document.addEventListener('click', handleClickOutside)
+  try {
+    const res = await getCurrentCity()
+    if (res.code == 0 && res.data) {
+      appStore.setCity(res.data)
+    }
+  } catch (e) { /* keep default city */ }
   try {
     const res = await getHotCities({})
     hotCities.value = res.data || []
