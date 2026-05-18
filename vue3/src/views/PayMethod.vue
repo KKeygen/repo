@@ -117,7 +117,7 @@ const startPolling = () => {
     if (pollCount > 60) { clearInterval(pollTimer); polling.value = false; toast.error('支付超时，请检查支付状态'); return }
     try {
       const res = await checkPayStatus({ orderNumber: orderNumber.value, payChannelType: 1 })
-      if (res.code == 0 && res.data?.paid) {
+      if (res.code == 0 && res.data?.orderStatus === 3) {
         clearInterval(pollTimer); polling.value = false; toast.success('支付成功！')
         router.push({ path: '/order/paySuccess', query: { orderNumber: orderNumber.value } })
       }
