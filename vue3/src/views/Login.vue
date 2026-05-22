@@ -8,7 +8,7 @@
       <!-- Logo -->
       <div class="login-card__logo child-stagger-1">
         <div class="login-card__logo-mark">✦</div>
-        <h1 class="font-display">登录</h1>
+        <h1 class="font-display">{{ isAdminMode ? '管理员登录' : '登录' }}</h1>
         <p>华彩流光 · 发现精彩，触手可及</p>
       </div>
 
@@ -73,6 +73,9 @@
       <div class="login-card__footer child-stagger-7">
         <span class="text-muted">还没有账号？</span>
         <router-link to="/register">立即注册</router-link>
+        <span class="admin-divider">·</span>
+        <a v-if="!isAdminMode" href="javascript:void(0)" class="admin-link" @click="isAdminMode = true">🔑 管理员登录</a>
+        <a v-else href="javascript:void(0)" class="admin-link" @click="isAdminMode = false">返回普通登录</a>
       </div>
     </div>
   </div>
@@ -83,6 +86,7 @@ import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useToast } from '@/components/Toast.vue'
+import { ADMIN_USER_IDS } from '@/constants/site'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -103,6 +107,7 @@ const errors = reactive({
 })
 const showPassword = ref(false)
 const submitting = ref(false)
+const isAdminMode = ref(false)
 
 const fillTrialAccount = () => {
   formData.account = '13800138000'
@@ -146,7 +151,16 @@ const handleLogin = async () => {
     const res = await userStore.login(credentials)
     if (res.code == 0) {
       toast.success('登录成功')
-      router.push('/')
+      if (isAdminMode.value) {
+        if (ADMIN_USER_IDS.includes(formData.account)) {
+          router.push('/admin')
+        } else {
+          toast.error('该账号无管理员权限')
+          router.push('/')
+        }
+      } else {
+        router.push('/')
+      }
     } else {
       toast.error(res.message || '登录失败，请检查账号和密码')
     }
@@ -257,6 +271,10 @@ const handleLogin = async () => {
     }
   }
 }
+
+.admin-divider { margin: 0 8px; color: var(--color-border); }
+.admin-link { color: var(--color-muted) !important; font-size: 13px; font-weight: 400 !important; transition: color var(--transition); cursor: pointer; }
+.admin-link:hover { color: var(--color-primary) !important; }
 
 .tab {
   flex: 1;
