@@ -55,7 +55,13 @@ public class ProgramElasticsearchInitData extends AbstractApplicationPostConstru
         
         List<Map<String, Object>> allDocs = new ArrayList<>();
         for (Long programId : allProgramIdList) {
-            ProgramVo programVo = programService.getDetailFromDb(programId);
+            ProgramVo programVo = null;
+            try {
+                programVo = programService.getDetailFromDb(programId);
+            } catch (Exception e) {
+                log.warn("initElasticsearchData skip programId:{} reason:{}", programId, e.getMessage());
+                continue;
+            }
             if (programVo == null) {
                 log.warn("initElasticsearchData skip null ProgramVo for id:{}", programId);
                 continue;
@@ -112,7 +118,7 @@ public class ProgramElasticsearchInitData extends AbstractApplicationPostConstru
         List<EsDocumentMappingDto> list = new ArrayList<>();
         
         list.add(new EsDocumentMappingDto(ProgramDocumentParamName.ID,"long"));
-        list.add(new EsDocumentMappingDto(ProgramDocumentParamName.PROGRAM_GROUP_ID,"integer"));
+        list.add(new EsDocumentMappingDto(ProgramDocumentParamName.PROGRAM_GROUP_ID,"long"));
         list.add(new EsDocumentMappingDto(ProgramDocumentParamName.PRIME,"long"));
         list.add(new EsDocumentMappingDto(ProgramDocumentParamName.TITLE,"text"));
         list.add(new EsDocumentMappingDto(ProgramDocumentParamName.ACTOR,"text"));

@@ -1,4 +1,4 @@
-# ==========================================================================
+﻿# ==========================================================================
 #  Dismai (万花筒) - Full Stack Docker Compose
 #  Usage:
 #    docker compose up -d                     # Start everything
@@ -60,6 +60,8 @@ services:
     command: >
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_unicode_ci
+      --init-connect='SET NAMES utf8mb4'
+      --skip-character-set-client-handshake
       --default-authentication-plugin=mysql_native_password
       --max-connections=500
       --innodb-buffer-pool-size=256M
@@ -209,7 +211,7 @@ services:
       SPRING_DATA_REDIS_PORT: 6379
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SPRING_CLOUD_SENTINEL_TRANSPORT_DASHBOARD: sentinel:8858
-      JAVA_OPTS: "-Xms256m -Xmx256m"
+      JAVA_OPTS: "-Xms256m -Xmx256m -Dcsp.sentinel.log.dir=/app/logs"
     depends_on:
       nacos:
         condition: service_healthy
@@ -244,7 +246,7 @@ services:
       SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR: nacos:8848
       SPRING_DATA_REDIS_HOST: redis
       SHARDING_CONFIG_NAME: shardingsphere-user-local.yaml
-      JAVA_OPTS: "-Xms256m -Xmx256m"
+      JAVA_OPTS: "-Xms256m -Xmx256m -Dcsp.sentinel.log.dir=/app/logs"
     depends_on:
       mysql:
         condition: service_healthy
@@ -276,7 +278,7 @@ services:
       ELASTICSEARCH_USERNAME: elastic
       ELASTICSEARCH_PASSWORD: elastic
       SHARDING_CONFIG_NAME: shardingsphere-program-local.yaml
-      JAVA_OPTS: "-Xms256m -Xmx512m"
+      JAVA_OPTS: "-Xms256m -Xmx512m -Dcsp.sentinel.log.dir=/app/logs"
     depends_on:
       mysql:
         condition: service_healthy
@@ -308,7 +310,7 @@ services:
       SPRING_DATA_REDIS_HOST: redis
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SHARDING_CONFIG_NAME: shardingsphere-order-local.yaml
-      JAVA_OPTS: "-Xms256m -Xmx256m"
+      JAVA_OPTS: "-Xms256m -Xmx256m -Dcsp.sentinel.log.dir=/app/logs"
     depends_on:
       mysql:
         condition: service_healthy
@@ -337,7 +339,7 @@ services:
       SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR: nacos:8848
       SPRING_DATA_REDIS_HOST: redis
       SHARDING_CONFIG_NAME: shardingsphere-pay-local.yaml
-      JAVA_OPTS: "-Xms256m -Xmx256m"
+      JAVA_OPTS: "-Xms256m -Xmx256m -Dcsp.sentinel.log.dir=/app/logs"
     depends_on:
       mysql:
         condition: service_healthy
@@ -366,7 +368,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/dismai_base_data?useUnicode=true&characterEncoding=UTF-8&rewriteBatchedStatements=true&allowMultiQueries=true&serverTimezone=Asia/Shanghai
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
-      JAVA_OPTS: "-Xms256m -Xmx256m"
+      JAVA_OPTS: "-Xms256m -Xmx256m -Dcsp.sentinel.log.dir=/app/logs"
     depends_on:
       mysql:
         condition: service_healthy
@@ -396,7 +398,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/dismai_customize?useUnicode=true&characterEncoding=UTF-8&rewriteBatchedStatements=true&allowMultiQueries=true&serverTimezone=Asia/Shanghai
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
-      JAVA_OPTS: "-Xms256m -Xmx256m"
+      JAVA_OPTS: "-Xms256m -Xmx256m -Dcsp.sentinel.log.dir=/app/logs"
     depends_on:
       mysql:
         condition: service_healthy
@@ -422,7 +424,7 @@ services:
       <<: *common-env
       SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
       SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR: nacos:8848
-      JAVA_OPTS: "-Xms128m -Xmx128m"
+      JAVA_OPTS: "-Xms128m -Xmx128m -Dcsp.sentinel.log.dir=/app/logs"
     depends_on:
       nacos:
         condition: service_healthy

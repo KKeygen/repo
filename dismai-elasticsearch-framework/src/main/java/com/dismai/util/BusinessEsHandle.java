@@ -36,6 +36,7 @@ import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -63,6 +64,7 @@ public class BusinessEsHandle {
      * @param list 参数集合
      */
     public void createIndex(String indexName, String indexType, List<EsDocumentMappingDto> list) throws IOException {
+        indexName = indexName.toLowerCase();
         if (!esSwitch) {
             return;
         }
@@ -113,6 +115,7 @@ public class BusinessEsHandle {
      * @return boolean
      */
     public boolean checkIndex(String indexName, String indexType)  {
+        indexName = indexName.toLowerCase();
         if (!esSwitch) {
             return false;
         }
@@ -145,6 +148,7 @@ public class BusinessEsHandle {
      * @return boolean
      */
     public boolean deleteIndex(String indexName) {
+        indexName = indexName.toLowerCase();
         if (!esSwitch) {
             return false;
         }
@@ -193,6 +197,7 @@ public class BusinessEsHandle {
      * @return boolean
      */
     public boolean add(String indexName, String indexType,Map<String,Object> params, String id) {
+        indexName = indexName.toLowerCase();
         if (!esSwitch) {
             return false;
         }
@@ -228,6 +233,7 @@ public class BusinessEsHandle {
      * 批量添加文档
      */
     public void bulkAdd(String indexName, String indexType, List<Map<String, Object>> docList) {
+        indexName = indexName.toLowerCase();
         if (!esSwitch || CollectionUtil.isEmpty(docList)) {
             return;
         }
@@ -238,7 +244,9 @@ public class BusinessEsHandle {
                 sb.append(JSON.toJSONString(doc)).append("\n");
             }
             Request request = new Request("POST", "/_bulk");
-            request.setEntity(new NStringEntity(sb.toString(), ContentType.create("application/x-ndjson")));
+            request.setEntity(new NStringEntity(
+                    sb.toString(),
+                    ContentType.create("application/x-ndjson", StandardCharsets.UTF_8)));
             request.addParameters(Collections.emptyMap());
             restClient.performRequest(request);
         } catch (Exception e) {
@@ -488,7 +496,8 @@ public class BusinessEsHandle {
     }
     
     public <T> void executeQuery(String indexName, String indexType,List<T> list,PageInfo<T> pageInfo,Class<T> clazz, 
-                                 SearchSourceBuilder sourceBuilder,List<String> highLightFieldNameList) throws IOException {
+            SearchSourceBuilder sourceBuilder,List<String> highLightFieldNameList) throws IOException {
+        indexName = indexName.toLowerCase();
         String string = sourceBuilder.toString();
         HttpEntity entity = new NStringEntity(string, ContentType.APPLICATION_JSON);
         StringBuilder endpointStringBuilder = new StringBuilder("/" + indexName);
@@ -561,6 +570,7 @@ public class BusinessEsHandle {
     }
     
     public JSONObject executeQueryRaw(String indexName, SearchSourceBuilder sourceBuilder) throws IOException {
+        indexName = indexName.toLowerCase();
         if (!esSwitch) {
             return new JSONObject();
         }
