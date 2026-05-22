@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import NProgress from 'nprogress'
 import { getToken } from '@/utils/auth'
 import { SITE_NAME } from '@/constants/site'
+import { ADMIN_USER_IDS } from '@/constants/site'
+import { useUserStore } from '@/stores/user'
 
 const routes = [
   { path: '/', redirect: '/index' },
@@ -112,6 +114,43 @@ const routes = [
     name: 'Authentication',
     component: () => import('@/views/Authentication.vue'),
     meta: { title: '实名认证', layout: 'account', requiresAuth: true }
+  },
+  // === Admin Routes ===
+  {
+    path: '/admin',
+    name: 'AdminDashboard',
+    component: () => import('@/views/admin/Dashboard.vue'),
+    meta: { title: '管理后台', layout: 'admin', requiresAuth: true }
+  },
+  {
+    path: '/admin/programs',
+    name: 'AdminProgramList',
+    component: () => import('@/views/admin/ProgramList.vue'),
+    meta: { title: '节目管理', layout: 'admin', requiresAuth: true }
+  },
+  {
+    path: '/admin/programs/add',
+    name: 'AdminProgramAdd',
+    component: () => import('@/views/admin/ProgramEdit.vue'),
+    meta: { title: '新增节目', layout: 'admin', requiresAuth: true }
+  },
+  {
+    path: '/admin/programs/:id/edit',
+    name: 'AdminProgramEdit',
+    component: () => import('@/views/admin/ProgramEdit.vue'),
+    meta: { title: '编辑节目', layout: 'admin', requiresAuth: true }
+  },
+  {
+    path: '/admin/seats',
+    name: 'AdminSeatManage',
+    component: () => import('@/views/admin/SeatManage.vue'),
+    meta: { title: '座位管理', layout: 'admin', requiresAuth: true }
+  },
+  {
+    path: '/admin/categories',
+    name: 'AdminCategoryManage',
+    component: () => import('@/views/admin/CategoryManage.vue'),
+    meta: { title: '分类管理', layout: 'admin', requiresAuth: true }
   }
 ]
 
@@ -128,6 +167,13 @@ router.beforeEach((to, from, next) => {
   document.title = to.meta.title ? `${to.meta.title} - ${SITE_NAME}` : SITE_NAME
 
   if (!to.meta.requiresAuth || getToken()) {
+    if (to.path.startsWith('/admin')) {
+      const store = useUserStore()
+      if (!ADMIN_USER_IDS.includes(String(store.mobile))) {
+        next('/')
+        return
+      }
+    }
     next()
     return
   }

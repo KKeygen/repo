@@ -199,13 +199,13 @@ public class ProgramService extends ServiceImpl<ProgramMapper, Program> {
         Program program = new Program();
         BeanUtil.copyProperties(programAddDto,program);
         program.setId(uidGenerator.getUid());
+        program.setProgramGroupId(uidGenerator.getUid());
         programMapper.insert(program);
         return program.getId();
     }
     
     /**
      * 搜索的功能
-     * 关于 Elasticsearch 的详细讲解，可到技术文档中进行学习：<a href="https://dismai.example.com/">...</a>
      * @param programSearchDto 搜索节目数据的入参
      * @return 执行后的结果
      * */
