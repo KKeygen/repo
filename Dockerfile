@@ -26,8 +26,8 @@ LABEL maintainer="dismai" \
       service="${SERVICE_NAME}"
 
 RUN groupadd -r appuser && useradd -r -g appuser appuser \
-    && mkdir -p /app/config /app/sharding-templates /app/logs \
-    && chown -R appuser:appuser /app
+    && mkdir -p /app/config /app/sharding-templates /app/logs /home/appuser/logs/csp \
+    && chown -R appuser:appuser /app /home/appuser
 
 WORKDIR /app
 
