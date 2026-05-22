@@ -49,7 +49,7 @@ services:
     container_name: dismai-mysql
     restart: unless-stopped
     ports:
-      - "3306:3306"
+      - "22100:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
       TZ: Asia/Shanghai
@@ -77,7 +77,7 @@ services:
     container_name: dismai-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "22101:6379"
     volumes:
       - redis-data:/data
     command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
@@ -94,9 +94,9 @@ services:
     container_name: dismai-nacos
     restart: unless-stopped
     ports:
-      - "8848:8848"
-      - "9848:9848"
-      - "9849:9849"
+      - "22102:8848"
+      - "22103:9848"
+      - "22104:9849"
     environment:
       MODE: standalone
       NACOS_AUTH_ENABLE: "false"
@@ -119,7 +119,7 @@ services:
     container_name: dismai-kafka
     restart: unless-stopped
     ports:
-      - "9092:9092"
+      - "22105:9092"
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
@@ -150,8 +150,8 @@ services:
     container_name: dismai-elasticsearch
     restart: unless-stopped
     ports:
-      - "9200:9200"
-      - "9300:9300"
+      - "22106:9200"
+      - "22107:9300"
     environment:
       discovery.type: single-node
       xpack.security.enabled: "false"
@@ -173,11 +173,11 @@ services:
     container_name: dismai-sentinel
     restart: unless-stopped
     ports:
-      - "8082:8858"
+      - "22108:8858"
     environment:
       TZ: Asia/Shanghai
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8858/ || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8858/ >/dev/null 2>&1 || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -199,7 +199,7 @@ services:
         SERVICE_NAME: gateway
         SERVICE_PORT: 6085
     ports:
-      - "6085:6085"
+      - "22109:6085"
     environment:
       <<: *common-env
       SPRING_PROFILES_ACTIVE: local,pro
@@ -236,7 +236,7 @@ services:
         SERVICE_NAME: user
         SERVICE_PORT: 6082
     ports:
-      - "6082:6082"
+      - "22110:6082"
     environment:
       <<: *common-env
       SPRING_PROFILES_ACTIVE: local
@@ -263,7 +263,7 @@ services:
         SERVICE_NAME: program
         SERVICE_PORT: 6086
     ports:
-      - "6086:6086"
+      - "22111:6086"
     environment:
       <<: *common-env
       SPRING_PROFILES_ACTIVE: local
@@ -299,7 +299,7 @@ services:
         SERVICE_NAME: order
         SERVICE_PORT: 8081
     ports:
-      - "8081:8081"
+      - "22112:8081"
     environment:
       <<: *common-env
       SPRING_PROFILES_ACTIVE: local
@@ -329,7 +329,7 @@ services:
         SERVICE_NAME: pay
         SERVICE_PORT: 6087
     ports:
-      - "6087:6087"
+      - "22113:6087"
     environment:
       <<: *common-env
       SPRING_PROFILES_ACTIVE: local
@@ -356,7 +356,7 @@ services:
         SERVICE_NAME: base-data
         SERVICE_PORT: 6083
     ports:
-      - "6083:6083"
+      - "22114:6083"
     environment:
       <<: *common-env
       SPRING_PROFILES_ACTIVE: local
@@ -385,7 +385,7 @@ services:
         SERVICE_NAME: customize
         SERVICE_PORT: 6084
     ports:
-      - "6084:6084"
+      - "22115:6084"
     environment:
       <<: *common-env
       SPRING_PROFILES_ACTIVE: local
@@ -417,7 +417,7 @@ services:
         SERVICE_NAME: admin
         SERVICE_PORT: 10082
     ports:
-      - "10082:10082"
+      - "22116:10082"
     environment:
       <<: *common-env
       SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
@@ -438,7 +438,7 @@ services:
     container_name: dismai-frontend
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "22117:80"
     volumes:
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
