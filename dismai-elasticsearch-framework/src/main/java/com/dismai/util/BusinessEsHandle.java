@@ -600,4 +600,21 @@ public class BusinessEsHandle {
             log.error("deleteData error",e);
         }
     }
+
+    public void updateDocumentFields(String index, String documentId, Map<String, Object> docFields) {
+        if (!esSwitch) {
+            return;
+        }
+        try {
+            index = index.toLowerCase();
+            Request request = new Request("POST", "/" + index + "/_update/" + documentId);
+            request.setEntity(new NStringEntity("{\"doc\":" + JSON.toJSONString(docFields) + "}",
+                    ContentType.APPLICATION_JSON));
+            request.addParameters(Collections.<String, String>emptyMap());
+            Response response = restClient.performRequest(request);
+            log.info("updateDocumentFields result : {}", response.getStatusLine().getReasonPhrase());
+        } catch (Exception e) {
+            log.error("updateDocumentFields error", e);
+        }
+    }
 }
