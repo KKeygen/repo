@@ -201,6 +201,14 @@ public class ProgramService extends ServiceImpl<ProgramMapper, Program> {
         program.setId(uidGenerator.getUid());
         program.setProgramGroupId(uidGenerator.getUid());
         programMapper.insert(program);
+        
+        ProgramGroup programGroup = new ProgramGroup();
+        programGroup.setId(program.getProgramGroupId());
+        programGroup.setProgramJson("[]");
+        programGroup.setRecentShowTime(new Date());
+        programGroup.setStatus(1);
+        programGroupMapper.insert(programGroup);
+        
         return program.getId();
     }
     

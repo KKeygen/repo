@@ -135,12 +135,6 @@ const routes = [
     meta: { title: '新增节目', layout: 'admin', requiresAuth: true }
   },
   {
-    path: '/admin/programs/:id/edit',
-    name: 'AdminProgramEdit',
-    component: () => import('@/views/admin/ProgramEdit.vue'),
-    meta: { title: '编辑节目', layout: 'admin', requiresAuth: true }
-  },
-  {
     path: '/admin/seats',
     name: 'AdminSeatManage',
     component: () => import('@/views/admin/SeatManage.vue'),
@@ -151,6 +145,12 @@ const routes = [
     name: 'AdminCategoryManage',
     component: () => import('@/views/admin/CategoryManage.vue'),
     meta: { title: '分类管理', layout: 'admin', requiresAuth: true }
+  },
+  {
+    path: '/admin/ticket-categories',
+    name: 'AdminTicketCategoryManage',
+    component: () => import('@/views/admin/TicketCategoryManage.vue'),
+    meta: { title: '票档管理', layout: 'admin', requiresAuth: true }
   }
 ]
 
