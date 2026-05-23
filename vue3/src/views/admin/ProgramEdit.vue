@@ -232,7 +232,7 @@ const form = reactive({
   realTicketPurchaseRule: '', invoiceSpecification: '', deliveryInstruction: '', abnormalOrderDescription: '',
   kindReminder: '', performanceDuration: '', entryTime: '', minPerformanceCount: null,
   mainActor: '', minPerformanceDuration: '', prohibitedItem: '', depositSpecification: '',
-  permitRefund: 0, permitChooseSeat: 0, electronicDeliveryTicket: 1, electronicInvoice: 1,
+  permitRefund: 0, permitChooseSeat: 1, electronicDeliveryTicket: 1, electronicInvoice: 1,
   showTime: '', showDayTime: '', showWeekTime: ''
 })
 
@@ -345,8 +345,10 @@ onMounted(async () => {
         form.showDayTime = res.data.showDayTime || form.showDayTime
         form.showWeekTime = res.data.showWeekTime || form.showWeekTime
         if (form.parentProgramCategoryId) await onParentChange()
+      } else {
+        toast.error(res.message || '加载节目信息失败')
       }
-    } catch (e) { toast.error('加载节目信息失败') }
+    } catch (e) { toast.error(e.message || '加载节目信息失败') }
   }
 })
 
@@ -382,7 +384,7 @@ async function handleSubmit() {
     } else {
       toast.error(res.message || '操作失败')
     }
-  } catch (e) { toast.error('网络错误') }
+  } catch (e) { toast.error(e.message || '网络错误') }
   finally { saving.value = false }
 }
 </script>

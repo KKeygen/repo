@@ -11,7 +11,7 @@
       <div class="filter-bar__row">
         <div class="form-group">
           <label class="form-label">选择节目</label>
-          <select v-model.number="programId" class="form-select" @change="onProgramChange">
+          <select v-model="programId" class="form-select">
             <option :value="null" disabled>搜索或选择节目</option>
             <option v-for="p in programs" :key="p.id" :value="p.id">{{ p.title }}</option>
           </select>
@@ -19,9 +19,9 @@
         </div>
         <div class="form-group">
           <label class="form-label">选择票档</label>
-          <select v-model.number="ticketCategoryId" class="form-select">
+          <select v-model="ticketCategoryId" class="form-select">
             <option :value="null" disabled>请先选择节目</option>
-            <option v-for="t in ticketCategories" :key="t.id" :value="t.id">{{ t.name }} (¥{{ t.price }})</option>
+            <option v-for="t in ticketCategories" :key="t.id" :value="t.id">{{ t.introduce || '票档#' + t.id }} (¥{{ t.price }})</option>
           </select>
         </div>
         <button class="btn btn-outline btn-sm" @click="loadSeats" style="align-self:flex-end;">查询已有座位</button>
@@ -91,12 +91,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import AdminLayout from '@/layouts/AdminLayout.vue'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
-import { getSeatInfo, searchPrograms as searchApi } from '@/api/program'
-import { batchAddSeats } from '@/api/admin'
+import { getSeatInfo, searchPrograms as searchApi, getProgramPage } from '@/api/program'
+import { addSeat, getTicketCategoriesByProgram } from '@/api/admin'
 import { useToast } from '@/components/Toast.vue'
 
 const route = useRoute()
@@ -120,26 +120,58 @@ const preview = ref([])
 
 let searchTimer = null
 
+watch(programId, (val) => {
+  if (val) onProgramChange()
+})
+
+function stripHtml(str) {
+  if (!str) return ''
+  return str.replace(/<[^>]+>/g, '')
+}
+
 async function searchPrograms() {
   clearTimeout(searchTimer)
   searchTimer = setTimeout(async () => {
     const kw = programSearch.value.trim()
-    if (!kw) { programs.value = []; return }
     try {
-      const res = await searchApi({ content: kw, pageNumber: 1, pageSize: 20, timeType: 0 })
-      if (res.code == 0) programs.value = (res.data?.records || res.data?.list || [])
+      if (kw) {
+        const res = await searchApi({ content: kw, pageNumber: 1, pageSize: 50, timeType: 0 })
+        if (res.code == 0) {
+          const list = res.data?.records || res.data?.list || []
+          programs.value = list.map(p => ({ ...p, title: stripHtml(p.title) }))
+        }
+      } else {
+        await loadAllPrograms()
+      }
     } catch (e) { /* ignore */ }
   }, 300)
 }
+
+async function loadAllPrograms() {
+  try {
+    const res = await getProgramPage({ pageNumber: 1, pageSize: 50, timeType: 0, type: 1 })
+    if (res.code == 0) {
+      const list = res.data?.records || res.data?.list || []
+      programs.value = list.map(p => ({ ...p, title: stripHtml(p.title) }))
+    }
+  } catch (e) { /* ignore */ }
+}
+
+onMounted(() => loadAllPrograms())
 
 async function onProgramChange() {
   ticketCategories.value = []; ticketCategoryId.value = null
   if (!programId.value) return
   try {
-    const res = await getSeatInfo({ programId: programId.value })
+    const res = await getTicketCategoriesByProgram({ programId: programId.value })
     if (res.code == 0) {
-      const data = res.data || {}
-      ticketCategories.value = data.ticketCategoryList || data.ticketCategories || []
+      ticketCategories.value = (res.data || []).map(t => ({
+        id: t.id,
+        price: t.price,
+        introduce: t.introduce,
+        totalNumber: t.totalNumber,
+        remainNumber: t.remainNumber
+      }))
     }
   } catch (e) { /* ignore */ }
 }
@@ -148,12 +180,13 @@ async function loadSeats() {
   if (!programId.value || !ticketCategoryId.value) { toast.error('请选择节目和票档'); return }
   loading.value = true
   try {
-    const res = await getSeatInfo({ programId: programId.value, ticketCategoryId: ticketCategoryId.value })
+    const res = await getSeatInfo({ programId: programId.value })
     if (res.code == 0) {
       const data = res.data || {}
-      seats.value = data.seatList || data.seats || []
+      const seatMap = data.seatVoMap || {}
+      seats.value = Object.values(seatMap).flat().filter(s => s.ticketCategoryId === ticketCategoryId.value)
     } else toast.error(res.message || '查询失败')
-  } catch (e) { toast.error('网络错误') }
+  } catch (e) { toast.error(e.message || '网络错误') }
   finally { loading.value = false }
 }
 
@@ -172,20 +205,30 @@ function generatePreview() {
 
 async function batchAdd() {
   if (!ticketCategoryId.value) { toast.error('请先选择票档'); return }
+  const selectedCategory = ticketCategories.value.find(t => t.id === ticketCategoryId.value)
+  const price = selectedCategory ? selectedCategory.price : 0
   const seatList = []
   for (const row of preview.value) {
     for (const seat of row.seats) {
       if (!seat.off) {
-        seatList.push({ ticketCategoryId: ticketCategoryId.value, rowCode: row.row, colCode: seat.col })
+        seatList.push({
+          programId: programId.value,
+          ticketCategoryId: ticketCategoryId.value,
+          rowCode: row.row,
+          colCode: seat.col,
+          seatType: 1,
+          price: price
+        })
       }
     }
   }
   if (!seatList.length) { toast.error('没有可添加的座位'); return }
   adding.value = true
   try {
-    const res = await batchAddSeats(seatList)
-    if (res.code == 0) { toast.success(`成功添加 ${seatList.length} 个座位`); preview.value = []; loadSeats() }
-    else toast.error(res.message || '添加失败')
+    const results = await Promise.all(seatList.map(s => addSeat(s)))
+    const allOk = results.every(r => r.code == 0)
+    if (allOk) { toast.success(`成功添加 ${seatList.length} 个座位`); preview.value = []; loadSeats() }
+    else toast.error(results.find(r => r.code != 0)?.message || '部分添加失败')
   } catch (e) { toast.error('网络错误') }
   finally { adding.value = false }
 }

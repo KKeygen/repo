@@ -16,14 +16,14 @@
         </div>
         <div class="form-group">
           <label class="form-label">类型 <span class="required">*</span></label>
-          <select v-model.number="newType" class="form-select" @change="newParentId = null">
+          <select v-model="newType" class="form-select">
             <option :value="1">大类（一级分类）</option>
             <option :value="2">子类（二级分类）</option>
           </select>
         </div>
-        <div v-if="newType === 2" class="form-group">
+        <div v-if="newType == 2" class="form-group">
           <label class="form-label">所属大类 <span class="required">*</span></label>
-          <select v-model.number="newParentId" class="form-select">
+          <select v-model="newParentId" class="form-select">
             <option :value="null" disabled>选择父分类</option>
             <option v-for="c in parentCategories" :key="c.id" :value="c.id">{{ c.name }}</option>
           </select>
@@ -53,7 +53,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import AdminLayout from '@/layouts/AdminLayout.vue'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
@@ -72,7 +72,11 @@ const newName = ref('')
 const newType = ref(1)
 const newParentId = ref(null)
 
-const parentCategories = computed(() => categories.value.filter(c => c.type === 1))
+const parentCategories = computed(() => categories.value.filter(c => c.type == 1))
+
+watch(newType, () => {
+  newParentId.value = null
+})
 
 async function loadCategories() {
   try {
@@ -84,10 +88,10 @@ async function loadCategories() {
 
 async function handleAdd() {
   if (!newName.value.trim()) { toast.error('请输入分类名称'); return }
-  if (newType.value === 2 && !newParentId.value) { toast.error('请选择所属大类'); return }
+  if (newType.value == 2 && !newParentId.value) { toast.error('请选择所属大类'); return }
   adding.value = true
   const item = { name: newName.value.trim(), type: newType.value }
-  if (newType.value === 2) item.parentId = newParentId.value
+  if (newType.value == 2) item.parentId = Number(newParentId.value)
   try {
     const res = await batchSaveCategories([item])
     if (res.code == 0) { toast.success('添加成功'); newName.value = ''; newParentId.value = null; loadCategories() }
