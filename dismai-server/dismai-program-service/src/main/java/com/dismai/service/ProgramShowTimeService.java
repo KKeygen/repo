@@ -25,10 +25,13 @@ import com.dismai.servicelock.LockType;
 import com.dismai.servicelock.annotion.ServiceLock;
 import com.dismai.util.DateUtils;
 import com.dismai.util.ServiceLockTool;
+import com.dismai.service.es.ProgramEs;
 import org.redisson.api.RLock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -67,14 +70,25 @@ public class ProgramShowTimeService extends ServiceImpl<ProgramShowTimeMapper, P
     
     @Autowired
     private LocalCacheProgramShowTime localCacheProgramShowTime;
-    
-    
+
+    @Autowired
+    private ProgramEs programEs;
+
     @Transactional(rollbackFor = Exception.class)
     public Long add(ProgramShowTimeAddDto programShowTimeAddDto) {
         ProgramShowTime programShowTime = new ProgramShowTime();
         BeanUtil.copyProperties(programShowTimeAddDto,programShowTime);
         programShowTime.setId(uidGenerator.getUid());
         programShowTimeMapper.insert(programShowTime);
+        
+        Long programId = programShowTimeAddDto.getProgramId();
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                programEs.addDocument(programId);
+            }
+        });
+        
         return programShowTime.getId();
     }
     
