@@ -7,6 +7,7 @@ import com.baidu.fsg.uid.UidGenerator;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.dismai.BusinessThreadPool;
@@ -44,6 +45,7 @@ import com.dismai.enums.CompositeCheckType;
 import com.dismai.enums.SellStatus;
 import com.dismai.exception.DismaiFrameException;
 import com.dismai.initialize.impl.composite.CompositeContainer;
+import com.dismai.handler.BloomFilterHandler;
 import com.dismai.mapper.ProgramCategoryMapper;
 import com.dismai.mapper.ProgramGroupMapper;
 import com.dismai.mapper.ProgramMapper;
@@ -183,6 +185,9 @@ public class ProgramService extends ServiceImpl<ProgramMapper, Program> {
     
     @Autowired
     private CompositeContainer compositeContainer;
+
+    @Autowired
+    private BloomFilterHandler bloomFilterHandler;
     
     @Autowired
     private TokenExpireManager tokenExpireManager;
@@ -201,7 +206,8 @@ public class ProgramService extends ServiceImpl<ProgramMapper, Program> {
         program.setId(uidGenerator.getUid());
         program.setProgramGroupId(uidGenerator.getUid());
         programMapper.insert(program);
-        
+        bloomFilterHandler.add(String.valueOf(program.getId()));
+
         ProgramGroup programGroup = new ProgramGroup();
         programGroup.setId(program.getProgramGroupId());
         programGroup.setProgramJson("[]");
@@ -218,9 +224,83 @@ public class ProgramService extends ServiceImpl<ProgramMapper, Program> {
      * @return 执行后的结果
      * */
     public PageVo<ProgramListVo> search(ProgramSearchDto programSearchDto) {
-        //将入参的参数进行具体的组装
         setQueryTime(programSearchDto);
-        return programEs.search(programSearchDto);
+        try {
+            PageVo<ProgramListVo> pageVo = programEs.search(programSearchDto);
+            if (CollectionUtil.isNotEmpty(pageVo.getList())) {
+                return pageVo;
+            }
+        } catch (Exception e) {
+            log.error("ES search failed, falling back to db", e);
+        }
+        return dbSearch(programSearchDto);
+    }
+
+    private PageVo<ProgramListVo> dbSearch(ProgramSearchDto programSearchDto) {
+        PageVo<ProgramListVo> pageVo = new PageVo<>();
+        LambdaQueryWrapper<Program> programLambdaQueryWrapper = Wrappers.lambdaQuery(Program.class)
+                .eq(Program::getProgramStatus, BusinessStatus.YES.getCode());
+        if (Objects.nonNull(programSearchDto.getAreaId())) {
+            programLambdaQueryWrapper.eq(Program::getAreaId, programSearchDto.getAreaId());
+        }
+        if (Objects.nonNull(programSearchDto.getParentProgramCategoryId())) {
+            programLambdaQueryWrapper.eq(Program::getParentProgramCategoryId, programSearchDto.getParentProgramCategoryId());
+        }
+        if (StringUtil.isNotEmpty(programSearchDto.getContent())) {
+            programLambdaQueryWrapper.and(w -> {
+                w.like(Program::getTitle, programSearchDto.getContent());
+                w.or();
+                w.like(Program::getActor, programSearchDto.getContent());
+            });
+        }
+        if (Objects.nonNull(programSearchDto.getStartDateTime()) && Objects.nonNull(programSearchDto.getEndDateTime())) {
+            programLambdaQueryWrapper.ge(Program::getIssueTime, programSearchDto.getStartDateTime());
+            programLambdaQueryWrapper.le(Program::getIssueTime, programSearchDto.getEndDateTime());
+        }
+        
+        long total = programMapper.selectCount(programLambdaQueryWrapper);
+        if (total == 0) {
+            return pageVo;
+        }
+        
+        switch (programSearchDto.getType()) {
+            case 2:
+                programLambdaQueryWrapper.orderByDesc(Program::getHighHeat);
+                break;
+            case 3:
+                break;
+            default:
+                programLambdaQueryWrapper.orderByDesc(Program::getCreateTime);
+                break;
+        }
+        
+        Page<Program> programPage = Page.of(programSearchDto.getPageNumber(), programSearchDto.getPageSize());
+        Page<Program> pageResult = programMapper.selectPage(programPage, programLambdaQueryWrapper);
+        
+        List<ProgramListVo> voList = new ArrayList<>();
+        List<Long> programIdList = pageResult.getRecords().stream().map(Program::getId).collect(Collectors.toList());
+        if (CollectionUtil.isNotEmpty(programIdList)) {
+            Map<Long, String> programCategoryMap = selectProgramCategoryMap(programIdList);
+            Map<Long, TicketCategoryAggregate> ticketCategorieMap = selectTicketCategorieMap(programIdList);
+            for (Program program : pageResult.getRecords()) {
+                ProgramListVo vo = new ProgramListVo();
+                BeanUtil.copyProperties(program, vo);
+                vo.setProgramCategoryName(programCategoryMap.get(program.getProgramCategoryId()));
+                vo.setParentProgramCategoryName(programCategoryMap.get(program.getParentProgramCategoryId()));
+                TicketCategoryAggregate aggregate = ticketCategorieMap.get(program.getId());
+                if (Objects.nonNull(aggregate)) {
+                    vo.setMinPrice(aggregate.getMinPrice());
+                    vo.setMaxPrice(aggregate.getMaxPrice());
+                }
+                voList.add(vo);
+            }
+        }
+        
+        pageVo.setList(voList);
+        pageVo.setTotalSize(total);
+        pageVo.setPageSize(programSearchDto.getPageSize());
+        pageVo.setPageNum(programSearchDto.getPageNumber());
+        return pageVo;
     }
     
     /**

@@ -43,7 +43,9 @@ public class ProgramDocumentParamName {
     public static final String SHOW_WEEK_TIME = "showWeekTime";
     
     public static final String MIN_PRICE = "minPrice";
-    
+
     public static final String MAX_PRICE = "maxPrice";
-    
+
+    public static final String PROGRAM_STATUS = "programStatus";
+
 }

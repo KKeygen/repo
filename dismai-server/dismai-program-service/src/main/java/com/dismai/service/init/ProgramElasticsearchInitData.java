@@ -4,6 +4,7 @@ import com.dismai.BusinessThreadPool;
 import com.dismai.core.SpringUtil;
 import com.dismai.dto.EsDocumentMappingDto;
 import com.dismai.entity.TicketCategoryAggregate;
+import com.dismai.enums.BusinessStatus;
 import com.dismai.initialize.base.AbstractApplicationPostConstructHandler;
 import com.dismai.service.ProgramService;
 import com.dismai.util.BusinessEsHandle;
@@ -91,6 +92,7 @@ public class ProgramElasticsearchInitData extends AbstractApplicationPostConstru
             map.put(ProgramDocumentParamName.MAX_PRICE,
                     Optional.ofNullable(ticketCategorieMap.get(programVo.getId()))
                             .map(TicketCategoryAggregate::getMaxPrice).orElse(null));
+            map.put(ProgramDocumentParamName.PROGRAM_STATUS, BusinessStatus.YES.getCode());
             allDocs.add(map);
         }
         businessEsHandle.bulkAdd(SpringUtil.getPrefixDistinctionName() + "-" + 
@@ -137,7 +139,8 @@ public class ProgramElasticsearchInitData extends AbstractApplicationPostConstru
         list.add(new EsDocumentMappingDto(ProgramDocumentParamName.SHOW_WEEK_TIME,"text"));
         list.add(new EsDocumentMappingDto(ProgramDocumentParamName.MIN_PRICE,"integer"));
         list.add(new EsDocumentMappingDto(ProgramDocumentParamName.MAX_PRICE,"integer"));
-        
+        list.add(new EsDocumentMappingDto(ProgramDocumentParamName.PROGRAM_STATUS,"integer"));
+
         return list;
     }
 }

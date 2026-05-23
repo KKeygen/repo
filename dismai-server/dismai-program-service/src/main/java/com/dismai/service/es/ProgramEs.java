@@ -21,7 +21,6 @@ import com.dismai.vo.ProgramListVo;
 import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.MatchAllQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.script.Script;
@@ -33,12 +32,21 @@ import org.elasticsearch.search.sort.ScriptSortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.io.IOException;
+
+import com.dismai.entity.TicketCategoryAggregate;
+import com.dismai.service.ProgramService;
+import com.dismai.vo.ProgramVo;
 
 @Slf4j
 @Component
@@ -46,7 +54,11 @@ public class ProgramEs {
     
     @Autowired
     private BusinessEsHandle businessEsHandle;
-    
+
+    @Lazy
+    @Autowired
+    private ProgramService programService;
+
     public List<ProgramHomeVo> selectHomeList(ProgramListDto programListDto) {
         List<ProgramHomeVo> programHomeVoList = new ArrayList<>();
 
@@ -55,6 +67,8 @@ public class ProgramEs {
                     ProgramDocumentParamName.INDEX_NAME;
 
             BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+            boolQuery.must(QueryBuilders.termQuery(
+                    ProgramDocumentParamName.PROGRAM_STATUS, BusinessStatus.YES.getCode()));
             if (Objects.nonNull(programListDto.getAreaId())) {
                 boolQuery.must(QueryBuilders.termQuery(
                         ProgramDocumentParamName.AREA_ID, programListDto.getAreaId()));
@@ -122,29 +136,26 @@ public class ProgramEs {
     public List<ProgramListVo> recommendList(ProgramRecommendListDto programRecommendListDto) {
         List<ProgramListVo> programListVoList = new ArrayList<>();
         try {
-            boolean allQueryFlag = true;
-            MatchAllQueryBuilder matchAllQueryBuilder = QueryBuilders.matchAllQuery();
             BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+            boolQuery.must(QueryBuilders.termQuery(
+                    ProgramDocumentParamName.PROGRAM_STATUS, BusinessStatus.YES.getCode()));
             if (Objects.nonNull(programRecommendListDto.getAreaId())) {
-                allQueryFlag = false;
                 QueryBuilder builds = QueryBuilders.termQuery(ProgramDocumentParamName.AREA_ID, 
                         programRecommendListDto.getAreaId());
                 boolQuery.must(builds);
             }
             if (Objects.nonNull(programRecommendListDto.getParentProgramCategoryId())) {
-                allQueryFlag = false;
                 QueryBuilder builds = QueryBuilders.termQuery(ProgramDocumentParamName.PARENT_PROGRAM_CATEGORY_ID, 
                         programRecommendListDto.getParentProgramCategoryId());
                 boolQuery.must(builds);
             }
             if (Objects.nonNull(programRecommendListDto.getProgramId())) {
-                allQueryFlag = false;
                 QueryBuilder builds = QueryBuilders.termQuery(ProgramDocumentParamName.ID,
                         programRecommendListDto.getProgramId());
                 boolQuery.mustNot(builds);
             }
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-            searchSourceBuilder.query(allQueryFlag ? matchAllQueryBuilder : boolQuery);
+            searchSourceBuilder.query(boolQuery);
             searchSourceBuilder.trackTotalHits(true);
             searchSourceBuilder.from(1);
             searchSourceBuilder.size(10);
@@ -170,6 +181,10 @@ public class ProgramEs {
         PageVo<ProgramListVo> pageVo = new PageVo<>();
         try {
             List<EsDataQueryDto> esDataQueryDtoList = new ArrayList<>();
+            EsDataQueryDto statusDto = new EsDataQueryDto();
+            statusDto.setParamName(ProgramDocumentParamName.PROGRAM_STATUS);
+            statusDto.setParamValue(BusinessStatus.YES.getCode());
+            esDataQueryDtoList.add(statusDto);
             if (Objects.nonNull(programPageListDto.getAreaId())) {
                 EsDataQueryDto areaIdQueryDto = new EsDataQueryDto();
                 areaIdQueryDto.setParamName(ProgramDocumentParamName.AREA_ID);
@@ -242,56 +257,54 @@ public class ProgramEs {
         return programPageOrder;
     }
     
-    public PageVo<ProgramListVo> search(ProgramSearchDto programSearchDto) {
+    public PageVo<ProgramListVo> search(ProgramSearchDto programSearchDto) throws IOException {
         PageVo<ProgramListVo> pageVo = new PageVo<>();
-        try {
-            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-            if (Objects.nonNull(programSearchDto.getAreaId())) {
-                QueryBuilder builds = QueryBuilders.termQuery(ProgramDocumentParamName.AREA_ID, programSearchDto.getAreaId());
-                boolQuery.must(builds);
-            }
-            if (Objects.nonNull(programSearchDto.getParentProgramCategoryId())) {
-                QueryBuilder builds = QueryBuilders.termQuery(ProgramDocumentParamName.PARENT_PROGRAM_CATEGORY_ID, programSearchDto.getParentProgramCategoryId());
-                boolQuery.must(builds);
-            }
-            if (Objects.nonNull(programSearchDto.getStartDateTime()) &&
-                    Objects.nonNull(programSearchDto.getEndDateTime())) {
-                QueryBuilder builds = QueryBuilders.rangeQuery(ProgramDocumentParamName.SHOW_DAY_TIME)
-                        .from(programSearchDto.getStartDateTime()).to(programSearchDto.getEndDateTime()).includeLower(true);
-                boolQuery.must(builds);
-            }
-            if (StringUtil.isNotEmpty(programSearchDto.getContent())) {
-                BoolQueryBuilder innerBoolQuery = QueryBuilders.boolQuery();
-                innerBoolQuery.should(QueryBuilders.matchQuery(ProgramDocumentParamName.TITLE, programSearchDto.getContent()));
-                innerBoolQuery.should(QueryBuilders.matchQuery(ProgramDocumentParamName.ACTOR, programSearchDto.getContent()));
-                innerBoolQuery.minimumShouldMatch(1);
-                boolQuery.must(innerBoolQuery);
-            }
-            
-            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-            ProgramPageOrder programPageOrder = getProgramPageOrder(programSearchDto);
-            if (Objects.nonNull(programPageOrder.sortParam) && Objects.nonNull(programPageOrder.sortOrder)) {
-                FieldSortBuilder sort = SortBuilders.fieldSort(programPageOrder.sortParam);
-                sort.order(programPageOrder.sortOrder);
-                searchSourceBuilder.sort(sort);
-            }
-            searchSourceBuilder.query(boolQuery);
-            searchSourceBuilder.trackTotalHits(true);
-            searchSourceBuilder.from((programSearchDto.getPageNumber() - 1) * programSearchDto.getPageSize());
-            searchSourceBuilder.size(programSearchDto.getPageSize());
-            searchSourceBuilder.highlighter(getHighlightBuilder(Arrays.asList(ProgramDocumentParamName.TITLE,
-                    ProgramDocumentParamName.ACTOR)));
-            List<ProgramListVo> list = new ArrayList<>();
-            PageInfo<ProgramListVo> pageInfo = new PageInfo<>(list);
-            pageInfo.setPageNum(programSearchDto.getPageNumber());
-            pageInfo.setPageSize(programSearchDto.getPageSize());
-            businessEsHandle.executeQuery(SpringUtil.getPrefixDistinctionName() + "-" + ProgramDocumentParamName.INDEX_NAME,
-                    ProgramDocumentParamName.INDEX_TYPE,list,pageInfo,ProgramListVo.class,
-                    searchSourceBuilder,Arrays.asList(ProgramDocumentParamName.TITLE,ProgramDocumentParamName.ACTOR));
-            pageVo = PageUtil.convertPage(pageInfo,programListVo -> programListVo);
-        }catch (Exception e) {
-            log.error("search error",e);
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        boolQuery.must(QueryBuilders.termQuery(
+                ProgramDocumentParamName.PROGRAM_STATUS, BusinessStatus.YES.getCode()));
+        if (Objects.nonNull(programSearchDto.getAreaId())) {
+            QueryBuilder builds = QueryBuilders.termQuery(ProgramDocumentParamName.AREA_ID, programSearchDto.getAreaId());
+            boolQuery.must(builds);
         }
+        if (Objects.nonNull(programSearchDto.getParentProgramCategoryId())) {
+            QueryBuilder builds = QueryBuilders.termQuery(ProgramDocumentParamName.PARENT_PROGRAM_CATEGORY_ID, programSearchDto.getParentProgramCategoryId());
+            boolQuery.must(builds);
+        }
+        if (Objects.nonNull(programSearchDto.getStartDateTime()) &&
+                Objects.nonNull(programSearchDto.getEndDateTime())) {
+            QueryBuilder builds = QueryBuilders.rangeQuery(ProgramDocumentParamName.SHOW_DAY_TIME)
+                    .from(programSearchDto.getStartDateTime()).to(programSearchDto.getEndDateTime()).includeLower(true);
+            boolQuery.must(builds);
+        }
+        if (StringUtil.isNotEmpty(programSearchDto.getContent())) {
+            BoolQueryBuilder innerBoolQuery = QueryBuilders.boolQuery();
+            innerBoolQuery.should(QueryBuilders.matchQuery(ProgramDocumentParamName.TITLE, programSearchDto.getContent()));
+            innerBoolQuery.should(QueryBuilders.matchQuery(ProgramDocumentParamName.ACTOR, programSearchDto.getContent()));
+            innerBoolQuery.minimumShouldMatch(1);
+            boolQuery.must(innerBoolQuery);
+        }
+
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        ProgramPageOrder programPageOrder = getProgramPageOrder(programSearchDto);
+        if (Objects.nonNull(programPageOrder.sortParam) && Objects.nonNull(programPageOrder.sortOrder)) {
+            FieldSortBuilder sort = SortBuilders.fieldSort(programPageOrder.sortParam);
+            sort.order(programPageOrder.sortOrder);
+            searchSourceBuilder.sort(sort);
+        }
+        searchSourceBuilder.query(boolQuery);
+        searchSourceBuilder.trackTotalHits(true);
+        searchSourceBuilder.from((programSearchDto.getPageNumber() - 1) * programSearchDto.getPageSize());
+        searchSourceBuilder.size(programSearchDto.getPageSize());
+        searchSourceBuilder.highlighter(getHighlightBuilder(Arrays.asList(ProgramDocumentParamName.TITLE,
+                ProgramDocumentParamName.ACTOR)));
+        List<ProgramListVo> list = new ArrayList<>();
+        PageInfo<ProgramListVo> pageInfo = new PageInfo<>(list);
+        pageInfo.setPageNum(programSearchDto.getPageNumber());
+        pageInfo.setPageSize(programSearchDto.getPageSize());
+        businessEsHandle.executeQuery(SpringUtil.getPrefixDistinctionName() + "-" + ProgramDocumentParamName.INDEX_NAME,
+                ProgramDocumentParamName.INDEX_TYPE,list,pageInfo,ProgramListVo.class,
+                searchSourceBuilder,Arrays.asList(ProgramDocumentParamName.TITLE,ProgramDocumentParamName.ACTOR));
+        pageVo = PageUtil.convertPage(pageInfo,programListVo -> programListVo);
         return pageVo;
     }
     
@@ -330,13 +343,55 @@ public class ProgramEs {
                             ProgramListVo.class);
             if (CollectionUtil.isNotEmpty(programListVos)) {
                 for (ProgramListVo programListVo : programListVos) {
-                    businessEsHandle.deleteByDocumentId(
-                            SpringUtil.getPrefixDistinctionName() + "-" + ProgramDocumentParamName.INDEX_NAME,
-                            programListVo.getEsId());
+                    String indexName = SpringUtil.getPrefixDistinctionName() + "-" + ProgramDocumentParamName.INDEX_NAME;
+                    Map<String, Object> updateFields = new HashMap<>();
+                    updateFields.put(ProgramDocumentParamName.PROGRAM_STATUS, 0);
+                    businessEsHandle.updateDocumentFields(indexName, programListVo.getEsId(), updateFields);
                 }
             }
         }catch (Exception e) {
             log.error("deleteByProgramId error",e);
+        }
+    }
+
+    public void addDocument(Long programId) {
+        try {
+            ProgramVo programVo = programService.getDetailFromDb(programId);
+            List<Long> ids = java.util.Collections.singletonList(programId);
+            Map<Long, TicketCategoryAggregate> ticketCategorieMap = programService.selectTicketCategorieMap(ids);
+
+            Map<String,Object> map = new HashMap<>(32);
+            map.put(ProgramDocumentParamName.ID,programVo.getId());
+            map.put(ProgramDocumentParamName.PROGRAM_GROUP_ID,programVo.getProgramGroupId());
+            map.put(ProgramDocumentParamName.PRIME,programVo.getPrime());
+            map.put(ProgramDocumentParamName.TITLE,programVo.getTitle());
+            map.put(ProgramDocumentParamName.ACTOR,programVo.getActor());
+            map.put(ProgramDocumentParamName.PLACE,programVo.getPlace());
+            map.put(ProgramDocumentParamName.ITEM_PICTURE,programVo.getItemPicture());
+            map.put(ProgramDocumentParamName.AREA_ID,programVo.getAreaId());
+            map.put(ProgramDocumentParamName.AREA_NAME,programVo.getAreaName());
+            map.put(ProgramDocumentParamName.PROGRAM_CATEGORY_ID,programVo.getProgramCategoryId());
+            map.put(ProgramDocumentParamName.PROGRAM_CATEGORY_NAME,programVo.getProgramCategoryName());
+            map.put(ProgramDocumentParamName.PARENT_PROGRAM_CATEGORY_ID,programVo.getParentProgramCategoryId());
+            map.put(ProgramDocumentParamName.PARENT_PROGRAM_CATEGORY_NAME,programVo.getParentProgramCategoryName());
+            map.put(ProgramDocumentParamName.HIGH_HEAT,programVo.getHighHeat());
+            map.put(ProgramDocumentParamName.ISSUE_TIME,programVo.getIssueTime());
+            map.put(ProgramDocumentParamName.SHOW_TIME, programVo.getShowTime());
+            map.put(ProgramDocumentParamName.SHOW_DAY_TIME,programVo.getShowDayTime());
+            map.put(ProgramDocumentParamName.SHOW_WEEK_TIME,programVo.getShowWeekTime());
+            map.put(ProgramDocumentParamName.MIN_PRICE,
+                    Optional.ofNullable(ticketCategorieMap.get(programVo.getId()))
+                            .map(TicketCategoryAggregate::getMinPrice).orElse(null));
+            map.put(ProgramDocumentParamName.MAX_PRICE,
+                    Optional.ofNullable(ticketCategorieMap.get(programVo.getId()))
+                            .map(TicketCategoryAggregate::getMaxPrice).orElse(null));
+            map.put(ProgramDocumentParamName.PROGRAM_STATUS, BusinessStatus.YES.getCode());
+
+            String indexName = SpringUtil.getPrefixDistinctionName() + "-" + ProgramDocumentParamName.INDEX_NAME;
+            businessEsHandle.add(indexName, ProgramDocumentParamName.INDEX_TYPE, map);
+            log.info("ES addDocument success, programId: {}", programId);
+        } catch (Exception e) {
+            log.error("ES addDocument error, programId: {}", programId, e);
         }
     }
 }
