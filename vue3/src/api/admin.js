@@ -23,6 +23,9 @@ export function addTicketCategory(data) {
 export function getTicketCategoryDetail(data) {
   return request({ url: '/Dismai/program/ticket/category/detail', method: 'post', data })
 }
+export function getTicketCategoriesByProgram(data) {
+  return request({ url: '/Dismai/program/ticket/category/select/list/by/program', method: 'post', data })
+}
 
 // 分类管理
 export function getAllCategories() {

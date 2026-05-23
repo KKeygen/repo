@@ -30,14 +30,16 @@
         </thead>
         <tbody>
           <tr v-for="p in programs" :key="p.id">
-            <td class="td-id">{{ p.id }}</td>
-            <td class="td-title">{{ p.title }}</td>
-            <td class="td-place">{{ p.place || '—' }}</td>
-            <td class="td-meta">{{ p.areaName || '—' }}</td>
-            <td class="td-meta">{{ p.parentProgramCategoryName || '—' }} / {{ p.programCategoryName || '—' }}</td>
+            <td class="td-id" :title="p.id">{{ p.id }}</td>
+            <td class="td-title" :title="p.title">{{ p.title }}</td>
+            <td class="td-place" :title="p.place">{{ p.place || '—' }}</td>
+            <td class="td-meta" :title="p.areaName">{{ p.areaName || '—' }}</td>
+            <td class="td-meta" :title="(p.parentProgramCategoryName || '') + ' / ' + (p.programCategoryName || '')">
+              {{ p.parentProgramCategoryName || '—' }} / {{ p.programCategoryName || '—' }}
+            </td>
             <td class="td-actions">
-              <button class="btn btn-sm btn-outline" @click="goEdit(p.id)">编辑</button>
               <button class="btn btn-sm btn-ghost btn-danger-text" @click="handleInvalid(p)">下架</button>
+              <button class="btn btn-sm btn-ghost btn-warn-text" @click="handleReset(p)">重置</button>
             </td>
           </tr>
           <tr v-if="programs.length === 0">
@@ -58,15 +60,14 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import AdminLayout from '@/layouts/AdminLayout.vue'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
-import { getProgramPage } from '@/api/program'
-import { invalidProgram } from '@/api/admin'
+import { getProgramPage, searchPrograms } from '@/api/program'
+import { invalidProgram, resetProgram } from '@/api/admin'
 import { useToast } from '@/components/Toast.vue'
 
 const route = useRoute()
-const router = useRouter()
 const toast = useToast()
 
 const layoutComponent = computed(() => route.meta.layout === 'admin' ? AdminLayout : DefaultLayout)
@@ -78,15 +79,22 @@ const page = ref(1)
 const pageSize = 12
 const totalPages = ref(0)
 
+function stripHtml(str) {
+  if (!str) return ''
+  return str.replace(/<[^>]+>/g, '')
+}
+
 async function loadData() {
   loading.value = true
   try {
     const params = { pageNumber: page.value, pageSize, timeType: 0, type: 1 }
     if (keyword.value.trim()) params.content = keyword.value.trim()
-    const res = await getProgramPage(params)
+    const api = keyword.value.trim() ? searchPrograms : getProgramPage
+    const res = await api(params)
     if (res.code == 0) {
       const data = res.data || {}
-      programs.value = data.records || data.list || []
+      const rawList = data.records || data.list || []
+      programs.value = rawList.map(p => ({ ...p, title: stripHtml(p.title) }))
       totalPages.value = Math.ceil((data.totalSize || data.total || 0) / pageSize)
     }
   } catch (e) { toast.error('加载失败') }
@@ -94,7 +102,6 @@ async function loadData() {
 }
 
 function goPage(p) { page.value = p; loadData() }
-function goEdit(id) { router.push(`/admin/programs/${id}/edit`) }
 
 async function handleInvalid(p) {
   if (!confirm(`确定下架节目 "${p.title}" 吗？`)) return
@@ -102,6 +109,15 @@ async function handleInvalid(p) {
     const res = await invalidProgram({ id: p.id })
     if (res.code == 0) { toast.success('已下架'); loadData() }
     else toast.error(res.message || '下架失败')
+  } catch (e) { toast.error('网络错误') }
+}
+
+async function handleReset(p) {
+  if (!confirm(`确定重置节目 "${p.title}" 的库存数据吗？此操作不可撤销。`)) return
+  try {
+    const res = await resetProgram({ programId: p.id })
+    if (res.code == 0) { toast.success('已重置'); loadData() }
+    else toast.error(res.message || '重置失败')
   } catch (e) { toast.error('网络错误') }
 }
 
@@ -120,18 +136,19 @@ onMounted(() => loadData())
 .filter-bar .form-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(212,168,83,0.1); outline: none; }
 
 .program-table-wrap { padding: 0; overflow-x: auto; }
-.program-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-.program-table th { text-align: left; padding: 14px 16px; color: var(--color-muted); font-weight: 600; border-bottom: 1px solid var(--color-border); }
-.program-table td { padding: 12px 16px; border-bottom: 1px solid rgba(212,168,83,0.08); }
+.program-table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 13px; }
+.program-table th { text-align: left; padding: 12px 14px; color: var(--color-muted); font-weight: 600; border-bottom: 1px solid var(--color-border); white-space: nowrap; }
+.program-table td { padding: 10px 14px; border-bottom: 1px solid rgba(212,168,83,0.08); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .program-table tr:hover td { background: rgba(212,168,83,0.03); }
-.td-id { color: var(--color-muted); width: 80px; }
-.td-title { font-weight: 500; }
-.td-place { color: var(--color-muted); }
+.td-id { color: var(--color-muted); width: 150px; font-size: 12px; word-break: break-all; white-space: normal; overflow: visible; }
+.td-title { font-weight: 500; width: 35%; }
+.td-place { color: var(--color-muted); width: 14%; }
 .td-meta { color: var(--color-muted); font-size: 12px; }
-.td-actions { display: flex; gap: 8px; }
+.td-actions { width: 110px; display: flex; gap: 6px; white-space: nowrap; overflow: visible; }
 .td-empty { text-align: center; color: var(--color-muted); padding: 40px; }
 
 .btn-danger-text { color: var(--color-error); &:hover { background: rgba(239,68,68,0.08); } }
+.btn-warn-text { color: var(--color-warning); &:hover { background: rgba(245,158,11,0.08); } }
 
 .pagination { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 20px; }
 .pagination__info { color: var(--color-muted); font-size: 13px; }

@@ -28,6 +28,7 @@ const menuItems = [
   { path: '/admin', label: '管理首页', icon: '📊' },
   { path: '/admin/programs', label: '节目管理', icon: '🎭' },
   { path: '/admin/seats', label: '座位管理', icon: '💺' },
+  { path: '/admin/ticket-categories', label: '票档管理', icon: '🎫' },
   { path: '/admin/categories', label: '分类管理', icon: '📂' }
 ]
 

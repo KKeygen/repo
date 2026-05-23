@@ -4,7 +4,7 @@
     <div class="page-header">
       <h2 class="page-title">管理后台</h2>
       <div class="page-title__line"></div>
-      <p class="page-subtitle text-muted">演出管理 · 座位管理 · 分类管理</p>
+      <p class="page-subtitle text-muted">演出管理 · 座位管理 · 票档管理 · 分类管理</p>
     </div>
 
     <div class="stat-cards">
@@ -20,6 +20,13 @@
         <div class="stat-card__info">
           <span class="stat-card__num">{{ stats.seatService }}</span>
           <span class="stat-card__label">座位服务</span>
+        </div>
+      </router-link>
+      <router-link to="/admin/ticket-categories" class="stat-card card">
+        <span class="stat-card__icon">🎫</span>
+        <div class="stat-card__info">
+          <span class="stat-card__num">{{ stats.ticketService }}</span>
+          <span class="stat-card__label">票档服务</span>
         </div>
       </router-link>
       <router-link to="/admin/categories" class="stat-card card">
@@ -46,6 +53,9 @@
         <router-link to="/admin/categories" class="quick-action-item">
           <span>📂</span> 管理分类
         </router-link>
+        <router-link to="/admin/ticket-categories" class="quick-action-item">
+          <span>🎫</span> 管理票档
+        </router-link>
       </div>
     </div>
     </div>
@@ -65,6 +75,7 @@ const layoutComponent = computed(() => route.meta.layout === 'admin' ? AdminLayo
 const stats = reactive({
   programCount: '—',
   seatService: '正常',
+  ticketService: '正常',
   categoryService: '正常'
 })
 
@@ -86,7 +97,7 @@ onMounted(async () => {
 .page-title__line { width: 60px; height: 2px; background: var(--gradient-primary); border-radius: 1px; }
 .page-subtitle { font-size: 13px; margin-top: 8px; }
 
-.stat-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+.stat-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
 
 .stat-card {
   padding: 24px; display: flex; align-items: center; gap: 16px; text-decoration: none;
