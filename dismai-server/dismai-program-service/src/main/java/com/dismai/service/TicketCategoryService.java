@@ -58,9 +58,6 @@ public class TicketCategoryService extends ServiceImpl<TicketCategoryMapper, Tic
     private TicketCategoryMapper ticketCategoryMapper;
     
     @Autowired
-    private TicketCategoryMapper ticketCategoryMapper;
-    
-    @Autowired
     private ServiceLockTool serviceLockTool;
     
     @Autowired
@@ -148,7 +145,7 @@ public class TicketCategoryService extends ServiceImpl<TicketCategoryMapper, Tic
             List<TicketCategory> ticketCategoryList = ticketCategoryMapper.selectList(ticketCategoryLambdaQueryWrapper);
             Map<String, Long> map = new HashMap<>();
             for (TicketCategory tc : ticketCategoryList) {
-                long shardRemain = Math.max(1L, tc.getRemainNumber() / 10);
+                long shardRemain = tc.getRemainNumber() / 10;
                 map.put(String.valueOf(tc.getId()), shardRemain);
             }
             redisCache.putHash(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_TICKET_REMAIN_NUMBER_HASH_RESOLUTION,
