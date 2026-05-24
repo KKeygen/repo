@@ -145,9 +145,9 @@ for index,ticket_count in ipairs(ticket_count_list) do
     local ticket_category_id = ticket_count.ticketCategoryId
     local count = ticket_count.ticketCount
     redis.call('hincrby',ticket_remain_number_hash_key,ticket_category_id,"-" .. count)
-end
-if KEYS[6] and KEYS[6] ~= "" then
-    redis.call('decrby', KEYS[6], count)
+    if KEYS[6] and KEYS[6] ~= "" then
+        redis.call('decrby', KEYS[6], count)
+    end
 end
 for ticket_category_id, seat_id_array in pairs(seat_id_list) do
         redis.call('hdel',string.format(placeholder_seat_no_sold_hash_key,program_id,tostring(ticket_category_id),KEYS[5]),unpack(seat_id_array))
