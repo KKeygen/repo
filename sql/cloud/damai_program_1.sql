@@ -5,7 +5,7 @@ DROP TABLE IF EXISTS `d_program_0`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `d_program_0` (
                                `id` bigint NOT NULL COMMENT '主键id',
-                               `program_group_id` bigint NOT NULL COMMENT '节目分组id',
+                               `program_group_id` bigint NOT NULL DEFAULT 0 COMMENT '节目分组id',
                                `prime` tinyint(1) NOT NULL DEFAULT '1' COMMENT '当属于同一个节目分组时 是否为主要节目 0:否 1:是',
                                `area_id` bigint NOT NULL COMMENT '所在区域id',
                                `program_category_id` bigint NOT NULL COMMENT '节目类型表id',
