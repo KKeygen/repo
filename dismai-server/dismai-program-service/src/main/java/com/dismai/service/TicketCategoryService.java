@@ -119,7 +119,7 @@ public class TicketCategoryService extends ServiceImpl<TicketCategoryMapper, Tic
     public Map<String, Long> getRedisRemainNumberResolution(Long programId,Long ticketCategoryId){
         Map<String, Long> ticketCategoryRemainNumber =
                 redisCache.getAllMapForHash(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_TICKET_REMAIN_NUMBER_HASH_RESOLUTION,
-                        programId,ticketCategoryId), Long.class);
+                        programId,ticketCategoryId,0), Long.class);
         
         if (CollectionUtil.isNotEmpty(ticketCategoryRemainNumber)) {
             return ticketCategoryRemainNumber;
@@ -130,7 +130,7 @@ public class TicketCategoryService extends ServiceImpl<TicketCategoryMapper, Tic
         try {
             ticketCategoryRemainNumber =
                     redisCache.getAllMapForHash(RedisKeyBuild.createRedisKey(
-                            RedisKeyManage.PROGRAM_TICKET_REMAIN_NUMBER_HASH_RESOLUTION, programId,ticketCategoryId), Long.class);
+                            RedisKeyManage.PROGRAM_TICKET_REMAIN_NUMBER_HASH_RESOLUTION, programId,ticketCategoryId,0), Long.class);
             if (CollectionUtil.isNotEmpty(ticketCategoryRemainNumber)) {
                 return ticketCategoryRemainNumber;
             }
@@ -140,7 +140,7 @@ public class TicketCategoryService extends ServiceImpl<TicketCategoryMapper, Tic
             Map<String, Long> map = ticketCategoryList.stream().collect(Collectors.toMap(t -> String.valueOf(t.getId()),
                     TicketCategory::getRemainNumber, (v1, v2) -> v2));
             redisCache.putHash(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_TICKET_REMAIN_NUMBER_HASH_RESOLUTION,
-                    programId,ticketCategoryId),map);
+                    programId,ticketCategoryId,0),map);
             return map;
         }finally {
             lock.unlock();

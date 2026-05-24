@@ -41,9 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -178,17 +176,16 @@ public class ProgramOrderService {
     
     
     public String createNew(ProgramOrderCreateDto programOrderCreateDto) {
-        List<SeatVo> purchaseSeatList = createOrderOperateProgramCacheResolution(programOrderCreateDto);
+        List<SeatVo> purchaseSeatList = createOrderOperateProgramCacheResolution(programOrderCreateDto, 0);
         return doCreate(programOrderCreateDto,purchaseSeatList);
     }
-    /**
-     **/
-    public String createNewAsync(ProgramOrderCreateDto programOrderCreateDto) {
-        List<SeatVo> purchaseSeatList = createOrderOperateProgramCacheResolution(programOrderCreateDto);
+
+    public String createNewAsync(ProgramOrderCreateDto programOrderCreateDto, int shardId) {
+        List<SeatVo> purchaseSeatList = createOrderOperateProgramCacheResolution(programOrderCreateDto, shardId);
         return doCreateV2(programOrderCreateDto,purchaseSeatList);
     }
     
-    public List<SeatVo> createOrderOperateProgramCacheResolution(ProgramOrderCreateDto programOrderCreateDto){
+    public List<SeatVo> createOrderOperateProgramCacheResolution(ProgramOrderCreateDto programOrderCreateDto, int shardId){
         ProgramShowTime programShowTime =
                 programShowTimeService.selectProgramShowTimeByProgramIdMultipleCache(programOrderCreateDto.getProgramId());
         List<TicketCategoryVo> getTicketCategoryList =
@@ -214,14 +211,14 @@ public class ProgramOrderService {
                 int ticketCount = entry.getValue().size();
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("programTicketRemainNumberHashKey",RedisKeyBuild.createRedisKey(
-                        RedisKeyManage.PROGRAM_TICKET_REMAIN_NUMBER_HASH_RESOLUTION, programId, ticketCategoryId).getRelKey());
+                        RedisKeyManage.PROGRAM_TICKET_REMAIN_NUMBER_HASH_RESOLUTION, programId, ticketCategoryId, shardId).getRelKey());
                 jsonObject.put("ticketCategoryId",String.valueOf(ticketCategoryId));
                 jsonObject.put("ticketCount",ticketCount);
                 jsonArray.add(jsonObject);
                 
                 JSONObject seatDatajsonObject = new JSONObject();
                 seatDatajsonObject.put("seatNoSoldHashKey",RedisKeyBuild.createRedisKey(
-                        RedisKeyManage.PROGRAM_SEAT_NO_SOLD_RESOLUTION_HASH, programId, ticketCategoryId).getRelKey());
+                        RedisKeyManage.PROGRAM_SEAT_NO_SOLD_RESOLUTION_HASH, programId, ticketCategoryId, shardId).getRelKey());
                 seatDatajsonObject.put("seatDataList",JSON.toJSONString(entry.getValue()));
                 addSeatDatajsonArray.add(seatDatajsonObject);
             }
@@ -231,16 +228,17 @@ public class ProgramOrderService {
             Integer ticketCount = programOrderCreateDto.getTicketCount();
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("programTicketRemainNumberHashKey",RedisKeyBuild.createRedisKey(
-                    RedisKeyManage.PROGRAM_TICKET_REMAIN_NUMBER_HASH_RESOLUTION, programId, ticketCategoryId).getRelKey());
+                    RedisKeyManage.PROGRAM_TICKET_REMAIN_NUMBER_HASH_RESOLUTION, programId, ticketCategoryId, shardId).getRelKey());
             jsonObject.put("ticketCategoryId",String.valueOf(ticketCategoryId));
             jsonObject.put("ticketCount",ticketCount);
             jsonObject.put("seatNoSoldHashKey",RedisKeyBuild.createRedisKey(
-                    RedisKeyManage.PROGRAM_SEAT_NO_SOLD_RESOLUTION_HASH, programId, ticketCategoryId).getRelKey());
+                    RedisKeyManage.PROGRAM_SEAT_NO_SOLD_RESOLUTION_HASH, programId, ticketCategoryId, shardId).getRelKey());
             jsonArray.add(jsonObject);
         }
         keys.add(RedisKeyBuild.getRedisKey(RedisKeyManage.PROGRAM_SEAT_NO_SOLD_RESOLUTION_HASH));
         keys.add(RedisKeyBuild.getRedisKey(RedisKeyManage.PROGRAM_SEAT_LOCK_RESOLUTION_HASH));
         keys.add(String.valueOf(programOrderCreateDto.getProgramId()));
+        keys.add(String.valueOf(shardId));
         String[] data = new String[3];
         data[0] = JSON.toJSONString(jsonArray);
         data[1] = JSON.toJSONString(addSeatDatajsonArray);
@@ -376,7 +374,7 @@ public class ProgramOrderService {
         ticketCategoryCountMap.forEach((k,v) -> {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("programTicketRemainNumberHashKey",RedisKeyBuild.createRedisKey(
-                    RedisKeyManage.PROGRAM_TICKET_REMAIN_NUMBER_HASH_RESOLUTION, programId, k).getRelKey());
+                    RedisKeyManage.PROGRAM_TICKET_REMAIN_NUMBER_HASH_RESOLUTION, programId, k, 0).getRelKey());
             jsonObject.put("ticketCategoryId",String.valueOf(k));
             if (Objects.equals(orderStatus.getCode(), OrderStatus.NO_PAY.getCode())) {
                 jsonObject.put("count","-" + v);
@@ -395,14 +393,14 @@ public class ProgramOrderService {
             String seatHashKeyDel = "";
             String seatHashKeyAdd = "";
             if (Objects.equals(orderStatus.getCode(), OrderStatus.NO_PAY.getCode())) {
-                seatHashKeyDel = (RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SEAT_NO_SOLD_RESOLUTION_HASH, programId, k).getRelKey());
-                seatHashKeyAdd = (RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SEAT_LOCK_RESOLUTION_HASH, programId, k).getRelKey());
+                seatHashKeyDel = (RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SEAT_NO_SOLD_RESOLUTION_HASH, programId, k, 0).getRelKey());
+                seatHashKeyAdd = (RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SEAT_LOCK_RESOLUTION_HASH, programId, k, 0).getRelKey());
                 for (SeatVo seatVo : v) {
                     seatVo.setSellStatus(SellStatus.LOCK.getCode());
                 }
             } else if (Objects.equals(orderStatus.getCode(), OrderStatus.CANCEL.getCode())) {
-                seatHashKeyDel = (RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SEAT_LOCK_RESOLUTION_HASH, programId, k).getRelKey());
-                seatHashKeyAdd = (RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SEAT_NO_SOLD_RESOLUTION_HASH, programId, k).getRelKey());
+                seatHashKeyDel = (RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SEAT_LOCK_RESOLUTION_HASH, programId, k, 0).getRelKey());
+                seatHashKeyAdd = (RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SEAT_NO_SOLD_RESOLUTION_HASH, programId, k, 0).getRelKey());
                 for (SeatVo seatVo : v) {
                     seatVo.setSellStatus(SellStatus.NO_SOLD.getCode());
                 }

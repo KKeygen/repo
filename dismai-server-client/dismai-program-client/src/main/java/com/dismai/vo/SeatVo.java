@@ -41,4 +41,6 @@ public class SeatVo implements Serializable {
     
     @Schema(name ="sellStatus", type ="Integer", description ="1未售卖 2锁定 3已售卖")
     private Integer sellStatus;
+
+    private Integer shardId;
 }

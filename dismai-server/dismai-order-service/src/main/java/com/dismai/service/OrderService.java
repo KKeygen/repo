@@ -409,7 +409,7 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
     public void updateProgramRelatedDataResolution(Long programId,Map<Long,List<Long>> seatMap,OrderStatus orderStatus){
         Map<Long, List<SeatVo>> seatVoMap = new HashMap<>(seatMap.size());
         seatMap.forEach((k,v) -> seatVoMap.put(k,redisCache.multiGetForHash(
-                RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SEAT_LOCK_RESOLUTION_HASH, programId, k),
+                RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SEAT_LOCK_RESOLUTION_HASH, programId, k, 0),
                 v.stream().map(String::valueOf).collect(Collectors.toList()), SeatVo.class)));
         if (CollectionUtil.isEmpty(seatVoMap)) {
             throw new DismaiFrameException(BaseCode.LOCK_SEAT_LIST_EMPTY);
@@ -422,7 +422,7 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
         seatVoMap.forEach((k,v) -> {
             JSONObject unLockSeatIdjsonObject = new JSONObject();
             unLockSeatIdjsonObject.put("programSeatLockHashKey", RedisKeyBuild.createRedisKey(
-                    RedisKeyManage.PROGRAM_SEAT_LOCK_RESOLUTION_HASH, programId, k).getRelKey());
+                    RedisKeyManage.PROGRAM_SEAT_LOCK_RESOLUTION_HASH, programId, k, 0).getRelKey());
             unLockSeatIdjsonObject.put("unLockSeatIdList",v.stream()
                     .map(SeatVo::getId).map(String::valueOf).collect(Collectors.toList()));
             unLockSeatIdjsonArray.add(unLockSeatIdjsonObject);
@@ -430,13 +430,13 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
             String seatHashKeyAdd = "";
             if (Objects.equals(orderStatus.getCode(), OrderStatus.CANCEL.getCode())) {
                 seatHashKeyAdd = RedisKeyBuild.createRedisKey(
-                        RedisKeyManage.PROGRAM_SEAT_NO_SOLD_RESOLUTION_HASH, programId, k).getRelKey();
+                        RedisKeyManage.PROGRAM_SEAT_NO_SOLD_RESOLUTION_HASH, programId, k, 0).getRelKey();
                 for (SeatVo seatVo : v) {
                     seatVo.setSellStatus(SellStatus.NO_SOLD.getCode());
                 }
             }else if (Objects.equals(orderStatus.getCode(), OrderStatus.PAY.getCode())) {
                 seatHashKeyAdd = RedisKeyBuild.createRedisKey(
-                        RedisKeyManage.PROGRAM_SEAT_SOLD_RESOLUTION_HASH, programId, k).getRelKey();
+                        RedisKeyManage.PROGRAM_SEAT_SOLD_RESOLUTION_HASH, programId, k, 0).getRelKey();
                 for (SeatVo seatVo : v) {
                     seatVo.setSellStatus(SellStatus.SOLD.getCode());
                 }
@@ -451,7 +451,7 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
             addSeatDatajsonArray.add(seatDatajsonObject);
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("programTicketRemainNumberHashKey",RedisKeyBuild.createRedisKey(
-                    RedisKeyManage.PROGRAM_TICKET_REMAIN_NUMBER_HASH_RESOLUTION, programId, k).getRelKey());
+                    RedisKeyManage.PROGRAM_TICKET_REMAIN_NUMBER_HASH_RESOLUTION, programId, k, 0).getRelKey());
             jsonObject.put("ticketCategoryId",String.valueOf(k));
             jsonObject.put("count",v.size());
             jsonArray.add(jsonObject);
