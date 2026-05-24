@@ -61,6 +61,8 @@ public enum RedisKeyManage {
     
     PROGRAM_TICKET_REMAIN_NUMBER_HASH_RESOLUTION("d_mai_program_ticket_remain_number_hash_resolution_%s_%s_%s","节目余票数量_节目id_票档id_分片id","节目余票数量","k"),
     
+    PROGRAM_TICKET_TOTAL_REMAIN("d_mai_program_ticket_total_remain_%s_%s","节目总余票_节目id_票档id","节目总余票","k"),
+    
     PROGRAM_CATEGORY_HASH("d_mai_program_category_hash","节目类型hash集合","节目类型hash集合","k"),
     
     COUNTER_COUNT("d_mai_counter_count","计数器的值的key","计数器的值","k"),

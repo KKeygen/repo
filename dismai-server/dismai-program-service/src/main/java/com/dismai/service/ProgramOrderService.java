@@ -32,6 +32,7 @@ import com.dismai.vo.SeatVo;
 import com.dismai.vo.TicketCategoryVo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -82,6 +83,9 @@ public class ProgramOrderService {
     
     @Autowired
     private SeatService seatService;
+    
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
     
     public List<TicketCategoryVo> getTicketCategoryList(ProgramOrderCreateDto programOrderCreateDto, Date showTime){
         List<TicketCategoryVo> getTicketCategoryVoList = new ArrayList<>();
@@ -183,6 +187,15 @@ public class ProgramOrderService {
     }
 
     public String createNewAsync(ProgramOrderCreateDto programOrderCreateDto, int shardId) {
+        Long tcId = programOrderCreateDto.getTicketCategoryId();
+        if (tcId != null) {
+            String totalKey = RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_TICKET_TOTAL_REMAIN,
+                    programOrderCreateDto.getProgramId(), tcId).getRelKey();
+            String remain = stringRedisTemplate.opsForValue().get(totalKey);
+            if (remain != null && Long.parseLong(remain) <= 0) {
+                throw new DismaiFrameException(BaseCode.TICKET_REMAIN_NUMBER_NOT_SUFFICIENT);
+            }
+        }
         List<SeatVo> purchaseSeatList = createOrderOperateProgramCacheResolution(programOrderCreateDto, shardId);
         return doCreateV2(programOrderCreateDto,purchaseSeatList);
     }
@@ -204,13 +217,15 @@ public class ProgramOrderService {
         // String[] data initialization moved to before invocation
         JSONArray jsonArray = new JSONArray();
         JSONArray addSeatDatajsonArray = new JSONArray();
+        Long ticketCategoryId = null;
+        Integer ticketCount = null;
         if (CollectionUtil.isNotEmpty(seatDtoList)) {
             keys.add("1");
             Map<Long, List<SeatDto>> seatTicketCategoryDtoCount = seatDtoList.stream()
                     .collect(Collectors.groupingBy(SeatDto::getTicketCategoryId));
             for (Entry<Long, List<SeatDto>> entry : seatTicketCategoryDtoCount.entrySet()) {
-                Long ticketCategoryId = entry.getKey();
-                int ticketCount = entry.getValue().size();
+                ticketCategoryId = entry.getKey();
+                ticketCount = entry.getValue().size();
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("programTicketRemainNumberHashKey",RedisKeyBuild.createRedisKey(
                         RedisKeyManage.PROGRAM_TICKET_REMAIN_NUMBER_HASH_RESOLUTION, programId, ticketCategoryId, shardId).getRelKey());
@@ -226,8 +241,8 @@ public class ProgramOrderService {
             }
         }else {
             keys.add("2");
-            Long ticketCategoryId = programOrderCreateDto.getTicketCategoryId();
-            Integer ticketCount = programOrderCreateDto.getTicketCount();
+            ticketCategoryId = programOrderCreateDto.getTicketCategoryId();
+            ticketCount = programOrderCreateDto.getTicketCount();
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("programTicketRemainNumberHashKey",RedisKeyBuild.createRedisKey(
                     RedisKeyManage.PROGRAM_TICKET_REMAIN_NUMBER_HASH_RESOLUTION, programId, ticketCategoryId, shardId).getRelKey());
@@ -241,6 +256,8 @@ public class ProgramOrderService {
         keys.add(RedisKeyBuild.getRedisKey(RedisKeyManage.PROGRAM_SEAT_LOCK_RESOLUTION_HASH));
         keys.add(String.valueOf(programOrderCreateDto.getProgramId()));
         keys.add(String.valueOf(shardId));
+        keys.add(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_TICKET_TOTAL_REMAIN,
+                programId, ticketCategoryId).getRelKey());
         String[] data = new String[3];
         data[0] = JSON.toJSONString(jsonArray);
         data[1] = JSON.toJSONString(addSeatDatajsonArray);
