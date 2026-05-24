@@ -104,7 +104,12 @@ public class SeatService extends ServiceImpl<SeatMapper, Seat> {
     
     @ServiceLock(lockType= LockType.Read,name = SEAT_LOCK,keys = {"#programId","#ticketCategoryId"})
     public List<SeatVo> selectSeatResolution(Long programId,Long ticketCategoryId,Long expireTime,TimeUnit timeUnit) {
-        List<SeatVo> seatVoList = getSeatVoListByCacheResolution(programId,ticketCategoryId);
+        return selectSeatResolution(programId, ticketCategoryId, expireTime, timeUnit, 0);
+    }
+    
+    @ServiceLock(lockType= LockType.Read,name = SEAT_LOCK,keys = {"#programId","#ticketCategoryId","#shardId"})
+    public List<SeatVo> selectSeatResolution(Long programId,Long ticketCategoryId,Long expireTime,TimeUnit timeUnit, Integer shardId) {
+        List<SeatVo> seatVoList = getSeatVoListByCacheResolution(programId,ticketCategoryId, shardId);
         if (CollectionUtil.isNotEmpty(seatVoList)) {
             return seatVoList;
         }
@@ -112,7 +117,7 @@ public class SeatService extends ServiceImpl<SeatMapper, Seat> {
                 String.valueOf(ticketCategoryId)});
         lock.lock();
         try {
-            seatVoList = getSeatVoListByCacheResolution(programId,ticketCategoryId);
+            seatVoList = getSeatVoListByCacheResolution(programId,ticketCategoryId, shardId);
             if (CollectionUtil.isNotEmpty(seatVoList)) {
                 return seatVoList;
             }
@@ -132,19 +137,19 @@ public class SeatService extends ServiceImpl<SeatMapper, Seat> {
             List<SeatVo> soldSeatVoList = seatMap.get(SellStatus.SOLD.getCode());
             if (CollectionUtil.isNotEmpty(noSoldSeatVoList)) {
                 redisCache.putHash(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SEAT_NO_SOLD_RESOLUTION_HASH, 
-                                programId,ticketCategoryId,0),noSoldSeatVoList.stream()
+                                programId,ticketCategoryId,shardId),noSoldSeatVoList.stream()
                                 .collect(Collectors.toMap(s -> String.valueOf(s.getId()),s -> s,(v1,v2) -> v2))
                         ,expireTime, timeUnit);
             }
             if (CollectionUtil.isNotEmpty(lockSeatVoList)) {
                 redisCache.putHash(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SEAT_LOCK_RESOLUTION_HASH, 
-                                programId,ticketCategoryId,0),lockSeatVoList.stream()
+                                programId,ticketCategoryId,shardId),lockSeatVoList.stream()
                                 .collect(Collectors.toMap(s -> String.valueOf(s.getId()),s -> s,(v1,v2) -> v2))
                         ,expireTime, timeUnit);
             }
             if (CollectionUtil.isNotEmpty(soldSeatVoList)) {
                 redisCache.putHash(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SEAT_SOLD_RESOLUTION_HASH, 
-                                programId,ticketCategoryId,0)
+                                programId,ticketCategoryId,shardId)
                         ,soldSeatVoList.stream()
                                 .collect(Collectors.toMap(s -> String.valueOf(s.getId()),s -> s,(v1,v2) -> v2))
                         ,expireTime, timeUnit);
@@ -158,13 +163,17 @@ public class SeatService extends ServiceImpl<SeatMapper, Seat> {
     }
     
     public List<SeatVo> getSeatVoListByCacheResolution(Long programId,Long ticketCategoryId){
+        return getSeatVoListByCacheResolution(programId, ticketCategoryId, 0);
+    }
+    
+    public List<SeatVo> getSeatVoListByCacheResolution(Long programId,Long ticketCategoryId, Integer shardId){
         List<String> keys = new ArrayList<>(4);
         keys.add(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SEAT_NO_SOLD_RESOLUTION_HASH,
-                programId, ticketCategoryId, 0).getRelKey());
+                programId, ticketCategoryId, shardId).getRelKey());
         keys.add(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SEAT_LOCK_RESOLUTION_HASH,
-                programId, ticketCategoryId, 0).getRelKey());
+                programId, ticketCategoryId, shardId).getRelKey());
         keys.add(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SEAT_SOLD_RESOLUTION_HASH,
-                programId, ticketCategoryId, 0).getRelKey());
+                programId, ticketCategoryId, shardId).getRelKey());
         return programSeatCacheData.getData(keys, new String[]{});
     }
     
