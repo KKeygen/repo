@@ -194,9 +194,9 @@ public class ProgramOrderService {
                 getTicketCategoryList(programOrderCreateDto,programShowTime.getShowTime());
         for (TicketCategoryVo ticketCategory : getTicketCategoryList) {
             seatService.selectSeatResolution(programOrderCreateDto.getProgramId(), ticketCategory.getId(),
-                            DateUtils.countBetweenSecond(DateUtils.now(), programShowTime.getShowTime()), TimeUnit.SECONDS);
+                            DateUtils.countBetweenSecond(DateUtils.now(), programShowTime.getShowTime()), TimeUnit.SECONDS, shardId);
             ticketCategoryService.getRedisRemainNumberResolution(
-                    programOrderCreateDto.getProgramId(),ticketCategory.getId());
+                    programOrderCreateDto.getProgramId(),ticketCategory.getId(), shardId);
         }
         Long programId = programOrderCreateDto.getProgramId();
         List<SeatDto> seatDtoList = programOrderCreateDto.getSeatDtoList();

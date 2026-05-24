@@ -123,7 +123,8 @@ public class SeatService extends ServiceImpl<SeatMapper, Seat> {
             }
             LambdaQueryWrapper<Seat> seatLambdaQueryWrapper =
                     Wrappers.lambdaQuery(Seat.class).eq(Seat::getProgramId, programId)
-                            .eq(Seat::getTicketCategoryId,ticketCategoryId);
+                            .eq(Seat::getTicketCategoryId,ticketCategoryId)
+                            .eq(Seat::getShardId, shardId);
             List<Seat> seats = seatMapper.selectList(seatLambdaQueryWrapper);
             for (Seat seat : seats) {
                 SeatVo seatVo = new SeatVo();
@@ -222,6 +223,7 @@ public class SeatService extends ServiceImpl<SeatMapper, Seat> {
         
         
         int rowIndex = 0;
+        int seatCounter = 0;
         for (SeatBatchRelateInfoAddDto seatBatchRelateInfoAddDto : seatBatchRelateInfoAddDtoList) {
             Long ticketCategoryId = seatBatchRelateInfoAddDto.getTicketCategoryId();
             BigDecimal price = seatBatchRelateInfoAddDto.getPrice();
@@ -240,11 +242,12 @@ public class SeatService extends ServiceImpl<SeatMapper, Seat> {
                     seat.setTicketCategoryId(ticketCategoryId);
                     seat.setRowCode(rowIndex);
                     seat.setColCode(j);
+                    seat.setShardId(seatCounter % 10);
                     seat.setSeatType(1);
                     seat.setPrice(price);
                     seat.setSellStatus(SellStatus.NO_SOLD.getCode());
-                    seat.setShardId(rowIndex % 10);
                     seatMapper.insert(seat);
+                    seatCounter++;
                 }
                 remaining -= colsInThisRow;
             }
