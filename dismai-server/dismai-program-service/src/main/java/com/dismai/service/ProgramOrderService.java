@@ -34,6 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import com.dismai.redis.RedisCache;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -47,6 +48,8 @@ import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import com.dismai.redis.RedisCache;
 
 import static com.dismai.service.constant.ProgramOrderConstant.ORDER_TABLE_COUNT;
 
@@ -85,7 +88,7 @@ public class ProgramOrderService {
     private SeatService seatService;
     
     @Autowired
-    private StringRedisTemplate stringRedisTemplate;
+    private RedisCache redisCache;
     
     public List<TicketCategoryVo> getTicketCategoryList(ProgramOrderCreateDto programOrderCreateDto, Date showTime){
         List<TicketCategoryVo> getTicketCategoryVoList = new ArrayList<>();
@@ -191,8 +194,10 @@ public class ProgramOrderService {
         if (tcId != null) {
             String totalKey = RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_TICKET_TOTAL_REMAIN,
                     programOrderCreateDto.getProgramId(), tcId).getRelKey();
-            String remain = stringRedisTemplate.opsForValue().get(totalKey);
-            if (remain != null && Long.parseLong(remain) <= 0) {
+            Long remain = redisCache.get(RedisKeyBuild.createRedisKey(
+                    RedisKeyManage.PROGRAM_TICKET_TOTAL_REMAIN,
+                    programOrderCreateDto.getProgramId(), tcId), Long.class);
+            if (remain != null && remain <= 0) {
                 throw new DismaiFrameException(BaseCode.TICKET_REMAIN_NUMBER_NOT_SUFFICIENT);
             }
         }
