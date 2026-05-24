@@ -11,10 +11,13 @@ import com.dismai.dto.TicketCategoryAddDto;
 import com.dismai.dto.TicketCategoryDto;
 import com.dismai.dto.TicketCategoryListByProgramDto;
 import com.dismai.entity.Program;
+import com.dismai.entity.Seat;
 import com.dismai.entity.TicketCategory;
 import com.dismai.enums.BaseCode;
+import com.dismai.enums.SellStatus;
 import com.dismai.exception.DismaiFrameException;
 import com.dismai.mapper.ProgramMapper;
+import com.dismai.mapper.SeatMapper;
 import com.dismai.mapper.TicketCategoryMapper;
 import com.dismai.redis.RedisCache;
 import com.dismai.redis.RedisKeyBuild;
@@ -32,6 +35,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -56,6 +60,8 @@ public class TicketCategoryService extends ServiceImpl<TicketCategoryMapper, Tic
     @Autowired
     private TicketCategoryMapper ticketCategoryMapper;
     
+    @Autowired
+    private SeatMapper seatMapper;
     @Autowired
     private ServiceLockTool serviceLockTool;
     
@@ -139,11 +145,14 @@ public class TicketCategoryService extends ServiceImpl<TicketCategoryMapper, Tic
             if (CollectionUtil.isNotEmpty(ticketCategoryRemainNumber)) {
                 return ticketCategoryRemainNumber;
             }
-            LambdaQueryWrapper<TicketCategory> ticketCategoryLambdaQueryWrapper = Wrappers.lambdaQuery(TicketCategory.class)
-                    .eq(TicketCategory::getProgramId, programId).eq(TicketCategory::getId,ticketCategoryId);
-            List<TicketCategory> ticketCategoryList = ticketCategoryMapper.selectList(ticketCategoryLambdaQueryWrapper);
-            Map<String, Long> map = ticketCategoryList.stream().collect(Collectors.toMap(t -> String.valueOf(t.getId()),
-                    TicketCategory::getRemainNumber, (v1, v2) -> v2));
+            LambdaQueryWrapper<Seat> seatWrapper = Wrappers.lambdaQuery(Seat.class)
+                    .eq(Seat::getProgramId, programId)
+                    .eq(Seat::getTicketCategoryId, ticketCategoryId)
+                    .eq(Seat::getShardId, shardId)
+                    .eq(Seat::getSellStatus, SellStatus.NO_SOLD.getCode());
+            long remainCount = seatMapper.selectCount(seatWrapper);
+            Map<String, Long> map = new HashMap<>();
+            map.put(String.valueOf(ticketCategoryId), remainCount);
             redisCache.putHash(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_TICKET_REMAIN_NUMBER_HASH_RESOLUTION,
                     programId,ticketCategoryId,shardId),map);
             return map;
