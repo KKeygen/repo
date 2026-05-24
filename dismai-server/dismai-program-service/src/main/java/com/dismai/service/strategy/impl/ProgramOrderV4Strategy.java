@@ -37,7 +37,7 @@ public class ProgramOrderV4Strategy implements ProgramOrderStrategy {
     @Override
     public String createOrder(ProgramOrderCreateDto programOrderCreateDto) {
         compositeContainer.execute(CompositeCheckType.PROGRAM_ORDER_CREATE_CHECK.getValue(),programOrderCreateDto);
-        final int shardId = ThreadLocalRandom.current().nextInt(10);
+        final int shardId = 0; // TODO: random shard after warmup aligned
         String lockKey = StrUtil.join("-", PROGRAM_ORDER_CREATE_V4,
                 programOrderCreateDto.getProgramId(), programOrderCreateDto.getTicketCategoryId(), shardId);
         ReentrantLock lock = localLockCache.getLock(lockKey, false);
