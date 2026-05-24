@@ -25,19 +25,23 @@ import com.dismai.redis.RedisKeyBuild;
 import com.dismai.service.lua.ProgramSeatCacheData;
 import com.dismai.servicelock.LockType;
 import com.dismai.servicelock.annotion.ServiceLock;
+import com.dismai.threadlocal.BaseParameterHolder;
 import com.dismai.util.DateUtils;
 import com.dismai.util.ServiceLockTool;
+import com.dismai.util.StringUtil;
 import com.dismai.vo.ProgramVo;
 import com.dismai.vo.SeatRelateInfoVo;
 import com.dismai.vo.SeatVo;
 import com.dismai.vo.TicketCategoryVo;
 import org.redisson.api.RLock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +49,7 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.dismai.constant.Constant.USER_ID;
 import static com.dismai.core.DistributedLockConstants.GET_SEAT_LOCK;
 import static com.dismai.core.DistributedLockConstants.SEAT_LOCK;
 
@@ -74,6 +79,9 @@ public class SeatService extends ServiceImpl<SeatMapper, Seat> {
     
     @Autowired
     private ProgramSeatCacheData programSeatCacheData;
+    
+    @Value("${admin.user.ids:}")
+    private String adminUserIds;
     
     /**
      * 添加座位
@@ -179,8 +187,12 @@ public class SeatService extends ServiceImpl<SeatMapper, Seat> {
                     DateUtils.countBetweenSecond(DateUtils.now(), programShowTime.getShowTime()), TimeUnit.SECONDS));
         }
         
+        
         if (programVo.getPermitChooseSeat().equals(BusinessStatus.NO.getCode())) {
-            throw new DismaiFrameException(BaseCode.PROGRAM_NOT_ALLOW_CHOOSE_SEAT);
+            String userId = BaseParameterHolder.getParameter(USER_ID);
+            if (StringUtil.isEmpty(userId) || !Arrays.asList(adminUserIds.split(",")).contains(userId)) {
+                throw new DismaiFrameException(BaseCode.PROGRAM_NOT_ALLOW_CHOOSE_SEAT);
+            }
         }
         
         Map<String, List<SeatVo>> seatVoMap =
