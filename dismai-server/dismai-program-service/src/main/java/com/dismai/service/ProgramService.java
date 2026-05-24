@@ -555,6 +555,9 @@ public class ProgramService extends ServiceImpl<ProgramMapper, Program> {
         ProgramShowTime programShowTime =
                 programShowTimeService.selectProgramShowTimeByProgramIdMultipleCache(programGetDto.getId());
         
+        log.info("getDetailV2: programId={}, showTime={}", 
+                programGetDto.getId(), programShowTime == null ? "NULL" : programShowTime.getShowTime());
+        
         ProgramVo programVo = programService.getByIdMultipleCache(programGetDto.getId(),programShowTime.getShowTime());
         
         programVo.setShowTime(programShowTime.getShowTime());
@@ -594,8 +597,10 @@ public class ProgramService extends ServiceImpl<ProgramMapper, Program> {
         return localCacheProgram.getCache(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM, programId).getRelKey(),
                 key -> {
                     log.info("查询节目详情 从本地缓存没有查询到 节目id : {}",programId);
-                    ProgramVo programVo = getById(programId,
-                            Math.max(1L, DateUtils.countBetweenSecond(DateUtils.now(), showTime)),
+                    long expireSec = DateUtils.countBetweenSecond(DateUtils.now(), showTime);
+                    log.info("getByIdMultipleCache: programId={}, showTime={}, countBetweenSecond={}", 
+                            programId, showTime, expireSec);
+                    ProgramVo programVo = getById(programId, expireSec,
                             TimeUnit.SECONDS);
                     programVo.setShowTime(showTime);
                     return programVo;
@@ -644,7 +649,7 @@ public class ProgramService extends ServiceImpl<ProgramMapper, Program> {
             return redisCache.get(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM,programId)
                     ,ProgramVo.class,
                     () -> createProgramVo(programId)
-                    ,Math.max(1L, expireTime),
+                    ,expireTime,
                     timeUnit);
         }finally {
             lock.unlock();
