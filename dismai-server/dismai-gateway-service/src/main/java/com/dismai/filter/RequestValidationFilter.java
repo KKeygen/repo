@@ -243,15 +243,19 @@ public class RequestValidationFilter implements GlobalFilter, Ordered {
         if (StringUtil.isEmpty(userId)) {
             token = request.getHeaders().getFirst(TOKEN);
             if (StringUtil.isNotEmpty(token)) {
-                code = StringUtil.isNotEmpty(code) ? code : String.valueOf(bodyContent.get(CODE));
-                if (StringUtil.isNotEmpty(code)) {
-                    try {
-                        GetChannelDataVo channelDataVo = channelDataService.getChannelDataByCode(code);
-                        UserVo userVo = tokenService.getUser(token, code, channelDataVo.getTokenSecret());
-                        userId = userVo.getId();
-                    } catch (Exception e) {
-                        log.warn("no_verify mode token parse failed for url {}: {}", url, e.getMessage());
-                    }
+                String bodyCode = String.valueOf(bodyContent.get(CODE));
+                if (StringUtil.isNotEmpty(bodyCode) && !"null".equals(bodyCode) && !"null".equals(code)) {
+                    code = bodyCode;
+                }
+                if (StringUtil.isEmpty(code)) {
+                    code = "0001";
+                }
+                try {
+                    GetChannelDataVo channelDataVo = channelDataService.getChannelDataByCode(code);
+                    UserVo userVo = tokenService.getUser(token, code, channelDataVo.getTokenSecret());
+                    userId = userVo.getId();
+                } catch (Exception e) {
+                    log.warn("no_verify mode token parse failed for url {}: {}", url, e.getMessage());
                 }
             }
         }
