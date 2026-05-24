@@ -115,6 +115,9 @@ delay:
     corePoolSize: 1
     maximumPoolSize: 1
     isolationRegionCount: 4
+admin:
+  user:
+    ids: 2180375160387821569
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
