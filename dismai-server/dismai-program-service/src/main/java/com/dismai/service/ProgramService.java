@@ -509,35 +509,6 @@ public class ProgramService extends ServiceImpl<ProgramMapper, Program> {
         return getDetailV2(programGetDto);
     }
     
-    public ProgramVo detailV1(ProgramGetDto programGetDto) {
-        checkProgramExistWithBloomFallback(programGetDto);
-        return getDetail(programGetDto);
-    }
-    
-    public ProgramVo detailV2(ProgramGetDto programGetDto) {
-        checkProgramExistWithBloomFallback(programGetDto);
-        return getDetailV2(programGetDto);
-    }
-    
-    /**
-     * 先过布隆过滤器，不命中则回源DB确认
-     */
-    private void checkProgramExistWithBloomFallback(ProgramGetDto programGetDto) {
-        try {
-            compositeContainer.execute(CompositeCheckType.PROGRAM_DETAIL_CHECK.getValue(), programGetDto);
-        } catch (DismaiFrameException e) {
-            if (!BaseCode.PROGRAM_NOT_EXIST.getCode().equals(e.getCode())) {
-                throw e;
-            }
-            Program program = programMapper.selectById(programGetDto.getId());
-            if (program == null || !BusinessStatus.YES.getCode().equals(program.getProgramStatus())) {
-                throw e;
-            }
-            bloomFilterHandler.add(String.valueOf(programGetDto.getId()));
-            log.info("Bloom filter miss repaired for program {}", programGetDto.getId());
-        }
-    }
-    
     /**
      * 查询节目详情执行
      * @param programGetDto 查询节目数据的入参
