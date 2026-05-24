@@ -183,8 +183,35 @@ public class ProgramOrderService {
     }
 
     public String createNewAsync(ProgramOrderCreateDto programOrderCreateDto, int shardId) {
+        // Quick pre-check: try other shards if current one is exhausted
+        shardId = findAvailableShard(programOrderCreateDto.getProgramId(), 
+                programOrderCreateDto.getTicketCategoryId(), shardId);
         List<SeatVo> purchaseSeatList = createOrderOperateProgramCacheResolution(programOrderCreateDto, shardId);
         return doCreateV2(programOrderCreateDto,purchaseSeatList);
+    }
+    
+    /**
+     * Quick HGET on remain number, retry other shards if exhausted
+     */
+    private int findAvailableShard(Long programId, Long ticketCategoryId, int startShard) {
+        for (int i = 0; i < 10; i++) {
+            int shard = (startShard + i) % 10;
+            Map<String, Long> remainMap = redisCache.getAllMapForHash(
+                    RedisKeyBuild.createRedisKey(
+                            RedisKeyManage.PROGRAM_TICKET_REMAIN_NUMBER_HASH_RESOLUTION,
+                            programId, ticketCategoryId, shard), Long.class);
+            if (remainMap == null || remainMap.isEmpty()) {
+                continue; // not initialized, assume has seats
+            }
+            Long remain = remainMap.get(String.valueOf(ticketCategoryId));
+            if (remain == null || remain > 0) {
+                if (i > 0) {
+                    log.info("Shard switch: {} -> {} for program {}", startShard, shard, programId);
+                }
+                return shard;
+            }
+        }
+        throw new DismaiFrameException(BaseCode.TICKET_REMAIN_NUMBER_NOT_SUFFICIENT);
     }
     
     public List<SeatVo> createOrderOperateProgramCacheResolution(ProgramOrderCreateDto programOrderCreateDto, int shardId){
