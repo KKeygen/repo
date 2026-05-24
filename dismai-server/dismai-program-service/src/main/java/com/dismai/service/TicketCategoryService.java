@@ -117,20 +117,25 @@ public class TicketCategoryService extends ServiceImpl<TicketCategoryMapper, Tic
     
     @ServiceLock(lockType= LockType.Read,name = REMAIN_NUMBER_LOCK,keys = {"#programId","#ticketCategoryId"})
     public Map<String, Long> getRedisRemainNumberResolution(Long programId,Long ticketCategoryId){
+        return getRedisRemainNumberResolution(programId, ticketCategoryId, 0);
+    }
+    
+    @ServiceLock(lockType= LockType.Read,name = REMAIN_NUMBER_LOCK,keys = {"#programId","#ticketCategoryId","#shardId"})
+    public Map<String, Long> getRedisRemainNumberResolution(Long programId,Long ticketCategoryId, Integer shardId){
         Map<String, Long> ticketCategoryRemainNumber =
                 redisCache.getAllMapForHash(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_TICKET_REMAIN_NUMBER_HASH_RESOLUTION,
-                        programId,ticketCategoryId,0), Long.class);
+                        programId,ticketCategoryId,shardId), Long.class);
         
         if (CollectionUtil.isNotEmpty(ticketCategoryRemainNumber)) {
             return ticketCategoryRemainNumber;
         }
         RLock lock = serviceLockTool.getLock(LockType.Reentrant, GET_REMAIN_NUMBER_LOCK,
-                new String[]{String.valueOf(programId),String.valueOf(ticketCategoryId)});
+                new String[]{String.valueOf(programId),String.valueOf(ticketCategoryId),String.valueOf(shardId)});
         lock.lock();
         try {
             ticketCategoryRemainNumber =
                     redisCache.getAllMapForHash(RedisKeyBuild.createRedisKey(
-                            RedisKeyManage.PROGRAM_TICKET_REMAIN_NUMBER_HASH_RESOLUTION, programId,ticketCategoryId,0), Long.class);
+                            RedisKeyManage.PROGRAM_TICKET_REMAIN_NUMBER_HASH_RESOLUTION, programId,ticketCategoryId,shardId), Long.class);
             if (CollectionUtil.isNotEmpty(ticketCategoryRemainNumber)) {
                 return ticketCategoryRemainNumber;
             }
@@ -140,7 +145,7 @@ public class TicketCategoryService extends ServiceImpl<TicketCategoryMapper, Tic
             Map<String, Long> map = ticketCategoryList.stream().collect(Collectors.toMap(t -> String.valueOf(t.getId()),
                     TicketCategory::getRemainNumber, (v1, v2) -> v2));
             redisCache.putHash(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_TICKET_REMAIN_NUMBER_HASH_RESOLUTION,
-                    programId,ticketCategoryId,0),map);
+                    programId,ticketCategoryId,shardId),map);
             return map;
         }finally {
             lock.unlock();
