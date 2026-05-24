@@ -495,28 +495,37 @@ public class ProgramService extends ServiceImpl<ProgramMapper, Program> {
      * @return 执行后的结果
      * */
     public ProgramVo detail(ProgramGetDto programGetDto) {
-        compositeContainer.execute(CompositeCheckType.PROGRAM_DETAIL_CHECK.getValue(),programGetDto);
+        checkProgramExistWithBloomFallback(programGetDto);
         return getDetail(programGetDto);
     }
     
-    /**
-     * 查询节目详情V1
-     * @param programGetDto 查询节目数据的入参
-     * @return 执行后的结果
-     * */
     public ProgramVo detailV1(ProgramGetDto programGetDto) {
-        compositeContainer.execute(CompositeCheckType.PROGRAM_DETAIL_CHECK.getValue(),programGetDto);
+        checkProgramExistWithBloomFallback(programGetDto);
         return getDetail(programGetDto);
     }
     
-    /**
-     * 查询节目详情V2
-     * @param programGetDto 查询节目数据的入参
-     * @return 执行后的结果
-     * */
     public ProgramVo detailV2(ProgramGetDto programGetDto) {
-        compositeContainer.execute(CompositeCheckType.PROGRAM_DETAIL_CHECK.getValue(),programGetDto);
+        checkProgramExistWithBloomFallback(programGetDto);
         return getDetailV2(programGetDto);
+    }
+    
+    /**
+     * 先过布隆过滤器，不命中则回源DB确认
+     */
+    private void checkProgramExistWithBloomFallback(ProgramGetDto programGetDto) {
+        try {
+            compositeContainer.execute(CompositeCheckType.PROGRAM_DETAIL_CHECK.getValue(), programGetDto);
+        } catch (DismaiFrameException e) {
+            if (!BaseCode.PROGRAM_NOT_EXIST.getCode().equals(e.getCode())) {
+                throw e;
+            }
+            Program program = programMapper.selectById(programGetDto.getId());
+            if (program == null || !BusinessStatus.YES.getCode().equals(program.getProgramStatus())) {
+                throw e;
+            }
+            bloomFilterHandler.add(String.valueOf(programGetDto.getId()));
+            log.info("Bloom filter miss repaired for program {}", programGetDto.getId());
+        }
     }
     
     /**
