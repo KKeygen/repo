@@ -594,7 +594,8 @@ public class ProgramService extends ServiceImpl<ProgramMapper, Program> {
         return localCacheProgram.getCache(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM, programId).getRelKey(),
                 key -> {
                     log.info("查询节目详情 从本地缓存没有查询到 节目id : {}",programId);
-                    ProgramVo programVo = getById(programId,DateUtils.countBetweenSecond(DateUtils.now(),showTime),
+                    ProgramVo programVo = getById(programId,
+                            Math.max(1L, DateUtils.countBetweenSecond(DateUtils.now(), showTime)),
                             TimeUnit.SECONDS);
                     programVo.setShowTime(showTime);
                     return programVo;
@@ -643,7 +644,7 @@ public class ProgramService extends ServiceImpl<ProgramMapper, Program> {
             return redisCache.get(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM,programId)
                     ,ProgramVo.class,
                     () -> createProgramVo(programId)
-                    ,expireTime,
+                    ,Math.max(1L, expireTime),
                     timeUnit);
         }finally {
             lock.unlock();
