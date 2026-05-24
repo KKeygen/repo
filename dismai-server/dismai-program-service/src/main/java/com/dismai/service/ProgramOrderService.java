@@ -215,7 +215,7 @@ public class ProgramOrderService {
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("programTicketRemainNumberHashKey",RedisKeyBuild.createRedisKey(
                         RedisKeyManage.PROGRAM_TICKET_REMAIN_NUMBER_HASH_RESOLUTION, programId, ticketCategoryId).getRelKey());
-                jsonObject.put("ticketCategoryId",ticketCategoryId);
+                jsonObject.put("ticketCategoryId",String.valueOf(ticketCategoryId));
                 jsonObject.put("ticketCount",ticketCount);
                 jsonArray.add(jsonObject);
                 
@@ -232,7 +232,7 @@ public class ProgramOrderService {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("programTicketRemainNumberHashKey",RedisKeyBuild.createRedisKey(
                     RedisKeyManage.PROGRAM_TICKET_REMAIN_NUMBER_HASH_RESOLUTION, programId, ticketCategoryId).getRelKey());
-            jsonObject.put("ticketCategoryId",ticketCategoryId);
+            jsonObject.put("ticketCategoryId",String.valueOf(ticketCategoryId));
             jsonObject.put("ticketCount",ticketCount);
             jsonObject.put("seatNoSoldHashKey",RedisKeyBuild.createRedisKey(
                     RedisKeyManage.PROGRAM_SEAT_NO_SOLD_RESOLUTION_HASH, programId, ticketCategoryId).getRelKey());
