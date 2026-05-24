@@ -132,19 +132,19 @@ public class SeatService extends ServiceImpl<SeatMapper, Seat> {
             List<SeatVo> soldSeatVoList = seatMap.get(SellStatus.SOLD.getCode());
             if (CollectionUtil.isNotEmpty(noSoldSeatVoList)) {
                 redisCache.putHash(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SEAT_NO_SOLD_RESOLUTION_HASH, 
-                                programId,ticketCategoryId),noSoldSeatVoList.stream()
+                                programId,ticketCategoryId,0),noSoldSeatVoList.stream()
                                 .collect(Collectors.toMap(s -> String.valueOf(s.getId()),s -> s,(v1,v2) -> v2))
                         ,expireTime, timeUnit);
             }
             if (CollectionUtil.isNotEmpty(lockSeatVoList)) {
                 redisCache.putHash(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SEAT_LOCK_RESOLUTION_HASH, 
-                                programId,ticketCategoryId),lockSeatVoList.stream()
+                                programId,ticketCategoryId,0),lockSeatVoList.stream()
                                 .collect(Collectors.toMap(s -> String.valueOf(s.getId()),s -> s,(v1,v2) -> v2))
                         ,expireTime, timeUnit);
             }
             if (CollectionUtil.isNotEmpty(soldSeatVoList)) {
                 redisCache.putHash(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SEAT_SOLD_RESOLUTION_HASH, 
-                                programId,ticketCategoryId)
+                                programId,ticketCategoryId,0)
                         ,soldSeatVoList.stream()
                                 .collect(Collectors.toMap(s -> String.valueOf(s.getId()),s -> s,(v1,v2) -> v2))
                         ,expireTime, timeUnit);
@@ -160,11 +160,11 @@ public class SeatService extends ServiceImpl<SeatMapper, Seat> {
     public List<SeatVo> getSeatVoListByCacheResolution(Long programId,Long ticketCategoryId){
         List<String> keys = new ArrayList<>(4);
         keys.add(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SEAT_NO_SOLD_RESOLUTION_HASH,
-                programId, ticketCategoryId).getRelKey());
+                programId, ticketCategoryId, 0).getRelKey());
         keys.add(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SEAT_LOCK_RESOLUTION_HASH,
-                programId, ticketCategoryId).getRelKey());
+                programId, ticketCategoryId, 0).getRelKey());
         keys.add(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SEAT_SOLD_RESOLUTION_HASH,
-                programId, ticketCategoryId).getRelKey());
+                programId, ticketCategoryId, 0).getRelKey());
         return programSeatCacheData.getData(keys, new String[]{});
     }
     
@@ -234,6 +234,7 @@ public class SeatService extends ServiceImpl<SeatMapper, Seat> {
                     seat.setSeatType(1);
                     seat.setPrice(price);
                     seat.setSellStatus(SellStatus.NO_SOLD.getCode());
+                    seat.setShardId(rowIndex % 10);
                     seatMapper.insert(seat);
                 }
                 remaining -= colsInThisRow;

@@ -57,4 +57,9 @@ public class Seat extends BaseTableData implements Serializable {
      * 1未售卖 2锁定 3已售卖
      */
     private Integer sellStatus;
+
+    /**
+     * 库存分片id
+     */
+    private Integer shardId;
 }

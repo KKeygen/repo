@@ -147,10 +147,10 @@ for index,ticket_count in ipairs(ticket_count_list) do
     redis.call('hincrby',ticket_remain_number_hash_key,ticket_category_id,"-" .. count)
 end
 for ticket_category_id, seat_id_array in pairs(seat_id_list) do
-    redis.call('hdel',string.format(placeholder_seat_no_sold_hash_key,program_id,tostring(ticket_category_id)),unpack(seat_id_array))
+        redis.call('hdel',string.format(placeholder_seat_no_sold_hash_key,program_id,tostring(ticket_category_id),KEYS[5]),unpack(seat_id_array))
 end
 for ticket_category_id, seat_data_array in pairs(seat_data_list) do
-    redis.call('hmset',string.format(placeholder_seat_lock_hash_key,program_id,tostring(ticket_category_id)),unpack(seat_data_array))    
+        redis.call('hmset',string.format(placeholder_seat_lock_hash_key,program_id,tostring(ticket_category_id),KEYS[5]),unpack(seat_data_array))
 end
 
 if ARGV[3] and ARGV[3] ~= "" then
