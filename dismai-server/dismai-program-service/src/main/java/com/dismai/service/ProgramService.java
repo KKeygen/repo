@@ -495,8 +495,18 @@ public class ProgramService extends ServiceImpl<ProgramMapper, Program> {
      * @return 执行后的结果
      * */
     public ProgramVo detail(ProgramGetDto programGetDto) {
-        checkProgramExistWithBloomFallback(programGetDto);
+        compositeContainer.execute(CompositeCheckType.PROGRAM_DETAIL_CHECK.getValue(),programGetDto);
         return getDetail(programGetDto);
+    }
+    
+    public ProgramVo detailV1(ProgramGetDto programGetDto) {
+        compositeContainer.execute(CompositeCheckType.PROGRAM_DETAIL_CHECK.getValue(),programGetDto);
+        return getDetail(programGetDto);
+    }
+    
+    public ProgramVo detailV2(ProgramGetDto programGetDto) {
+        compositeContainer.execute(CompositeCheckType.PROGRAM_DETAIL_CHECK.getValue(),programGetDto);
+        return getDetailV2(programGetDto);
     }
     
     public ProgramVo detailV1(ProgramGetDto programGetDto) {
