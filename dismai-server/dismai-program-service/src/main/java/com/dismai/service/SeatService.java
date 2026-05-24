@@ -36,6 +36,7 @@ import com.dismai.vo.TicketCategoryVo;
 import org.redisson.api.RLock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -62,6 +63,8 @@ public class SeatService extends ServiceImpl<SeatMapper, Seat> {
     @Autowired
     private RedisCache redisCache;
     
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private SeatMapper seatMapper;
     
@@ -251,6 +254,11 @@ public class SeatService extends ServiceImpl<SeatMapper, Seat> {
                 }
                 remaining -= colsInThisRow;
             }
+        }
+        for (SeatBatchRelateInfoAddDto dto : seatBatchRelateInfoAddDtoList) {
+            String totalKey = RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_TICKET_TOTAL_REMAIN,
+                    programId, dto.getTicketCategoryId()).getRelKey();
+            stringRedisTemplate.opsForValue().increment(totalKey, dto.getCount());
         }
         
         return true;
