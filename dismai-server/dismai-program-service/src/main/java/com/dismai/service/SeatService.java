@@ -219,11 +219,13 @@ public class SeatService extends ServiceImpl<SeatMapper, Seat> {
             Integer count = seatBatchRelateInfoAddDto.getCount();
             
             int colCount = 10;
-            int rowCount = count / colCount;
+            int rowCount = (count + colCount - 1) / colCount;
+            int remaining = count;
             
-            for (int i = 1;i<= rowCount;i++) {
+            for (int i = 1; i <= rowCount; i++) {
                 rowIndex++;
-                for (int j = 1;j<=colCount;j++) {
+                int colsInThisRow = Math.min(colCount, remaining);
+                for (int j = 1; j <= colsInThisRow; j++) {
                     Seat seat = new Seat();
                     seat.setProgramId(programId);
                     seat.setTicketCategoryId(ticketCategoryId);
@@ -234,6 +236,7 @@ public class SeatService extends ServiceImpl<SeatMapper, Seat> {
                     seat.setSellStatus(SellStatus.NO_SOLD.getCode());
                     seatMapper.insert(seat);
                 }
+                remaining -= colsInThisRow;
             }
         }
         
