@@ -2,7 +2,7 @@
 
 DROP TABLE IF EXISTS `d_order_0`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `d_order_0` (
   `id` bigint(20) NOT NULL COMMENT '主键id',
   `order_number` bigint(20) NOT NULL COMMENT '订单编号',
@@ -28,7 +28,7 @@ CREATE TABLE `d_order_0` (
   UNIQUE KEY `d_order_order_number_IDX` (`order_number`) USING BTREE,
   KEY `user_id_IDX` (`user_id`) USING BTREE,
   KEY `program_id_IDX` (`program_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='订单表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订单表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -46,7 +46,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `d_order_1`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `d_order_1` (
   `id` bigint(20) NOT NULL COMMENT '主键id',
   `order_number` bigint(20) NOT NULL COMMENT '订单编号',
@@ -72,7 +72,7 @@ CREATE TABLE `d_order_1` (
   UNIQUE KEY `d_order_order_number_IDX` (`order_number`) USING BTREE,
   KEY `user_id_IDX` (`user_id`) USING BTREE,
   KEY `program_id_IDX` (`program_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='订单表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订单表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -90,7 +90,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `d_order_2`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `d_order_2` (
   `id` bigint(20) NOT NULL COMMENT '主键id',
   `order_number` bigint(20) NOT NULL COMMENT '订单编号',
@@ -116,7 +116,7 @@ CREATE TABLE `d_order_2` (
   UNIQUE KEY `d_order_order_number_IDX` (`order_number`) USING BTREE,
   KEY `user_id_IDX` (`user_id`) USING BTREE,
   KEY `program_id_IDX` (`program_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='订单表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订单表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -134,7 +134,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `d_order_3`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `d_order_3` (
   `id` bigint(20) NOT NULL COMMENT '主键id',
   `order_number` bigint(20) NOT NULL COMMENT '订单编号',
@@ -160,7 +160,7 @@ CREATE TABLE `d_order_3` (
   UNIQUE KEY `d_order_order_number_IDX` (`order_number`) USING BTREE,
   KEY `user_id_IDX` (`user_id`) USING BTREE,
   KEY `program_id_IDX` (`program_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='订单表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订单表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -182,7 +182,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `d_order_ticket_user_0`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `d_order_ticket_user_0` (
   `id` bigint(20) NOT NULL COMMENT '主键id',
   `order_number` bigint(20) NOT NULL COMMENT '订单编号',
@@ -207,7 +207,7 @@ CREATE TABLE `d_order_ticket_user_0` (
   KEY `d_order_ticket_user_user_id_IDX` (`user_id`) USING BTREE,
   KEY `d_order_ticket_user_ticket_user_id_IDX` (`ticket_user_id`) USING BTREE,
   KEY `d_order_ticket_user_create_order_time_IDX` (`create_order_time`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='购票人订单表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='购票人订单表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -225,7 +225,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `d_order_ticket_user_1`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `d_order_ticket_user_1` (
   `id` bigint(20) NOT NULL COMMENT '主键id',
   `order_number` bigint(20) NOT NULL COMMENT '订单编号',
@@ -250,7 +250,7 @@ CREATE TABLE `d_order_ticket_user_1` (
   KEY `d_order_ticket_user_user_id_IDX` (`user_id`) USING BTREE,
   KEY `d_order_ticket_user_ticket_user_id_IDX` (`ticket_user_id`) USING BTREE,
   KEY `d_order_ticket_user_create_order_time_IDX` (`create_order_time`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='购票人订单表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='购票人订单表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -268,7 +268,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `d_order_ticket_user_2`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `d_order_ticket_user_2` (
   `id` bigint(20) NOT NULL COMMENT '主键id',
   `order_number` bigint(20) NOT NULL COMMENT '订单编号',
@@ -293,7 +293,7 @@ CREATE TABLE `d_order_ticket_user_2` (
   KEY `d_order_ticket_user_user_id_IDX` (`user_id`) USING BTREE,
   KEY `d_order_ticket_user_ticket_user_id_IDX` (`ticket_user_id`) USING BTREE,
   KEY `d_order_ticket_user_create_order_time_IDX` (`create_order_time`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='购票人订单表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='购票人订单表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -311,7 +311,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `d_order_ticket_user_3`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `d_order_ticket_user_3` (
   `id` bigint(20) NOT NULL COMMENT '主键id',
   `order_number` bigint(20) NOT NULL COMMENT '订单编号',
@@ -336,7 +336,7 @@ CREATE TABLE `d_order_ticket_user_3` (
   KEY `d_order_ticket_user_user_id_IDX` (`user_id`) USING BTREE,
   KEY `d_order_ticket_user_ticket_user_id_IDX` (`ticket_user_id`) USING BTREE,
   KEY `d_order_ticket_user_create_order_time_IDX` (`create_order_time`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='购票人订单表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='购票人订单表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
