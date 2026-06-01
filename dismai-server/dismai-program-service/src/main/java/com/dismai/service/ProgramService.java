@@ -7,6 +7,7 @@ import com.baidu.fsg.uid.UidGenerator;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.dismai.BusinessThreadPool;
@@ -44,6 +45,7 @@ import com.dismai.enums.CompositeCheckType;
 import com.dismai.enums.SellStatus;
 import com.dismai.exception.DismaiFrameException;
 import com.dismai.initialize.impl.composite.CompositeContainer;
+import com.dismai.handler.BloomFilterHandler;
 import com.dismai.mapper.ProgramCategoryMapper;
 import com.dismai.mapper.ProgramGroupMapper;
 import com.dismai.mapper.ProgramMapper;
@@ -183,6 +185,9 @@ public class ProgramService extends ServiceImpl<ProgramMapper, Program> {
     
     @Autowired
     private CompositeContainer compositeContainer;
+
+    @Autowired
+    private BloomFilterHandler bloomFilterHandler;
     
     @Autowired
     private TokenExpireManager tokenExpireManager;
@@ -199,20 +204,103 @@ public class ProgramService extends ServiceImpl<ProgramMapper, Program> {
         Program program = new Program();
         BeanUtil.copyProperties(programAddDto,program);
         program.setId(uidGenerator.getUid());
+        program.setProgramGroupId(uidGenerator.getUid());
         programMapper.insert(program);
+        bloomFilterHandler.add(String.valueOf(program.getId()));
+
+        ProgramGroup programGroup = new ProgramGroup();
+        programGroup.setId(program.getProgramGroupId());
+        programGroup.setProgramJson("[]");
+        programGroup.setRecentShowTime(new Date());
+        programGroup.setStatus(1);
+        programGroupMapper.insert(programGroup);
+        
         return program.getId();
     }
     
     /**
      * 搜索的功能
-     * 关于 Elasticsearch 的详细讲解，可到技术文档中进行学习：<a href="https://dismai.example.com/">...</a>
      * @param programSearchDto 搜索节目数据的入参
      * @return 执行后的结果
      * */
     public PageVo<ProgramListVo> search(ProgramSearchDto programSearchDto) {
-        //将入参的参数进行具体的组装
         setQueryTime(programSearchDto);
-        return programEs.search(programSearchDto);
+        try {
+            PageVo<ProgramListVo> pageVo = programEs.search(programSearchDto);
+            if (CollectionUtil.isNotEmpty(pageVo.getList())) {
+                return pageVo;
+            }
+        } catch (Exception e) {
+            log.error("ES search failed, falling back to db", e);
+        }
+        return dbSearch(programSearchDto);
+    }
+
+    private PageVo<ProgramListVo> dbSearch(ProgramSearchDto programSearchDto) {
+        PageVo<ProgramListVo> pageVo = new PageVo<>();
+        LambdaQueryWrapper<Program> programLambdaQueryWrapper = Wrappers.lambdaQuery(Program.class)
+                .eq(Program::getProgramStatus, BusinessStatus.YES.getCode());
+        if (Objects.nonNull(programSearchDto.getAreaId())) {
+            programLambdaQueryWrapper.eq(Program::getAreaId, programSearchDto.getAreaId());
+        }
+        if (Objects.nonNull(programSearchDto.getParentProgramCategoryId())) {
+            programLambdaQueryWrapper.eq(Program::getParentProgramCategoryId, programSearchDto.getParentProgramCategoryId());
+        }
+        if (StringUtil.isNotEmpty(programSearchDto.getContent())) {
+            programLambdaQueryWrapper.and(w -> {
+                w.like(Program::getTitle, programSearchDto.getContent());
+                w.or();
+                w.like(Program::getActor, programSearchDto.getContent());
+            });
+        }
+        if (Objects.nonNull(programSearchDto.getStartDateTime()) && Objects.nonNull(programSearchDto.getEndDateTime())) {
+            programLambdaQueryWrapper.ge(Program::getIssueTime, programSearchDto.getStartDateTime());
+            programLambdaQueryWrapper.le(Program::getIssueTime, programSearchDto.getEndDateTime());
+        }
+        
+        long total = programMapper.selectCount(programLambdaQueryWrapper);
+        if (total == 0) {
+            return pageVo;
+        }
+        
+        switch (programSearchDto.getType()) {
+            case 2:
+                programLambdaQueryWrapper.orderByDesc(Program::getHighHeat);
+                break;
+            case 3:
+                break;
+            default:
+                programLambdaQueryWrapper.orderByDesc(Program::getCreateTime);
+                break;
+        }
+        
+        Page<Program> programPage = Page.of(programSearchDto.getPageNumber(), programSearchDto.getPageSize());
+        Page<Program> pageResult = programMapper.selectPage(programPage, programLambdaQueryWrapper);
+        
+        List<ProgramListVo> voList = new ArrayList<>();
+        List<Long> programIdList = pageResult.getRecords().stream().map(Program::getId).collect(Collectors.toList());
+        if (CollectionUtil.isNotEmpty(programIdList)) {
+            Map<Long, String> programCategoryMap = selectProgramCategoryMap(programIdList);
+            Map<Long, TicketCategoryAggregate> ticketCategorieMap = selectTicketCategorieMap(programIdList);
+            for (Program program : pageResult.getRecords()) {
+                ProgramListVo vo = new ProgramListVo();
+                BeanUtil.copyProperties(program, vo);
+                vo.setProgramCategoryName(programCategoryMap.get(program.getProgramCategoryId()));
+                vo.setParentProgramCategoryName(programCategoryMap.get(program.getParentProgramCategoryId()));
+                TicketCategoryAggregate aggregate = ticketCategorieMap.get(program.getId());
+                if (Objects.nonNull(aggregate)) {
+                    vo.setMinPrice(aggregate.getMinPrice());
+                    vo.setMaxPrice(aggregate.getMaxPrice());
+                }
+                voList.add(vo);
+            }
+        }
+        
+        pageVo.setList(voList);
+        pageVo.setTotalSize(total);
+        pageVo.setPageSize(programSearchDto.getPageSize());
+        pageVo.setPageNum(programSearchDto.getPageNumber());
+        return pageVo;
     }
     
     /**
@@ -411,21 +499,11 @@ public class ProgramService extends ServiceImpl<ProgramMapper, Program> {
         return getDetail(programGetDto);
     }
     
-    /**
-     * 查询节目详情V1
-     * @param programGetDto 查询节目数据的入参
-     * @return 执行后的结果
-     * */
     public ProgramVo detailV1(ProgramGetDto programGetDto) {
         compositeContainer.execute(CompositeCheckType.PROGRAM_DETAIL_CHECK.getValue(),programGetDto);
         return getDetail(programGetDto);
     }
     
-    /**
-     * 查询节目详情V2
-     * @param programGetDto 查询节目数据的入参
-     * @return 执行后的结果
-     * */
     public ProgramVo detailV2(ProgramGetDto programGetDto) {
         compositeContainer.execute(CompositeCheckType.PROGRAM_DETAIL_CHECK.getValue(),programGetDto);
         return getDetailV2(programGetDto);
@@ -477,6 +555,9 @@ public class ProgramService extends ServiceImpl<ProgramMapper, Program> {
         ProgramShowTime programShowTime =
                 programShowTimeService.selectProgramShowTimeByProgramIdMultipleCache(programGetDto.getId());
         
+        log.info("getDetailV2: programId={}, showTime={}", 
+                programGetDto.getId(), programShowTime == null ? "NULL" : programShowTime.getShowTime());
+        
         ProgramVo programVo = programService.getByIdMultipleCache(programGetDto.getId(),programShowTime.getShowTime());
         
         programVo.setShowTime(programShowTime.getShowTime());
@@ -516,7 +597,10 @@ public class ProgramService extends ServiceImpl<ProgramMapper, Program> {
         return localCacheProgram.getCache(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM, programId).getRelKey(),
                 key -> {
                     log.info("查询节目详情 从本地缓存没有查询到 节目id : {}",programId);
-                    ProgramVo programVo = getById(programId,DateUtils.countBetweenSecond(DateUtils.now(),showTime),
+                    long expireSec = DateUtils.countBetweenSecond(DateUtils.now(), showTime);
+                    log.info("getByIdMultipleCache: programId={}, showTime={}, countBetweenSecond={}", 
+                            programId, showTime, expireSec);
+                    ProgramVo programVo = getById(programId, expireSec,
                             TimeUnit.SECONDS);
                     programVo.setShowTime(showTime);
                     return programVo;
@@ -838,11 +922,11 @@ public class ProgramService extends ServiceImpl<ProgramMapper, Program> {
         keys.add(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM,programId).getRelKey());
         keys.add(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_GROUP,program.getProgramGroupId()).getRelKey());
         keys.add(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SHOW_TIME,programId).getRelKey());
-        keys.add(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SEAT_NO_SOLD_RESOLUTION_HASH, programId,"*").getRelKey());
-        keys.add(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SEAT_LOCK_RESOLUTION_HASH, programId,"*").getRelKey());
-        keys.add(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SEAT_SOLD_RESOLUTION_HASH, programId,"*").getRelKey());
+        keys.add(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SEAT_NO_SOLD_RESOLUTION_HASH, programId,"*","*").getRelKey());
+        keys.add(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SEAT_LOCK_RESOLUTION_HASH, programId,"*","*").getRelKey());
+        keys.add(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SEAT_SOLD_RESOLUTION_HASH, programId,"*","*").getRelKey());
         keys.add(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_TICKET_CATEGORY_LIST, programId).getRelKey());
-        keys.add(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_TICKET_REMAIN_NUMBER_HASH_RESOLUTION, programId,"*").getRelKey());
+        keys.add(RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_TICKET_REMAIN_NUMBER_HASH_RESOLUTION, programId,"*","*").getRelKey());
         programDelCacheData.del(keys,new String[]{});
     }
     

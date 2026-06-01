@@ -255,12 +255,15 @@ services:
 
   program:
     <<: *service-base
+    container_name: dismai-program
     build:
       context: .
       dockerfile: Dockerfile
       args:
         SERVICE_NAME: program
         SERVICE_PORT: 6086
+    ports:
+      - "22111:6086"
     environment:
       <<: *common-env
       SPRING_PROFILES_ACTIVE: local

@@ -47,6 +47,40 @@
             <span class="text-muted">当前城市：</span>
             <span class="filters__city-name">{{ appStore.currentCity?.name || '全国' }}</span>
           </div>
+
+          <!-- Time Filter -->
+          <div class="filters__time">
+            <button
+              v-for="t in timeTabs"
+              :key="t.value"
+              class="filters__time-btn"
+              :class="{ 'filters__time-btn--active': timeType === t.value }"
+              @click="selectTime(t.value)"
+            >
+              {{ t.label }}
+            </button>
+          </div>
+
+          <!-- Date Range Picker -->
+          <div v-if="timeType === 5" class="filters__daterange">
+            <input type="date" v-model="dateStart" class="form-input form-input--sm" />
+            <span class="text-muted">至</span>
+            <input type="date" v-model="dateEnd" class="form-input form-input--sm" />
+            <button class="btn btn--sm btn--outline" @click="applyDateRange">确定</button>
+          </div>
+        </div>
+
+        <!-- Sort Tabs -->
+        <div class="sort-tabs child-stagger-5">
+          <button
+            v-for="s in sortTabs"
+            :key="s.value"
+            class="sort-tabs__item"
+            :class="{ 'sort-tabs__item--active': sortType === s.value }"
+            @click="selectSort(s.value)"
+          >
+            {{ s.label }}
+          </button>
         </div>
 
         <!-- Loading -->
@@ -128,6 +162,50 @@ const currentPage = ref(1)
 const totalPages = ref(0)
 const pageSize = 12
 
+const timeType = ref(0)
+const sortType = ref(1)
+const dateStart = ref('')
+const dateEnd = ref('')
+
+const timeTabs = [
+  { label: '全部', value: 0 },
+  { label: '今天', value: 1 },
+  { label: '明天', value: 2 },
+  { label: '一周内', value: 3 },
+  { label: '一个月内', value: 4 },
+  { label: '按日历', value: 5 }
+]
+
+const sortTabs = [
+  { label: '相关度排序', value: 1 },
+  { label: '推荐排序', value: 2 },
+  { label: '最近开场', value: 3 },
+  { label: '最新上架', value: 4 }
+]
+
+const selectTime = (value) => {
+  timeType.value = value
+  if (value !== 5) {
+    dateStart.value = ''
+    dateEnd.value = ''
+  }
+  currentPage.value = 1
+  loadPrograms()
+}
+
+const selectSort = (value) => {
+  sortType.value = value
+  currentPage.value = 1
+  loadPrograms()
+}
+
+const applyDateRange = () => {
+  if (dateStart.value && dateEnd.value) {
+    currentPage.value = 1
+    loadPrograms()
+  }
+}
+
 const visiblePages = computed(() => {
   const pages = []
   const total = totalPages.value
@@ -198,10 +276,17 @@ const loadSubCategories = async (parentId) => {
 const loadPrograms = async () => {
   loading.value = true
   try {
+    const cityId = appStore.currentCity?.id
     const params = {
       pageNumber: currentPage.value,
       pageSize,
-      areaId: appStore.currentCity?.id || 0
+      timeType: timeType.value,
+      type: sortType.value
+    }
+    if (cityId) params.areaId = Number(cityId)
+    if (timeType.value === 5) {
+      params.startDateTime = dateStart.value
+      params.endDateTime = dateEnd.value
     }
 
     if (activeSubCategoryId.value) {

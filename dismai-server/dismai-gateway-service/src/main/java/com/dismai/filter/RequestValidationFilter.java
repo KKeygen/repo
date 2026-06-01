@@ -240,6 +240,25 @@ public class RequestValidationFilter implements GlobalFilter, Ordered {
             
             requestBody = bodyContent.get(BUSINESS_BODY);
         }
+        if (StringUtil.isEmpty(userId)) {
+            token = request.getHeaders().getFirst(TOKEN);
+            if (StringUtil.isNotEmpty(token)) {
+                String bodyCode = String.valueOf(bodyContent.get(CODE));
+                if (StringUtil.isNotEmpty(bodyCode) && !"null".equals(bodyCode) && !"null".equals(code)) {
+                    code = bodyCode;
+                }
+                if (StringUtil.isEmpty(code)) {
+                    code = "0001";
+                }
+                try {
+                    GetChannelDataVo channelDataVo = channelDataService.getChannelDataByCode(code);
+                    UserVo userVo = tokenService.getUser(token, code, channelDataVo.getTokenSecret());
+                    userId = userVo.getId();
+                } catch (Exception e) {
+                    log.warn("no_verify mode token parse failed for url {}: {}", url, e.getMessage());
+                }
+            }
+        }
         apiRestrictService.apiRestrict(userId,url,request);
         Map<String,String> map = new HashMap<>(4);
         map.put(REQUEST_BODY,requestBody);
