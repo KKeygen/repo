@@ -5,7 +5,7 @@
 #
 set -e
 
-MYSQL_CMD="mysql -u root -p${MYSQL_ROOT_PASSWORD}"
+MYSQL_CMD="mysql -u root -p${MYSQL_ROOT_PASSWORD} --default-character-set=utf8mb4"
 SQL_DIR="/docker-entrypoint-initdb.d/sql"
 
 echo "============================================"

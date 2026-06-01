@@ -14,6 +14,8 @@ export const FALLBACK_HOT_CITIES = [
   { id: '6', name: '成都' }
 ]
 
+export const ADMIN_USER_IDS = ['13800138000']
+
 export const FALLBACK_CATEGORIES = [
   { name: '演唱会', id: '' },
   { name: '话剧歌剧', id: '' },

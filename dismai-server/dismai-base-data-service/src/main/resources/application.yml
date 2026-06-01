@@ -1,6 +1,11 @@
 ﻿#服务端口
 server:
   port: 6083
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
 # 应用名称
 spring:
   profiles:

@@ -4,6 +4,7 @@ import com.dismai.BusinessThreadPool;
 import com.dismai.core.SpringUtil;
 import com.dismai.dto.EsDocumentMappingDto;
 import com.dismai.entity.TicketCategoryAggregate;
+import com.dismai.enums.BusinessStatus;
 import com.dismai.initialize.base.AbstractApplicationPostConstructHandler;
 import com.dismai.service.ProgramService;
 import com.dismai.util.BusinessEsHandle;
@@ -55,7 +56,13 @@ public class ProgramElasticsearchInitData extends AbstractApplicationPostConstru
         
         List<Map<String, Object>> allDocs = new ArrayList<>();
         for (Long programId : allProgramIdList) {
-            ProgramVo programVo = programService.getDetailFromDb(programId);
+            ProgramVo programVo = null;
+            try {
+                programVo = programService.getDetailFromDb(programId);
+            } catch (Exception e) {
+                log.warn("initElasticsearchData skip programId:{} reason:{}", programId, e.getMessage());
+                continue;
+            }
             if (programVo == null) {
                 log.warn("initElasticsearchData skip null ProgramVo for id:{}", programId);
                 continue;
@@ -85,6 +92,7 @@ public class ProgramElasticsearchInitData extends AbstractApplicationPostConstru
             map.put(ProgramDocumentParamName.MAX_PRICE,
                     Optional.ofNullable(ticketCategorieMap.get(programVo.getId()))
                             .map(TicketCategoryAggregate::getMaxPrice).orElse(null));
+            map.put(ProgramDocumentParamName.PROGRAM_STATUS, BusinessStatus.YES.getCode());
             allDocs.add(map);
         }
         businessEsHandle.bulkAdd(SpringUtil.getPrefixDistinctionName() + "-" + 
@@ -112,7 +120,7 @@ public class ProgramElasticsearchInitData extends AbstractApplicationPostConstru
         List<EsDocumentMappingDto> list = new ArrayList<>();
         
         list.add(new EsDocumentMappingDto(ProgramDocumentParamName.ID,"long"));
-        list.add(new EsDocumentMappingDto(ProgramDocumentParamName.PROGRAM_GROUP_ID,"integer"));
+        list.add(new EsDocumentMappingDto(ProgramDocumentParamName.PROGRAM_GROUP_ID,"long"));
         list.add(new EsDocumentMappingDto(ProgramDocumentParamName.PRIME,"long"));
         list.add(new EsDocumentMappingDto(ProgramDocumentParamName.TITLE,"text"));
         list.add(new EsDocumentMappingDto(ProgramDocumentParamName.ACTOR,"text"));
@@ -131,7 +139,8 @@ public class ProgramElasticsearchInitData extends AbstractApplicationPostConstru
         list.add(new EsDocumentMappingDto(ProgramDocumentParamName.SHOW_WEEK_TIME,"text"));
         list.add(new EsDocumentMappingDto(ProgramDocumentParamName.MIN_PRICE,"integer"));
         list.add(new EsDocumentMappingDto(ProgramDocumentParamName.MAX_PRICE,"integer"));
-        
+        list.add(new EsDocumentMappingDto(ProgramDocumentParamName.PROGRAM_STATUS,"integer"));
+
         return list;
     }
 }

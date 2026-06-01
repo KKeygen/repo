@@ -143,7 +143,7 @@ onMounted(async () => {
     }
   } catch (e) { /* keep default city */ }
   try {
-    const res = await getHotCities({})
+    const res = await getHotCities()
     hotCities.value = res.data || []
   } catch (e) {
     hotCities.value = [
