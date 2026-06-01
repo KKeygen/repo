@@ -279,10 +279,13 @@ onMounted(async () => {
   }
 }
 
-.seat-tags {
+.seat-info-inline {
+  margin-top: 12px;
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
+  font-size: 13px;
 }
 
 .seat-tag {
@@ -308,15 +311,6 @@ onMounted(async () => {
   &:not(:first-child) {
     margin-top: 8px;
   }
-}
-
-.seat-info-inline {
-  margin-top: 12px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
 }
 
 .user-tags {

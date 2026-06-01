@@ -158,8 +158,9 @@
           <label class="switch-label">
             <span>允许退款</span>
             <select v-model.number="form.permitRefund" class="form-select">
-              <option :value="1">是</option>
-              <option :value="0">否</option>
+              <option :value="0">不支持退</option>
+              <option :value="1">条件退</option>
+              <option :value="2">全部退</option>
             </select>
           </label>
           <label class="switch-label">
@@ -170,10 +171,11 @@
             </select>
           </label>
           <label class="switch-label">
-            <span>电子票</span>
+            <span>票务类型</span>
             <select v-model.number="form.electronicDeliveryTicket" class="form-select">
-              <option :value="1">是</option>
-              <option :value="0">否</option>
+              <option :value="0">无</option>
+              <option :value="1">电子票</option>
+              <option :value="2">快递票</option>
             </select>
           </label>
           <label class="switch-label">
@@ -359,7 +361,7 @@ async function handleSubmit() {
     toast.error('请填写必填字段（标题、场馆、城市、分类）')
     return
   }
-  if (!isEdit.value && !form.showTime) {
+  if (!form.showTime) {
     toast.error('请填写演出时间')
     return
   }
@@ -369,17 +371,16 @@ async function handleSubmit() {
     const submitData = isEdit.value ? { ...form, id: form.id } : { ...form }
     const res = await submitApi(submitData)
     if (res.code == 0) {
-      if (!isEdit.value) {
-        const showTimeRes = await addShowTime({
-          programId: res.data,
-          showTime: toServerDateTime(form.showTime),
-          showDayTime: form.showDayTime,
-          showWeekTime: form.showWeekTime
-        })
-        if (showTimeRes.code != 0) {
-          toast.error(showTimeRes.message || '演出时间保存失败')
-          return
-        }
+      const programId = isEdit.value ? form.id : res.data
+      const showTimeRes = await addShowTime({
+        programId,
+        showTime: toServerDateTime(form.showTime),
+        showDayTime: form.showDayTime,
+        showWeekTime: form.showWeekTime
+      })
+      if (showTimeRes.code != 0) {
+        toast.error(showTimeRes.message || '演出时间保存失败')
+        return
       }
       toast.success(isEdit.value ? '修改成功' : '节目创建成功')
       router.push('/admin/programs')

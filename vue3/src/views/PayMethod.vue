@@ -92,8 +92,8 @@ onMounted(async () => {
         const data = res.data
         orderAmount.value = data.orderPrice || data.totalAmount || '0.00'
         orderTitle.value = data.programTitle || data.subject || ''
-        if (data.createTime) {
-          const elapsed = Math.floor((Date.now() - new Date(data.createTime).getTime()) / 1000)
+        if (data.createOrderTime) {
+          const elapsed = Math.floor((Date.now() - new Date(data.createOrderTime).getTime()) / 1000)
           countdown.value = Math.max(0, 15 * 60 - elapsed)
         }
       }
@@ -117,12 +117,15 @@ const handlePay = async () => {
       payBillType: 1
     })
     if (res.code == 0) {
-      // PC web 支付：把支付宝返回的 form HTML 写进浏览器，浏览器解析后
-      // form 内的 script 会自动 submit 跳到收银台。
-      // 支付完成后支付宝通过 return_url 跳回 /order/paySuccess。
       document.write(res.data)
-    } else toast.error(res.msg || '支付发起失败')
-  } catch (e) { toast.error('网络错误') }
+    } else {
+      toast.error(res.msg || '支付发起失败')
+      paying.value = false
+    }
+  } catch (e) {
+    toast.error('网络错误')
+    paying.value = false
+  }
 }
 </script>
 
@@ -322,20 +325,6 @@ const handlePay = async () => {
   &:disabled {
     opacity: 0.4;
     box-shadow: none;
-  }
-}
-
-// ── Polling ──
-.polling-status {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 32px;
-  padding: 24px;
-
-  .spinner {
-    border-color: var(--color-border);
-    border-top-color: var(--color-primary);
   }
 }
 </style>

@@ -96,7 +96,7 @@ import { useRoute } from 'vue-router'
 import AdminLayout from '@/layouts/AdminLayout.vue'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import { getSeatInfo, searchPrograms as searchApi, getProgramPage } from '@/api/program'
-import { addSeat, batchAddSeats, getTicketCategoriesByProgram } from '@/api/admin'
+import { batchAddSeats, getTicketCategoriesByProgram } from '@/api/admin'
 import { useToast } from '@/components/Toast.vue'
 
 const route = useRoute()
