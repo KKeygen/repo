@@ -7,7 +7,7 @@ WORKDIR /build
 COPY . .
 
 RUN --mount=type=cache,target=/root/.m2 \
-    mvn clean package -DskipTests -B -q \
+    mvn clean package -Dmaven.test.skip=true -B -q \
     && echo "==> Maven build complete"
 
 # Collect ShardingSphere config templates for runtime patching
