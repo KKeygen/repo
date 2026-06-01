@@ -1,17 +1,30 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cat <<'EOF'
-IT-006 Kafka 异常注入骨架
+SERVICE_NAME="${KAFKA_SERVICE_NAME:-kafka}"
+COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.yml}"
+ORDER_URL="${DISMAI_ORDER_CREATE_URL:-http://127.0.0.1:6084/Dismai/program/program/order/create/v4}"
+RUN_FAULT_TESTS="${RUN_FAULT_TESTS:-false}"
 
-目标:
-  验证 Kafka 停止或网络隔离时，发送失败能够回滚锁座，消费失败可以重试。
+ORDER_BODY="${DISMAI_ORDER_CREATE_BODY:-{\"userId\":\"2181859000000000001\",\"programId\":\"2181859535445270528\",\"ticketCategoryId\":\"2181859569805017088\",\"ticketCount\":1,\"ticketUserIdList\":[\"2181859000000000002\"],\"code\":\"0001\"}}"
 
-待完善步骤:
-  1. 通过 docker compose 或容器编排停止 Kafka。
-  2. 发起锁座下单请求，记录失败返回和回滚路径。
-  3. 恢复 Kafka 后，验证重试链路与补偿消息消费情况。
+run_or_print() {
+  if [[ "${RUN_FAULT_TESTS}" == "true" ]]; then
+    "$@"
+  else
+    printf '[dry-run]'
+    printf ' %q' "$@"
+    printf '\n'
+  fi
+}
 
-备注:
-  该脚本只输出执行计划，不会实际变更环境。
-EOF
+echo "IT-006 Kafka 异常注入"
+echo "目标：验证 Kafka 不可用时发送失败可回滚锁座，恢复后订单消息可继续处理。"
+echo "默认 dry-run；设置 RUN_FAULT_TESTS=true 才会修改 docker compose 环境。"
+
+run_or_print docker compose -f "${COMPOSE_FILE}" stop "${SERVICE_NAME}"
+run_or_print curl -sS -X POST "${ORDER_URL}" -H "Content-Type: application/json" -d "${ORDER_BODY}"
+run_or_print docker compose -f "${COMPOSE_FILE}" start "${SERVICE_NAME}"
+run_or_print docker compose -f "${COMPOSE_FILE}" logs --tail=120 "${SERVICE_NAME}"
+
+echo "人工验收点：下单返回失败或可恢复错误；Redis 锁座与库存被回滚；Kafka 恢复后无悬挂订单。"

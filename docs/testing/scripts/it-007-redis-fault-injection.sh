@@ -1,17 +1,30 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cat <<'EOF'
-IT-007 Redis 异常注入骨架
+SERVICE_NAME="${REDIS_SERVICE_NAME:-redis}"
+COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.yml}"
+ORDER_URL="${DISMAI_ORDER_CREATE_URL:-http://127.0.0.1:6084/Dismai/program/program/order/create/v4}"
+RUN_FAULT_TESTS="${RUN_FAULT_TESTS:-false}"
 
-目标:
-  验证 Redis 停止或网络隔离时，下单写链路停止，不产生重复售卖。
+ORDER_BODY="${DISMAI_ORDER_CREATE_BODY:-{\"userId\":\"2181859000000000001\",\"programId\":\"2181859535445270528\",\"ticketCategoryId\":\"2181859569805017088\",\"ticketCount\":1,\"ticketUserIdList\":[\"2181859000000000002\"],\"code\":\"0001\"}}"
 
-待完善步骤:
-  1. 通过 docker compose 或容器编排停止 Redis。
-  2. 发起锁座或下单请求，记录明确的失败提示。
-  3. 恢复 Redis 后，检查写链路恢复与幂等行为。
+run_or_print() {
+  if [[ "${RUN_FAULT_TESTS}" == "true" ]]; then
+    "$@"
+  else
+    printf '[dry-run]'
+    printf ' %q' "$@"
+    printf '\n'
+  fi
+}
 
-备注:
-  该脚本只输出执行计划，不会实际变更环境。
-EOF
+echo "IT-007 Redis 异常注入"
+echo "目标：验证 Redis 不可用时下单写链路失败且不绕过锁座状态机。"
+echo "默认 dry-run；设置 RUN_FAULT_TESTS=true 才会修改 docker compose 环境。"
+
+run_or_print docker compose -f "${COMPOSE_FILE}" stop "${SERVICE_NAME}"
+run_or_print curl -sS -X POST "${ORDER_URL}" -H "Content-Type: application/json" -d "${ORDER_BODY}"
+run_or_print docker compose -f "${COMPOSE_FILE}" start "${SERVICE_NAME}"
+run_or_print docker compose -f "${COMPOSE_FILE}" logs --tail=120 "${SERVICE_NAME}"
+
+echo "人工验收点：请求明确失败；不会创建绕过 Redis 的订单；恢复后可重新初始化或读取缓存。"
