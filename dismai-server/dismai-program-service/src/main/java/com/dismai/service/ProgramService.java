@@ -220,23 +220,70 @@ public class ProgramService extends ServiceImpl<ProgramMapper, Program> {
 
     /**
      * 编辑节目
-     * @param programAddDto 编辑节目数据的入参
+     * @param programAddDto 编辑节目数据的入参（id 必填）
      * @return 编辑节目后的id
      * */
+    @Transactional(rollbackFor = Exception.class)
     public Long edit(ProgramAddDto programAddDto) {
         if (programAddDto.getId() == null) {
-            throw new IllegalArgumentException("节目id不能为空");
+            throw new DismaiFrameException(BaseCode.ARGUMENT_EMPTY);
         }
         Program existing = programMapper.selectById(programAddDto.getId());
         if (existing == null) {
-            throw new IllegalArgumentException("节目不存在");
+            throw new DismaiFrameException(BaseCode.PROGRAM_NOT_EXIST);
         }
-        Program program = new Program();
-        BeanUtil.copyProperties(programAddDto, program);
-        program.setId(existing.getId());
-        program.setProgramGroupId(existing.getProgramGroupId());
-        programMapper.updateById(program);
-        return program.getId();
+
+        LambdaUpdateWrapper<Program> uw = Wrappers.lambdaUpdate(Program.class)
+                .eq(Program::getId, existing.getId())
+                .set(Program::getAreaId, programAddDto.getAreaId())
+                .set(Program::getProgramCategoryId, programAddDto.getProgramCategoryId())
+                .set(Program::getParentProgramCategoryId, programAddDto.getParentProgramCategoryId())
+                .set(Program::getTitle, programAddDto.getTitle())
+                .set(Program::getActor, programAddDto.getActor())
+                .set(Program::getPlace, programAddDto.getPlace())
+                .set(Program::getItemPicture, programAddDto.getItemPicture())
+                .set(Program::getDetail, programAddDto.getDetail())
+                .set(Program::getPurchaseLimitRule, programAddDto.getPurchaseLimitRule())
+                .set(Program::getRefundTicketRule, programAddDto.getRefundTicketRule())
+                .set(Program::getDeliveryInstruction, programAddDto.getDeliveryInstruction())
+                .set(Program::getEntryRule, programAddDto.getEntryRule())
+                .set(Program::getChildPurchase, programAddDto.getChildPurchase())
+                .set(Program::getInvoiceSpecification, programAddDto.getInvoiceSpecification())
+                .set(Program::getRealTicketPurchaseRule, programAddDto.getRealTicketPurchaseRule())
+                .set(Program::getAbnormalOrderDescription, programAddDto.getAbnormalOrderDescription())
+                .set(Program::getKindReminder, programAddDto.getKindReminder())
+                .set(Program::getPerformanceDuration, programAddDto.getPerformanceDuration())
+                .set(Program::getEntryTime, programAddDto.getEntryTime())
+                .set(Program::getMinPerformanceCount, programAddDto.getMinPerformanceCount())
+                .set(Program::getMainActor, programAddDto.getMainActor())
+                .set(Program::getMinPerformanceDuration, programAddDto.getMinPerformanceDuration())
+                .set(Program::getProhibitedItem, programAddDto.getProhibitedItem())
+                .set(Program::getDepositSpecification, programAddDto.getDepositSpecification())
+                .set(Program::getTotalCount, programAddDto.getTotalCount())
+                .set(Program::getPermitRefund, programAddDto.getPermitRefund())
+                .set(Program::getPermitChooseSeat, programAddDto.getPermitChooseSeat())
+                .set(Program::getElectronicDeliveryTicket, programAddDto.getElectronicDeliveryTicket())
+                .set(Program::getElectronicInvoice, programAddDto.getElectronicInvoice());
+        int result = programMapper.update(null, uw);
+        if (result > 0) {
+            try {
+                delRedisData(existing.getId());
+            } catch (Exception e) {
+                log.error("edit delRedisData failed programId={}", existing.getId(), e);
+            }
+            try {
+                redisStreamPushHandler.push(String.valueOf(existing.getId()));
+            } catch (Exception e) {
+                log.error("edit stream push failed programId={}", existing.getId(), e);
+            }
+            try {
+                programEs.addDocument(existing.getId());
+            } catch (Exception e) {
+                log.error("edit ES reindex failed programId={}", existing.getId(), e);
+            }
+            return existing.getId();
+        }
+        throw new DismaiFrameException(BaseCode.PROGRAM_NOT_EXIST);
     }
 
     /**

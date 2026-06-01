@@ -67,16 +67,16 @@ const payStatus = ref(null)
 
 const payStatusText = computed(() => {
   if (payStatus.value === 1) return '待支付'
-  if (payStatus.value === 2) return '已支付'
-  if (payStatus.value === 3) return '已取消'
-  if (payStatus.value === 4) return '已退款'
+  if (payStatus.value === 2) return '已取消'
+  if (payStatus.value === 3) return '已支付'
+  if (payStatus.value === 4) return '已退单'
   return '未知'
 })
 
 const payStatusClass = computed(() => {
-  if (payStatus.value === 2) return 'text-success'
+  if (payStatus.value === 3) return 'text-success'
   if (payStatus.value === 1) return 'text-warning'
-  if (payStatus.value === 3 || payStatus.value === 4) return 'text-muted'
+  if (payStatus.value === 2 || payStatus.value === 4) return 'text-muted'
   return ''
 })
 

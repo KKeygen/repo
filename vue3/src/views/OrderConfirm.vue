@@ -61,10 +61,10 @@
             <div v-if="showAddForm" class="add-user-form">
               <div class="form-row">
                 <input v-model="newUser.relName" type="text" class="form-input" placeholder="姓名" />
-                <select v-model="newUser.relIdType" class="form-input select-input">
+                <select v-model.number="newUser.idType" class="form-input select-input">
                   <option v-for="t in idTypes" :key="t.value" :value="t.value">{{ t.label }}</option>
                 </select>
-                <input v-model="newUser.relIdNumber" type="text" class="form-input" placeholder="证件号码" />
+                <input v-model="newUser.idNumber" type="text" class="form-input" placeholder="证件号码" />
               </div>
               <div class="form-actions mt-2">
                 <button class="btn btn-primary btn-sm" @click="handleAddUser">保存</button>
@@ -152,7 +152,7 @@ const idTypes = [
   { value: 5, label: '护照' }, { value: 6, label: '外国人永居证' }
 ]
 
-const newUser = reactive({ relName: '', relIdType: 1, relIdNumber: '' })
+const newUser = reactive({ relName: '', idType: 1, idNumber: '' })
 
 const totalAmount = computed(() => (programInfo.price * count.value).toFixed(2))
 
@@ -170,11 +170,11 @@ const loadTicketUsers = async () => {
 }
 
 const handleAddUser = async () => {
-  if (!newUser.relName.trim() || !newUser.relIdNumber.trim()) { toast.error('请填写完整信息'); return }
+  if (!newUser.relName.trim() || !newUser.idNumber.trim()) { toast.error('请填写完整信息'); return }
   try {
-    const res = await addTicketUser({ userId: userStore.userId, relName: newUser.relName, idType: newUser.relIdType, idNumber: newUser.relIdNumber })
+    const res = await addTicketUser({ userId: userStore.userId, relName: newUser.relName, idType: newUser.idType, idNumber: newUser.idNumber })
     if (res.code == 0) {
-      toast.success('添加成功'); showAddForm.value = false; newUser.relName = ''; newUser.relIdNumber = ''; newUser.relIdType = 1
+      toast.success('添加成功'); showAddForm.value = false; newUser.relName = ''; newUser.idNumber = ''; newUser.idType = 1
       await loadTicketUsers()
     } else { toast.error(res.msg || '添加失败') }
   } catch (e) { toast.error('网络错误') }
