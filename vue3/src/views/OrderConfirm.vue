@@ -228,8 +228,8 @@ onMounted(async () => {
       const data = programRes.data
       programInfo.title = data.title; programInfo.showTime = data.showTime || data.time || ''
       programInfo.venue = data.place || data.venue || ''; userPhone.value = data.mobile || ''
-      const ticket = (data.ticketCategoryList || []).find(t => String(t.id) === String(ticketCategoryId))
-      if (ticket) { programInfo.ticketName = ticket.name; programInfo.price = ticket.price }
+      const ticket = (data.ticketCategoryVoList || []).find(t => String(t.id) === String(ticketCategoryId))
+      if (ticket) { programInfo.ticketName = ticket.introduce; programInfo.price = ticket.price }
     }
   } catch (e) { console.error('Load order data failed:', e) }
   finally { loading.value = false }
