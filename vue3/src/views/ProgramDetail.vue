@@ -42,17 +42,19 @@
             </h3>
             <div class="ticket-cards">
               <div
-                v-for="ticket in program.ticketCategoryList || []"
+                v-for="ticket in program.ticketCategoryVoList || []"
                 :key="ticket.id"
                 class="ticket-card"
                 :class="{ 'ticket-card--selected': selectedTicket?.id === ticket.id }"
                 @click="selectTicket(ticket)"
               >
-                <div class="ticket-card__name">{{ ticket.name }}</div>
+                <div class="ticket-card__name">{{ ticket.introduce }}</div>
                 <div class="ticket-card__price">¥{{ ticket.price }}</div>
-                <div class="ticket-card__remain text-muted">剩余 {{ ticket.remainNumber ?? ticket.remain ?? '—' }} 张</div>
               </div>
             </div>
+            <p v-if="!program.ticketCategoryVoList?.length" class="text-muted text-center" style="padding:32px 0;">
+              暂无可售票档
+            </p>
           </div>
 
           <!-- Quantity Selector -->
