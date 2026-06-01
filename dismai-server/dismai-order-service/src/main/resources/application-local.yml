@@ -1,4 +1,4 @@
-﻿# 支付宝回调地址
-orderPayNotifyUrl: https://16c4-123-124-21-34.ngrok-free.app/Dismai/order/order/alipay/notify
-# 支付成功页面
-orderPayReturnUrl: http://localhost:5173/order/paySuccess
+﻿# 支付宝回调地址 (占位：内部架构下 PaySuccess 走 checkPayStatus 主动查，无需公网回调)
+orderPayNotifyUrl: http://127.0.0.1:22109/Dismai/order/order/alipay/notify
+# 支付成功页面 (本机访问转发后的前端 22117)
+orderPayReturnUrl: http://127.0.0.1:22117/order/paySuccess
