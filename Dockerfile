@@ -6,7 +6,8 @@ FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /build
 COPY . .
 
-RUN mvn clean package -DskipTests -B -q \
+RUN --mount=type=cache,target=/root/.m2 \
+    mvn clean package -DskipTests -B -q \
     && echo "==> Maven build complete"
 
 # Collect ShardingSphere config templates for runtime patching
