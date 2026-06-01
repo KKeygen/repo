@@ -2,7 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 import NProgress from 'nprogress'
 import { getToken } from '@/utils/auth'
 import { SITE_NAME } from '@/constants/site'
-import { ADMIN_USER_IDS } from '@/constants/site'
 import { useUserStore } from '@/stores/user'
 
 const routes = [
@@ -169,7 +168,7 @@ router.beforeEach((to, from, next) => {
   if (!to.meta.requiresAuth || getToken()) {
     if (to.path.startsWith('/admin')) {
       const store = useUserStore()
-      if (!ADMIN_USER_IDS.includes(String(store.mobile))) {
+      if (!store.isAdmin) {
         next('/')
         return
       }

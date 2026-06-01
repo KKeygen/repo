@@ -86,7 +86,6 @@ import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useToast } from '@/components/Toast.vue'
-import { ADMIN_USER_IDS } from '@/constants/site'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -152,7 +151,7 @@ const handleLogin = async () => {
     if (res.code == 0) {
       toast.success('登录成功')
       if (isAdminMode.value) {
-        if (ADMIN_USER_IDS.includes(formData.account)) {
+        if (userStore.isAdmin) {
           router.push('/admin')
         } else {
           toast.error('该账号无管理员权限')

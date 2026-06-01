@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>万花筒 Dismai - Demo Ready Slides</title>
+  <style>
+    :root {
+      --bg: #0b0d12;
+      --panel: #171b24;
+      --panel-2: #202632;
+      --text: #f2eee8;
+      --muted: #aeb7c8;
+      --gold: #d9aa5f;
+      --red: #d65353;
+      --blue: #5591df;
+      --green: #51ad7b;
+      --line: rgba(255, 255, 255, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow: hidden;
+      color: var(--text);
+      background: var(--bg);
+      font-family: "Inter", "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+    }
+
+    .deck {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(217, 170, 95, 0.14), transparent 26%),
+        radial-gradient(circle at 84% 12%, rgba(85, 145, 223, 0.12), transparent 26%),
+        linear-gradient(135deg, #090b10 0%, #10131b 48%, #0b0d12 100%);
+    }
+
+    .slide {
+      display: none;
+      width: min(100vw, 177.78vh);
+      height: min(56.25vw, 100vh);
+      aspect-ratio: 16 / 9;
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      padding: 52px 66px;
+    }
+
+    .slide.active { display: block; }
+
+    .slide::before {
+      content: "";
+      position: absolute;
+      inset: 24px;
+      border: 1px solid var(--line);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      color: var(--gold);
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 48px;
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 0;
+      color: var(--gold);
+      font-size: 28px;
+      line-height: 1.2;
+      letter-spacing: 0;
+      font-weight: 700;
+    }
+
+    p, li {
+      font-size: 20px;
+      line-height: 1.45;
+      color: var(--muted);
+      letter-spacing: 0;
+    }
+
+    ul, ol { margin: 0; padding-left: 24px; }
+    li { margin: 8px 0; }
+    strong { color: var(--text); }
+    code {
+      color: #ffe0a1;
+      background: rgba(217, 170, 95, 0.13);
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-family: "SFMono-Regular", Consolas, monospace;
+    }
+
+    .title-grid {
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 42px;
+      height: 100%;
+      align-items: center;
+    }
+
+    .hero-mark {
+      height: 410px;
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(145deg, rgba(217, 170, 95, 0.18), rgba(85, 145, 223, 0.08)),
+        var(--panel);
+      padding: 28px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    .big-number {
+      color: var(--gold);
+      font-size: 104px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 28px;
+      margin-bottom: 28px;
+      border-bottom: 3px solid var(--gold);
+      padding-bottom: 18px;
+    }
+
+    .header h1 { font-size: 34px; max-width: 820px; }
+    .header p { margin: 8px 0 0; font-size: 15px; }
+
+    .page-no {
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 22px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.015)), var(--panel);
+      border: 1px solid var(--line);
+      min-height: 190px;
+      padding: 22px 22px 18px;
+      position: relative;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 5px;
+      height: 100%;
+      background: var(--accent, var(--gold));
+    }
+
+    .card h3 {
+      margin: 0 0 12px;
+      font-size: 21px;
+      letter-spacing: 0;
+    }
+
+    .card li {
+      font-size: 17px;
+      line-height: 1.38;
+      margin: 7px 0;
+    }
+
+    .accent-gold { --accent: var(--gold); }
+    .accent-red { --accent: var(--red); }
+    .accent-blue { --accent: var(--blue); }
+    .accent-green { --accent: var(--green); }
+
+    .flow {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: 1fr;
+      gap: 14px;
+      margin: 30px 0;
+    }
+
+    .step {
+      min-height: 78px;
+      display: grid;
+      align-items: center;
+      justify-items: center;
+      text-align: center;
+      padding: 12px;
+      color: white;
+      font-size: 16px;
+      font-weight: 800;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      position: relative;
+    }
+
+    .step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      right: -14px;
+      top: calc(50% - 1px);
+      width: 14px;
+      height: 2px;
+      background: var(--line);
+    }
+
+    .step.gold { background: linear-gradient(135deg, #a66f2d, #d9aa5f); }
+    .step.red { background: linear-gradient(135deg, #8f3030, #d65353); }
+    .step.blue { background: linear-gradient(135deg, #244f86, #5591df); }
+    .step.green { background: linear-gradient(135deg, #246647, #51ad7b); }
+
+    .callout {
+      margin-top: 22px;
+      border-left: 6px solid var(--gold);
+      background: rgba(217, 170, 95, 0.09);
+      padding: 18px 22px;
+      color: var(--text);
+      font-size: 20px;
+      line-height: 1.45;
+    }
+
+    .matrix {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .qa {
+      display: grid;
+      grid-template-columns: 190px 1fr;
+      gap: 16px;
+      align-items: start;
+      padding: 13px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .qa b {
+      color: var(--gold);
+      font-size: 19px;
+    }
+
+    .qa span {
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.4;
+    }
+
+    .nav {
+      position: fixed;
+      right: 22px;
+      bottom: 18px;
+      color: rgba(242, 238, 232, 0.68);
+      font-size: 13px;
+      z-index: 20;
+      display: none;
+    }
+
+    .progress {
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      height: 4px;
+      width: 100%;
+      background: rgba(255,255,255,0.08);
+      z-index: 20;
+    }
+
+    .progress span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--gold), var(--red));
+    }
+
+    @media print {
+      @page {
+        size: 13.333in 7.5in;
+        margin: 0;
+      }
+
+      body { overflow: visible; background: white; }
+      .deck { width: auto; height: auto; background: var(--bg); }
+      .slide {
+        display: block !important;
+        position: relative;
+        width: 13.333in;
+        height: 7.5in;
+        page-break-after: always;
+      }
+      .nav, .progress { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="deck">
+    <section class="slide active">
+      <div class="title-grid">
+        <div>
+          <div class="eyebrow">分布式软件原理与技术 · Demo Ready</div>
+          <h1>万花筒 Dismai</h1>
+          <h2 style="margin-top: 18px;">高并发在线票务系统演示与可靠性答辩</h2>
+          <div class="callout">围绕防刷、锁座、Kafka 故障、Redis/数据库故障，把系统设计讲成一条可验证的购票链路。</div>
+        </div>
+        <div class="hero-mark">
+          <div class="big-number">15</div>
+          <p>页演示稿</p>
+          <p><strong>目标：</strong>不超卖、不重复下单、故障可恢复</p>
+        </div>
+      </div>
+      <div class="page-no">01</div>
+    </section>
+
+    <section class="slide">
+      <div class="header"><div><h1>演示目标</h1><p>把课程中的分布式组件落到可解释的业务链路里</p></div><div class="page-no">02</div></div>
+      <div class="grid-3">
+        <div class="card accent-gold"><h3>业务目标</h3><ul><li>浏览节目、选座、下单、支付</li><li>高峰抢票仍能保护座位一致性</li><li>演示路径清晰，不依赖口头补丁</li></ul></div>
+        <div class="card accent-blue"><h3>工程目标</h3><ul><li>微服务拆分清晰</li><li>Redis 承接热点状态</li><li>Kafka 平滑数据库写入压力</li></ul></div>
+        <div class="card accent-green"><h3>答辩目标</h3><ul><li>黑产流量如何拦截</li><li>座位如何不超卖</li><li>依赖故障时如何处理</li></ul></div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="header"><div><h1>系统架构</h1><p>读链路用缓存和搜索加速，写链路用 Redis 状态机和 Kafka 削峰</p></div><div class="page-no">03</div></div>
+      <div class="flow">
+        <div class="step blue">Vue3<br>前端</div><div class="step gold">Gateway<br>Sentinel</div><div class="step green">Program<br>节目</div><div class="step green">Order<br>订单</div><div class="step green">Pay<br>支付</div>
+      </div>
+      <div class="grid-4">
+        <div class="card accent-red"><h3>Redis/Redisson</h3><ul><li>库存和座位状态</li><li>幂等标记</li><li>分布式锁与延迟队列</li></ul></div>
+        <div class="card accent-blue"><h3>Kafka</h3><ul><li>异步创建订单</li><li>削峰填谷</li><li>失败重试</li></ul></div>
+        <div class="card accent-green"><h3>MySQL</h3><ul><li>最终事实源</li><li>ShardingSphere 分库分表</li><li>订单/用户/支付持久化</li></ul></div>
+        <div class="card accent-gold"><h3>Elasticsearch</h3><ul><li>节目搜索</li><li>列表检索</li><li>提升读体验</li></ul></div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="header"><div><h1>核心下单链路</h1><p>ProgramOrderV4Strategy 是演示首选路径</p></div><div class="page-no">04</div></div>
+      <div class="flow">
+        <div class="step blue">参数校验</div><div class="step red">防重复提交</div><div class="step gold">随机分片</div><div class="step green">本地锁</div><div class="step red">Redis Lua<br>锁座扣库存</div><div class="step blue">Kafka<br>异步建单</div>
+      </div>
+      <div class="grid-3">
+        <div class="card accent-gold"><h3>分片</h3><ul><li>票档维度随机 shardId</li><li>拆散热点锁竞争</li><li>提高并发吞吐</li></ul></div>
+        <div class="card accent-red"><h3>Lua</h3><ul><li>校验、扣减、迁移一次完成</li><li>Redis 脚本原子执行</li><li>避免并发读写错位</li></ul></div>
+        <div class="card accent-blue"><h3>异步</h3><ul><li>快速返回订单号</li><li>Kafka 消费后落库</li><li>削峰保护数据库</li></ul></div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="header"><div><h1>如何防止黑产刷流量</h1><p>入口限流 + 身份校验 + 行为限制 + 热点穿透防护</p></div><div class="page-no">05</div></div>
+      <div class="grid-4">
+        <div class="card accent-blue"><h3>入口层</h3><ul><li>Gateway Sentinel 过滤器</li><li>按路由/API 配 QPS</li><li>异常流量提前拦截</li></ul></div>
+        <div class="card accent-green"><h3>用户层</h3><ul><li>验证码能力</li><li>Redis 计数判断是否触发验证码</li><li>注册频率控制</li></ul></div>
+        <div class="card accent-red"><h3>业务层</h3><ul><li><code>@RepeatExecuteLimit</code></li><li>请求签名开关</li><li>管理员权限隔离</li></ul></div>
+        <div class="card accent-gold"><h3>缓存层</h3><ul><li>节目布隆过滤器</li><li>拦截不存在 ID</li><li>减少缓存穿透</li></ul></div>
+      </div>
+      <div class="callout">答辩口径：不是靠单个组件防刷，而是入口、身份、行为、业务资源四层防护。</div>
+    </section>
+
+    <section class="slide">
+      <div class="header"><div><h1>如何实现锁座</h1><p>锁座本质是座位状态机：未售 -> 锁定 -> 已售 / 释放</p></div><div class="page-no">06</div></div>
+      <div class="flow">
+        <div class="step green">未售座位 Hash</div><div class="step gold">Lua 原子校验</div><div class="step red">扣减余票</div><div class="step blue">迁移到锁定 Hash</div><div class="step gold">支付确认 / 超时释放</div>
+      </div>
+      <div class="grid-3">
+        <div class="card accent-green"><h3>数据结构</h3><ul><li>按 programId、ticketCategoryId、shardId 组织 key</li><li>未售 Hash 与锁定 Hash 分离</li></ul></div>
+        <div class="card accent-red"><h3>原子动作</h3><ul><li>余票校验</li><li>库存扣减</li><li>座位状态迁移</li></ul></div>
+        <div class="card accent-blue"><h3>补偿释放</h3><ul><li>Kafka 失败回滚</li><li>超时未支付释放</li><li>取消订单释放</li></ul></div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="header"><div><h1>Kafka 挂了怎么办</h1><p>当前策略：失败即回滚，宁可少卖，不可超卖</p></div><div class="page-no">07</div></div>
+      <div class="grid-3">
+        <div class="card accent-red"><h3>发送失败</h3><ul><li>失败回调记录错误</li><li>回滚 Redis 锁座和库存</li><li>返回下单失败，用户可重试</li></ul></div>
+        <div class="card accent-gold"><h3>消费异常</h3><ul><li>抛出 RuntimeException</li><li>交给消费端重试</li><li>过期消息取消节目侧数据</li></ul></div>
+        <div class="card accent-blue"><h3>长期不可用</h3><ul><li>下单链路失败</li><li>保护座位一致性</li><li>生产增强 Outbox/死信队列</li></ul></div>
+      </div>
+      <div class="callout">核心回答：Kafka 不可用时不继续占座，系统优先保证不会超卖。</div>
+    </section>
+
+    <section class="slide">
+      <div class="header"><div><h1>Redis 挂了怎么办</h1><p>购票写链路强依赖 Redis，故障时必须降级为不可下单</p></div><div class="page-no">08</div></div>
+      <div class="grid-3">
+        <div class="card accent-red"><h3>为什么不能绕过</h3><ul><li>座位状态在 Redis</li><li>库存扣减依赖 Lua 原子性</li><li>绕过会增加超卖风险</li></ul></div>
+        <div class="card accent-green"><h3>已有措施</h3><ul><li>Compose 健康检查</li><li>服务依赖 Redis healthy</li><li>失败返回业务异常</li></ul></div>
+        <div class="card accent-gold"><h3>恢复策略</h3><ul><li>读链路旧缓存降级</li><li>写链路熔断</li><li>恢复后从 DB 重建缓存</li></ul></div>
+      </div>
+      <div class="callout">答辩口径：Redis 故障时优先保护不超卖，而不是强行提高写入可用性。</div>
+    </section>
+
+    <section class="slide">
+      <div class="header"><div><h1>数据库挂了怎么办</h1><p>数据库是最终事实源；写入失败必须让缓存回到可售状态</p></div><div class="page-no">09</div></div>
+      <div class="grid-3">
+        <div class="card accent-blue"><h3>短故障</h3><ul><li>Kafka 暂存订单消息</li><li>数据库恢复后继续消费</li><li>消费异常触发重试</li></ul></div>
+        <div class="card accent-red"><h3>长故障</h3><ul><li>写链路熔断</li><li>避免锁座堆积</li><li>提示用户稍后重试</li></ul></div>
+        <div class="card accent-green"><h3>恢复后</h3><ul><li>以订单表为准</li><li>对账校正 Redis</li><li>重建节目和座位缓存</li></ul></div>
+      </div>
+      <div class="callout">数据库负责最终事实，Redis 和 Kafka 负责高峰期的吞吐与削峰。</div>
+    </section>
+
+    <section class="slide">
+      <div class="header"><div><h1>一致性模型</h1><p>系统选择最终一致性，但对“不能超卖”保持强约束</p></div><div class="page-no">10</div></div>
+      <div class="grid-3">
+        <div class="card accent-red"><h3>强约束</h3><ul><li>同一座位不能重复锁定</li><li>余票不能扣成负数</li><li>重复提交会被拦截</li></ul></div>
+        <div class="card accent-blue"><h3>最终一致</h3><ul><li>订单异步落库</li><li>支付状态异步更新</li><li>超时取消异步释放</li></ul></div>
+        <div class="card accent-green"><h3>补偿机制</h3><ul><li>Kafka 失败回滚</li><li>过期消息释放</li><li>支付/取消加分布式锁</li></ul></div>
+      </div>
+      <div class="callout">一句话：先在 Redis 确定座位抢占权，再让订单系统追上。</div>
+    </section>
+
+    <section class="slide">
+      <div class="header"><div><h1>Demo-Ready 修复</h1><p>修复演示阻断，不处理安全漏洞</p></div><div class="page-no">11</div></div>
+      <div class="grid-3">
+        <div class="card accent-red"><h3>管理员路由</h3><ul><li>刷新 /admin 后状态丢失</li><li>管理员被踢回首页</li><li>影响现场展示后台</li></ul></div>
+        <div class="card accent-green"><h3>修复方式</h3><ul><li>手机号写入 Cookie</li><li>Pinia 初始化恢复</li><li>统一 userStore.isAdmin</li></ul></div>
+        <div class="card accent-gold"><h3>镜像构建</h3><ul><li>Dockerfile 不硬依赖 lockfile</li><li>干净环境能构建</li><li>降低部署踩坑概率</li></ul></div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="header"><div><h1>验证结果</h1><p>已覆盖构建和编排层面的主要演示阻断</p></div><div class="page-no">12</div></div>
+      <div class="grid-2">
+        <div class="card accent-green"><h3>通过</h3><ul><li><code>npm run build</code></li><li><code>docker build -t dismai-frontend-check ./vue3</code></li><li><code>docker compose config</code></li><li><code>docker build --target build -t dismai-build-check .</code></li></ul></div>
+        <div class="card accent-gold"><h3>环境说明</h3><ul><li>宿主机 Java 11 不能直接 Maven 编译</li><li>项目要求 Java 17</li><li>Dockerfile 已使用 Java 17 Maven 镜像并验证通过</li></ul></div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="header"><div><h1>答辩 Q&A 速答</h1><p>把复杂问题压缩成可讲清楚的三句话</p></div><div class="page-no">13</div></div>
+      <div class="matrix">
+        <div class="qa"><b>如何防刷？</b><span>Gateway Sentinel 限流、验证码/计数、请求签名、幂等限制、布隆过滤器，多层挡流量。</span></div>
+        <div class="qa"><b>如何锁座？</b><span>Redis Lua 原子扣库存并迁移座位状态，失败和超时再补偿释放。</span></div>
+        <div class="qa"><b>Kafka 挂？</b><span>发送失败回滚，消费失败重试，长期不可用则下单失败。</span></div>
+        <div class="qa"><b>Redis 挂？</b><span>写链路熔断，不绕过锁座状态机；读链路可旧缓存降级。</span></div>
+        <div class="qa"><b>DB 挂？</b><span>短故障 Kafka 缓冲，长故障熔断，恢复后以订单表对账校正。</span></div>
+        <div class="qa"><b>一致性？</b><span>座位抢占是强约束，订单落库和支付状态走最终一致。</span></div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="header"><div><h1>结论</h1><p>演示重点不是组件堆砌，而是故障下如何保护业务不出错</p></div><div class="page-no">14</div></div>
+      <div class="grid-3">
+        <div class="card accent-green"><h3>可演示</h3><ul><li>前端构建可用</li><li>Docker 编排可解析</li><li>Java 17 构建路径可用</li></ul></div>
+        <div class="card accent-gold"><h3>可解释</h3><ul><li>下单状态机清晰</li><li>防刷/锁座/补偿可对应代码</li><li>故障边界可讲清</li></ul></div>
+        <div class="card accent-blue"><h3>可扩展</h3><ul><li>Outbox/本地消息表</li><li>Redis 高可用集群</li><li>死信队列与对账任务</li></ul></div>
+      </div>
+      <div class="callout">三条底线：不超卖、不重复下单、故障可解释可恢复。</div>
+    </section>
+  </main>
+
+  <div class="nav">← / → 翻页 · P 打印导出 PDF</div>
+  <div class="progress"><span></span></div>
+  <script>
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const progress = document.querySelector('.progress span');
+    let current = Number(new URLSearchParams(location.search).get('slide') || 1) - 1;
+
+    function show(index) {
+      current = Math.max(0, Math.min(slides.length - 1, index));
+      slides.forEach((slide, i) => slide.classList.toggle('active', i === current));
+      progress.style.width = `${((current + 1) / slides.length) * 100}%`;
+      const url = new URL(location.href);
+      url.searchParams.set('slide', current + 1);
+      history.replaceState(null, '', url);
+    }
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'ArrowRight' || event.key === ' ' || event.key === 'PageDown') show(current + 1);
+      if (event.key === 'ArrowLeft' || event.key === 'PageUp') show(current - 1);
+      if (event.key.toLowerCase() === 'p') window.print();
+      if (event.key === 'Home') show(0);
+      if (event.key === 'End') show(slides.length - 1);
+    });
+
+    show(current);
+  </script>
+</body>
+</html>
