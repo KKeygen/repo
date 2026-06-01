@@ -243,7 +243,6 @@ public class ProgramService extends ServiceImpl<ProgramMapper, Program> {
                 .set(Program::getPlace, programAddDto.getPlace())
                 .set(Program::getItemPicture, programAddDto.getItemPicture())
                 .set(Program::getDetail, programAddDto.getDetail())
-                .set(Program::getPurchaseLimitRule, programAddDto.getPurchaseLimitRule())
                 .set(Program::getRefundTicketRule, programAddDto.getRefundTicketRule())
                 .set(Program::getDeliveryInstruction, programAddDto.getDeliveryInstruction())
                 .set(Program::getEntryRule, programAddDto.getEntryRule())
