@@ -141,5 +141,4 @@ knife4j:
     enable: false
   setting:
     language: zh_cn
-    enable-version: true
-    enable-swagger-models: true
+    enable-version: true    enable-swagger-models: true
