@@ -5,9 +5,9 @@ FROM node:18-alpine AS build
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+COPY package*.json ./
 RUN --mount=type=cache,target=/root/.npm \
-    npm ci --prefer-offline
+    if [ -f package-lock.json ]; then npm ci --prefer-offline; else npm install --prefer-offline; fi
 
 COPY . .
 RUN npm run build

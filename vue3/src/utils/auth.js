@@ -3,6 +3,7 @@ import Cookies from 'js-cookie'
 const TOKEN_KEY = 'Admin-Token'
 const USER_ID_KEY = 'userId'
 const USER_NAME_KEY = 'userName'
+const USER_MOBILE_KEY = 'userMobile'
 
 export function getToken() {
   return Cookies.get(TOKEN_KEY)
@@ -38,4 +39,16 @@ export function setUserName(name) {
 
 export function removeUserName() {
   return Cookies.remove(USER_NAME_KEY)
+}
+
+export function getUserMobile() {
+  return Cookies.get(USER_MOBILE_KEY)
+}
+
+export function setUserMobile(mobile) {
+  return Cookies.set(USER_MOBILE_KEY, mobile)
+}
+
+export function removeUserMobile() {
+  return Cookies.remove(USER_MOBILE_KEY)
 }
