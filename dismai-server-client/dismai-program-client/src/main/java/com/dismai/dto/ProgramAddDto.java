@@ -99,4 +99,7 @@ public class ProgramAddDto {
     
     @Schema(name ="electronicInvoice", type ="Integer", description ="电子发票 1:是 0:不是")
     private Integer electronicInvoice;
+
+    @Schema(name = "id", type = "Long", description = "节目id（编辑时必填）")
+    private Long id;
 }

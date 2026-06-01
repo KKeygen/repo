@@ -134,6 +134,12 @@ const routes = [
     meta: { title: '新增节目', layout: 'admin', requiresAuth: true }
   },
   {
+    path: '/admin/programs/edit/:id',
+    name: 'AdminProgramEdit',
+    component: () => import('@/views/admin/ProgramEdit.vue'),
+    meta: { title: '编辑节目', layout: 'admin', requiresAuth: true }
+  },
+  {
     path: '/admin/seats',
     name: 'AdminSeatManage',
     component: () => import('@/views/admin/SeatManage.vue'),

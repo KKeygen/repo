@@ -4,6 +4,9 @@ import request from '@/utils/request'
 export function addProgram(data) {
   return request({ url: '/Dismai/program/program/add', method: 'post', data })
 }
+export function editProgram(data) {
+  return request({ url: '/Dismai/program/program/edit', method: 'post', data })
+}
 export function invalidProgram(data) {
   return request({ url: '/Dismai/program/program/invalid', method: 'post', data })
 }

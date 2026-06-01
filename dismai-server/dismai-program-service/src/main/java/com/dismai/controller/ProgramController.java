@@ -38,6 +38,12 @@ public class ProgramController {
     public ApiResponse<Long> add(@Valid @RequestBody ProgramAddDto programAddDto) {
         return ApiResponse.ok(programService.add(programAddDto));
     }
+
+    @Operation(summary  = "编辑")
+    @PostMapping(value = "/edit")
+    public ApiResponse<Long> edit(@Valid @RequestBody ProgramAddDto programAddDto) {
+        return ApiResponse.ok(programService.edit(programAddDto));
+    }
     
     @Operation(summary  = "搜索")
     @PostMapping(value = "/search")

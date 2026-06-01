@@ -12,7 +12,7 @@
         <div class="detail-main">
           <!-- Hero Image -->
           <div class="hero-image child-stagger-1">
-            <img :src="program.imgUrl || program.image" :alt="program.title" />
+            <img :src="program.itemPicture" :alt="program.title" />
             <div class="hero-image__overlay"></div>
             <span v-if="program.preSell === 1" class="badge badge--gold presale-badge">预售</span>
           </div>
@@ -23,12 +23,12 @@
             <div class="detail-info__meta">
               <div class="meta-item">
                 <svg class="meta-item__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                <span>{{ program.showTime || program.time }}</span>
-                <span v-if="program.showDayOfWeek" class="text-muted ml-2">{{ program.showDayOfWeek }}</span>
+                <span>{{ program.showTime }}</span>
+                <span v-if="program.showWeekTime" class="text-muted ml-2">{{ program.showWeekTime }}</span>
               </div>
               <div class="meta-item">
                 <svg class="meta-item__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                <span>{{ program.place || program.venue }}</span>
+                <span>{{ program.place }}</span>
                 <span v-if="program.areaName" class="text-muted ml-2">· {{ program.areaName }}</span>
               </div>
             </div>
@@ -83,37 +83,74 @@
             </button>
           </div>
 
-          <!-- Detail Tabs -->
-          <div class="detail-tabs child-stagger-6">
-            <div class="detail-tabs__header">
-              <button
-                v-for="tab in tabs"
-                :key="tab.key"
-                class="detail-tabs__tab"
-                :class="{ 'detail-tabs__tab--active': activeTab === tab.key }"
-                @click="activeTab = tab.key"
-              >{{ tab.label }}</button>
-            </div>
-            <div class="detail-tabs__content">
-              <div v-if="activeTab === 'detail'" v-html="program.detail || '<p>暂无详情</p>'"></div>
-              <div v-if="activeTab === 'buyNotice'" v-html="program.buyNotice || '<p>暂无购票须知</p>'"></div>
-              <div v-if="activeTab === 'watchNotice'" v-html="program.watchNotice || '<p>暂无观演须知</p>'"></div>
+          <!-- Project Detail -->
+          <div v-if="program.detail" class="detail-tabs child-stagger-6">
+            <h3 class="section-heading">
+              <span class="section-heading__bar"></span>
+              项目详情
+            </h3>
+            <div class="detail-tabs__content" v-html="program.detail"></div>
+          </div>
+
+          <!-- Purchase Rules -->
+          <div v-if="hasRules" class="detail-rules child-stagger-7">
+            <h3 class="section-heading">
+              <span class="section-heading__bar"></span>
+              购票须知
+            </h3>
+            <div class="rules-grid">
+              <div v-if="program.purchaseLimitRule" class="rule-item">
+                <span class="rule-item__label">限购规则</span>
+                <span class="rule-item__value">{{ program.purchaseLimitRule }}</span>
+              </div>
+              <div v-if="program.refundTicketRule" class="rule-item">
+                <span class="rule-item__label">退票/换票规则</span>
+                <span class="rule-item__value">{{ program.refundTicketRule }}</span>
+              </div>
+              <div v-if="program.entryRule" class="rule-item">
+                <span class="rule-item__label">入场规则</span>
+                <span class="rule-item__value">{{ program.entryRule }}</span>
+              </div>
+              <div v-if="program.childPurchase" class="rule-item">
+                <span class="rule-item__label">儿童购票</span>
+                <span class="rule-item__value">{{ program.childPurchase }}</span>
+              </div>
+              <div v-if="program.realTicketPurchaseRule" class="rule-item">
+                <span class="rule-item__label">实名购票规则</span>
+                <span class="rule-item__value">{{ program.realTicketPurchaseRule }}</span>
+              </div>
+              <div v-if="program.invoiceSpecification" class="rule-item">
+                <span class="rule-item__label">发票说明</span>
+                <span class="rule-item__value">{{ program.invoiceSpecification }}</span>
+              </div>
+              <div v-if="program.deliveryInstruction" class="rule-item">
+                <span class="rule-item__label">配送信息</span>
+                <span class="rule-item__value">{{ program.deliveryInstruction }}</span>
+              </div>
+              <div v-if="program.abnormalOrderDescription" class="rule-item">
+                <span class="rule-item__label">异常排单</span>
+                <span class="rule-item__value">{{ program.abnormalOrderDescription }}</span>
+              </div>
+              <div v-if="program.kindReminder" class="rule-item">
+                <span class="rule-item__label">温馨提示</span>
+                <span class="rule-item__value">{{ program.kindReminder }}</span>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Right Sidebar -->
-        <div class="detail-sidebar child-stagger-7">
+        <div class="detail-sidebar child-stagger-8">
           <div class="sidebar-card">
             <h4 class="sidebar-card__title">服务信息</h4>
             <div class="service-list">
               <div class="service-item">
                 <span class="service-item__label">退换政策</span>
-                <span class="service-item__value" :class="program.canRefund ? 'text-success' : 'text-error'">{{ program.canRefund ? '支持退款' : '不支持退款' }}</span>
+                <span class="service-item__value" :class="refundClass">{{ refundText }}</span>
               </div>
               <div class="service-item">
-                <span class="service-item__label">实名要求</span>
-                <span class="service-item__value" :class="program.needRealName ? 'text-primary' : ''">{{ program.needRealName ? '需实名认证' : '无需实名' }}</span>
+                <span class="service-item__label">实名购票</span>
+                <span class="service-item__value" :class="program.relNameTicketEntrance === 1 ? 'text-primary' : ''">{{ program.relNameTicketEntrance === 1 ? '需实名' : '无需实名' }}</span>
               </div>
               <div class="service-item">
                 <span class="service-item__label">配送方式</span>
@@ -162,34 +199,49 @@ const loading = ref(true)
 const program = ref(null)
 const selectedTicket = ref(null)
 const quantity = ref(1)
-const activeTab = ref('detail')
-
-const tabs = [
-  { key: 'detail', label: '项目详情' },
-  { key: 'buyNotice', label: '购票须知' },
-  { key: 'watchNotice', label: '观演须知' }
-]
 
 const totalPrice = computed(() => {
   if (!selectedTicket.value) return 0
   return (selectedTicket.value.price * quantity.value).toFixed(2)
 })
 
+const hasRules = computed(() => {
+  const p = program.value
+  if (!p) return false
+  return p.purchaseLimitRule || p.refundTicketRule || p.entryRule || p.childPurchase ||
+    p.realTicketPurchaseRule || p.invoiceSpecification || p.deliveryInstruction ||
+    p.abnormalOrderDescription || p.kindReminder
+})
+
+const refundText = computed(() => {
+  const v = program.value?.permitRefund
+  if (v === 0) return '不支持退'
+  if (v === 1) return '条件退'
+  if (v === 2) return '全部退'
+  return '—'
+})
+
+const refundClass = computed(() => {
+  const v = program.value?.permitRefund
+  if (v === 0) return 'text-error'
+  if (v === 1 || v === 2) return 'text-success'
+  return ''
+})
+
 const deliveryText = computed(() => {
   if (!program.value) return '—'
-  const type = program.value.deliveryType
+  const type = program.value.electronicDeliveryTicket
   if (type === 1) return '电子票'
-  if (type === 2) return '快递配送'
-  if (type === 3) return '现场取票'
-  return '电子票'
+  if (type === 2) return '快递票'
+  return '无'
 })
 
 const invoiceText = computed(() => {
   if (!program.value) return '—'
-  const type = program.value.invoiceType
+  const type = program.value.electronicInvoice
   if (type === 1) return '电子发票'
-  if (type === 2) return '纸质发票'
-  return '电子发票'
+  if (type === 0) return '纸质发票'
+  return '—'
 })
 
 const selectTicket = (ticket) => {
@@ -562,37 +614,8 @@ onMounted(async () => {
 
 /* Detail Tabs */
 .detail-tabs {
+  margin-bottom: 36px;
   animation: fadeInUp 0.5s ease 0.35s both;
-
-  &__header {
-    display: flex;
-    border-bottom: 1px solid var(--color-border);
-    margin-bottom: 28px;
-    gap: 4px;
-  }
-
-  &__tab {
-    padding: 14px 28px;
-    background: none;
-    border: none;
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--color-muted);
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: all var(--transition);
-    position: relative;
-
-    &:hover {
-      color: var(--color-primary-hover);
-    }
-
-    &--active {
-      color: var(--color-primary);
-      border-bottom-color: var(--color-primary);
-      font-weight: 600;
-    }
-  }
 
   &__content {
     padding: 20px 0;
@@ -610,6 +633,41 @@ onMounted(async () => {
       margin-bottom: 12px;
       color: var(--color-text);
     }
+  }
+}
+
+/* Purchase Rules */
+.detail-rules {
+  margin-bottom: 36px;
+  animation: fadeInUp 0.5s ease 0.4s both;
+}
+
+.rules-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+}
+
+.rule-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  font-size: 14px;
+  line-height: 1.6;
+
+  &__label {
+    color: var(--color-muted);
+    flex-shrink: 0;
+    min-width: 100px;
+  }
+
+  &__value {
+    color: var(--color-text);
+    flex: 1;
   }
 }
 

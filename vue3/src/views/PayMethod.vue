@@ -45,11 +45,6 @@
           <span v-else-if="countdown <= 0">订单已超时</span>
           <span v-else>立即支付 ¥{{ orderAmount }}</span>
         </button>
-
-        <div v-if="polling" class="polling-status">
-          <div class="spinner"></div>
-          <p class="text-muted mt-2">等待支付结果...</p>
-        </div>
       </div>
     </div>
   </component>
@@ -57,14 +52,13 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { payOrder, checkPayStatus, getOrderDetail } from '@/api/order'
+import { useRoute } from 'vue-router'
+import { payOrder, getOrderDetail } from '@/api/order'
 import { useToast } from '@/components/Toast.vue'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import AccountLayout from '@/layouts/AccountLayout.vue'
 
 const route = useRoute()
-const router = useRouter()
 const toast = useToast()
 
 const layoutComponent = computed(() => route.meta.layout === 'account' ? AccountLayout : DefaultLayout)
@@ -73,11 +67,8 @@ const orderNumber = ref('')
 const orderAmount = ref('0.00')
 const orderTitle = ref('')
 const paying = ref(false)
-const polling = ref(false)
 const countdown = ref(15 * 60)
 let countdownTimer = null
-let pollTimer = null
-let pollCount = 0
 
 const formatCountdown = computed(() => {
   const mins = Math.floor(countdown.value / 60)
@@ -90,39 +81,6 @@ const startCountdown = () => {
     if (countdown.value > 0) countdown.value--
     else { clearInterval(countdownTimer); toast.error('订单已超时，请重新下单') }
   }, 1000)
-}
-
-const handlePay = async () => {
-  if (paying.value || countdown.value <= 0) return
-  paying.value = true
-  try {
-    const res = await payOrder({
-      platform: 3,
-      orderNumber: orderNumber.value,
-      subject: orderTitle.value,
-      price: parseFloat(orderAmount.value),
-      channel: 'alipay',
-      payBillType: 1
-    })
-    if (res.code == 0) { polling.value = true; startPolling() }
-    else toast.error(res.msg || '支付发起失败')
-  } catch (e) { toast.error('网络错误') }
-  finally { paying.value = false }
-}
-
-const startPolling = () => {
-  pollCount = 0
-  pollTimer = setInterval(async () => {
-    pollCount++
-    if (pollCount > 60) { clearInterval(pollTimer); polling.value = false; toast.error('支付超时，请检查支付状态'); return }
-    try {
-      const res = await checkPayStatus({ orderNumber: orderNumber.value, payChannelType: 1 })
-      if (res.code == 0 && res.data?.orderStatus === 3) {
-        clearInterval(pollTimer); polling.value = false; toast.success('支付成功！')
-        router.push({ path: '/order/paySuccess', query: { orderNumber: orderNumber.value } })
-      }
-    } catch (e) { /* continue */ }
-  }, 3000)
 }
 
 onMounted(async () => {
@@ -144,7 +102,28 @@ onMounted(async () => {
   startCountdown()
 })
 
-onUnmounted(() => { if (countdownTimer) clearInterval(countdownTimer); if (pollTimer) clearInterval(pollTimer) })
+onUnmounted(() => { if (countdownTimer) clearInterval(countdownTimer) })
+
+const handlePay = async () => {
+  if (paying.value || countdown.value <= 0) return
+  paying.value = true
+  try {
+    const res = await payOrder({
+      platform: 3,
+      orderNumber: orderNumber.value,
+      subject: orderTitle.value,
+      price: parseFloat(orderAmount.value),
+      channel: 'alipay',
+      payBillType: 1
+    })
+    if (res.code == 0) {
+      // PC web 支付：把支付宝返回的 form HTML 写进浏览器，浏览器解析后
+      // form 内的 script 会自动 submit 跳到收银台。
+      // 支付完成后支付宝通过 return_url 跳回 /order/paySuccess。
+      document.write(res.data)
+    } else toast.error(res.msg || '支付发起失败')
+  } catch (e) { toast.error('网络错误') }
+}
 </script>
 
 <style scoped lang="scss">

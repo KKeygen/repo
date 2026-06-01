@@ -38,6 +38,7 @@
               {{ p.parentProgramCategoryName || '—' }} / {{ p.programCategoryName || '—' }}
             </td>
             <td class="td-actions">
+              <router-link :to="`/admin/programs/edit/${p.id}`" class="btn btn-sm btn-ghost">编辑</router-link>
               <button class="btn btn-sm btn-ghost btn-danger-text" @click="handleInvalid(p)">下架</button>
               <button class="btn btn-sm btn-ghost btn-warn-text" @click="handleReset(p)">重置</button>
             </td>
@@ -144,7 +145,7 @@ onMounted(() => loadData())
 .td-title { font-weight: 500; width: 35%; }
 .td-place { color: var(--color-muted); width: 14%; }
 .td-meta { color: var(--color-muted); font-size: 12px; }
-.td-actions { width: 110px; display: flex; gap: 6px; white-space: nowrap; overflow: visible; }
+.td-actions { width: 180px; display: flex; gap: 6px; white-space: nowrap; overflow: visible; }
 .td-empty { text-align: center; color: var(--color-muted); padding: 40px; }
 
 .btn-danger-text { color: var(--color-error); &:hover { background: rgba(239,68,68,0.08); } }

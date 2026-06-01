@@ -26,10 +26,19 @@
           </div>
           <p class="success-subtitle">您的订单已支付完成</p>
 
+          <div v-if="checking" class="order-info__checking">
+            <div class="spinner spinner--inline"></div>
+            <span class="text-muted">正在校验支付状态...</span>
+          </div>
+
           <div class="order-info">
             <div class="order-info__row">
               <span class="text-muted">订单号</span>
               <span class="order-info__value">{{ orderNumber }}</span>
+            </div>
+            <div v-if="payStatus" class="order-info__row">
+              <span class="text-muted">支付状态</span>
+              <span class="order-info__value" :class="payStatusClass">{{ payStatusText }}</span>
             </div>
           </div>
 
@@ -46,14 +55,43 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { checkPayStatus } from '@/api/order'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import AccountLayout from '@/layouts/AccountLayout.vue'
 
 const route = useRoute()
 const layoutComponent = computed(() => route.meta.layout === 'account' ? AccountLayout : DefaultLayout)
 const orderNumber = ref('')
+const checking = ref(false)
+const payStatus = ref(null)
 
-onMounted(() => { orderNumber.value = route.query.orderNumber || '' })
+const payStatusText = computed(() => {
+  if (payStatus.value === 1) return '待支付'
+  if (payStatus.value === 2) return '已支付'
+  if (payStatus.value === 3) return '已取消'
+  if (payStatus.value === 4) return '已退款'
+  return '未知'
+})
+
+const payStatusClass = computed(() => {
+  if (payStatus.value === 2) return 'text-success'
+  if (payStatus.value === 1) return 'text-warning'
+  if (payStatus.value === 3 || payStatus.value === 4) return 'text-muted'
+  return ''
+})
+
+onMounted(async () => {
+  orderNumber.value = route.query.orderNumber || ''
+  if (!orderNumber.value) return
+  checking.value = true
+  try {
+    const res = await checkPayStatus({ orderNumber: orderNumber.value, payChannelType: 1 })
+    if (res.code == 0 && res.data) {
+      payStatus.value = res.data.orderStatus ?? res.data.status ?? null
+    }
+  } catch (e) { console.error('Check pay status failed:', e) }
+  finally { checking.value = false }
+})
 </script>
 
 <style scoped lang="scss">
@@ -208,6 +246,21 @@ onMounted(() => { orderNumber.value = route.query.orderNumber || '' })
     font-weight: 500;
     font-family: var(--font-body);
   }
+
+  &__checking {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 18px;
+    font-size: 13px;
+  }
+}
+
+.spinner--inline {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
 }
 
 .success-actions {

@@ -118,11 +118,11 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { getTicketUserList, addTicketUser } from '@/api/ticketUser'
-import { createOrderV1, createOrderV2, createOrderV3, createOrderV4 } from '@/api/order'
+import { createOrderV1, createOrderV2, createOrderV3, createOrderV4, getOrderCache } from '@/api/order'
 import { getProgramDetail } from '@/api/program'
 import { useToast } from '@/components/Toast.vue'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
@@ -205,12 +205,49 @@ const handleSubmit = async () => {
     const version = import.meta.env.VITE_CREATE_ORDER_VERSION || '4'
     const createOrder = { '1': createOrderV1, '2': createOrderV2, '3': createOrderV3 }[version] || createOrderV4
     const res = await createOrder(params)
-    if (res.code == 0) {
-      toast.success('订单创建成功')
-      router.push({ path: '/order/payMethod', query: { orderNumber: res.data } })
-    } else { toast.error(res.msg || '创建订单失败') }
-  } catch (e) { toast.error('网络错误，请稍后重试') }
-  finally { submitting.value = false }
+    if (res.code == 0 && res.data) {
+      const orderNumber = res.data
+      if (version === '4') {
+        startPolling(orderNumber)
+      } else {
+        toast.success('订单创建成功')
+        router.push({ path: '/order/payMethod', query: { orderNumber } })
+      }
+    } else { toast.error(res.msg || '创建订单失败'); submitting.value = false }
+  } catch (e) { toast.error('网络错误，请稍后重试'); submitting.value = false }
+}
+
+let pollTimer = null
+let pollTimeout = null
+const POLL_INTERVAL = 200
+const POLL_TIMEOUT = 10_000
+
+const startPolling = (orderNumber) => {
+  const startTime = Date.now()
+  pollTimer = setInterval(async () => {
+    if (Date.now() - startTime >= POLL_TIMEOUT) {
+      stopPolling()
+      submitting.value = false
+      if (confirm('订单创建中（排队较久），是否继续等待？取消可稍后在订单列表查看。')) {
+        router.push({ path: '/orderManagement' })
+      }
+      return
+    }
+    try {
+      const cacheRes = await getOrderCache({ orderNumber })
+      if (cacheRes.code == 0 && cacheRes.data) {
+        stopPolling()
+        toast.success('订单创建成功')
+        router.push({ path: '/order/payMethod', query: { orderNumber: cacheRes.data } })
+      }
+    } catch (e) { /* keep polling */ }
+  }, POLL_INTERVAL)
+}
+
+const stopPolling = () => {
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null }
+  if (pollTimeout) { clearTimeout(pollTimeout); pollTimeout = null }
+  submitting.value = false
 }
 
 onMounted(async () => {
@@ -234,6 +271,8 @@ onMounted(async () => {
   } catch (e) { console.error('Load order data failed:', e) }
   finally { loading.value = false }
 })
+
+onUnmounted(() => stopPolling())
 </script>
 
 <style scoped lang="scss">

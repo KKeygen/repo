@@ -27,7 +27,8 @@
           <div class="settings-item__info">
             <h4>邮箱验证</h4>
             <p class="text-muted">
-              <span v-if="userInfo.email" class="text-success">已绑定：{{ userInfo.email }}</span>
+              <span v-if="userInfo.emailStatus === 1" class="text-success">已验证：{{ userInfo.email }}</span>
+              <span v-else-if="userInfo.email" class="text-warning">已绑定：{{ userInfo.email }}（待验证）</span>
               <span v-else class="text-error">未绑定</span>
             </p>
           </div>
@@ -55,7 +56,7 @@
           <div class="settings-item__info">
             <h4>实名认证</h4>
             <p class="text-muted">
-              <span v-if="userInfo.isAuthenticated" class="text-success">已认证</span>
+              <span v-if="userInfo.relAuthenticationStatus === 1" class="text-success">已认证</span>
               <span v-else class="text-error">未认证</span>
             </p>
           </div>
@@ -80,7 +81,7 @@ const userStore = useUserStore()
 const layoutComponent = computed(() => route.meta.layout === 'account' ? AccountLayout : DefaultLayout)
 
 const loading = ref(true)
-const userInfo = reactive({ email: '', mobile: '', isAuthenticated: false })
+const userInfo = reactive({ email: '', emailStatus: 0, mobile: '', relAuthenticationStatus: 0 })
 
 const maskPhone = (phone) => { const p = String(phone || ''); if (p.length < 7) return p; return p.slice(0, 3) + '****' + p.slice(-4) }
 
@@ -89,8 +90,10 @@ onMounted(async () => {
     const res = await getUserInfo({ id: userStore.userId })
     if (res.code == 0) {
       const data = res.data
-      userInfo.email = data.email || ''; userInfo.mobile = data.mobile || ''
-      userInfo.isAuthenticated = !!data.isAuthenticated
+      userInfo.email = data.email || ''
+      userInfo.emailStatus = Number(data.emailStatus || 0)
+      userInfo.mobile = data.mobile || ''
+      userInfo.relAuthenticationStatus = Number(data.relAuthenticationStatus || 0)
     }
   } catch (e) { console.error('Load user info failed:', e) }
   finally { loading.value = false }
