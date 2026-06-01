@@ -125,11 +125,16 @@ public class SeatService extends ServiceImpl<SeatMapper, Seat> {
             if (CollectionUtil.isNotEmpty(seatVoList)) {
                 return seatVoList;
             }
+            // shardId is computed from id % SHARD_COUNT, not a DB column
+            // (see Seat.SHARD_COUNT). Load all seats for this (program, ticketCategory)
+            // and filter to the requested shard in memory. This is the cache-miss
+            // warmup path; hot reads go through Redis (already sharded).
             LambdaQueryWrapper<Seat> seatLambdaQueryWrapper =
                     Wrappers.lambdaQuery(Seat.class).eq(Seat::getProgramId, programId)
-                            .eq(Seat::getTicketCategoryId,ticketCategoryId)
-                            .eq(Seat::getShardId, shardId);
-            List<Seat> seats = seatMapper.selectList(seatLambdaQueryWrapper);
+                            .eq(Seat::getTicketCategoryId, ticketCategoryId);
+            List<Seat> seats = seatMapper.selectList(seatLambdaQueryWrapper).stream()
+                    .filter(s -> s.getShardId().equals(shardId))
+                    .collect(Collectors.toList());
             for (Seat seat : seats) {
                 SeatVo seatVo = new SeatVo();
                 BeanUtil.copyProperties(seat, seatVo);
