@@ -15,7 +15,7 @@
           </div>
           <div class="status-card__text">
             <h3>{{ getStatusText(order.orderStatus) }}</h3>
-            <p class="text-muted">{{ order.createTime }}</p>
+            <p class="text-muted">{{ order.createOrderTime }}</p>
           </div>
         </div>
 
@@ -24,18 +24,47 @@
           <h3 class="section-title">演出信息</h3>
           <div class="info-grid">
             <div class="info-item"><span class="info-item__label">演出名称</span><span class="info-item__value">{{ order.programTitle || order.title }}</span></div>
-            <div class="info-item"><span class="info-item__label">票档</span><span class="info-item__value">{{ order.ticketCategoryName }}</span></div>
-            <div class="info-item"><span class="info-item__label">数量</span><span class="info-item__value">{{ order.count || 1 }} 张</span></div>
-            <div class="info-item"><span class="info-item__label">场馆</span><span class="info-item__value">{{ order.place || order.venue || '—' }}</span></div>
-            <div class="info-item"><span class="info-item__label">演出时间</span><span class="info-item__value">{{ order.showTime || '—' }}</span></div>
+            <div class="info-item"><span class="info-item__label">场馆</span><span class="info-item__value">{{ order.programPlace || order.place || '—' }}</span></div>
+            <div class="info-item"><span class="info-item__label">演出时间</span><span class="info-item__value">{{ order.programShowTime || order.showTime || '—' }}</span></div>
+            <div class="info-item"><span class="info-item__label">选座方式</span><span class="info-item__value">{{ order.programPermitChooseSeat === 1 ? '可选座' : '随机分配' }}</span></div>
+            <div v-if="order.distributionMode" class="info-item"><span class="info-item__label">配送方式</span><span class="info-item__value">{{ order.distributionMode }}</span></div>
+            <div v-if="order.takeTicketMode" class="info-item"><span class="info-item__label">取票方式</span><span class="info-item__value">{{ order.takeTicketMode }}</span></div>
           </div>
         </div>
 
-        <!-- Seat Info -->
-        <div v-if="order.seatInfo || order.seats" class="info-section">
-          <h3 class="section-title">座位信息</h3>
-          <div class="seat-tags">
-            <span class="seat-tag">{{ order.seatInfo || (order.seats || []).map(s => `${s.row}排${s.col}座`).join('、') }}</span>
+        <!-- Ticket Info (per ticket-category) -->
+        <div v-if="order.orderTicketInfoVoList && order.orderTicketInfoVoList.length" class="info-section">
+          <h3 class="section-title">票档明细</h3>
+          <div v-for="(t, i) in order.orderTicketInfoVoList" :key="i" class="ticket-block">
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-item__label">单价</span>
+                <span class="info-item__value text-gold font-bold">¥{{ t.price }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-item__label">数量</span>
+                <span class="info-item__value">{{ t.quantity }} 张</span>
+              </div>
+              <div v-if="t.relPrice !== undefined && t.relPrice !== null" class="info-item">
+                <span class="info-item__label">实付</span>
+                <span class="info-item__value">¥{{ t.relPrice }}</span>
+              </div>
+            </div>
+            <div v-if="t.seatInfo" class="seat-info-inline">
+              <span class="text-muted">座位：</span>
+              <span v-for="(seat, idx) in t.seatInfo.split(',').filter(Boolean)" :key="idx" class="seat-tag">{{ seat }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ticket Users (购票人) -->
+        <div v-if="ticketUsers.length" class="info-section">
+          <h3 class="section-title">购票人</h3>
+          <div class="user-tags">
+            <div v-for="u in ticketUsers" :key="u.id" class="user-tag">
+              <span class="user-tag__name">{{ u.relName }}</span>
+              <span class="user-tag__id">{{ getIdTypeName(u.idType) }} {{ maskIdNumber(u.idNumber) }}</span>
+            </div>
           </div>
         </div>
 
@@ -44,10 +73,11 @@
           <h3 class="section-title">支付信息</h3>
           <div class="info-grid">
             <div class="info-item"><span class="info-item__label">订单号</span><span class="info-item__value">{{ order.orderNumber }}</span></div>
-            <div class="info-item"><span class="info-item__label">订单金额</span><span class="info-item__value info-item__value--gold text-gold font-bold">¥{{ order.orderPrice || order.totalAmount }}</span></div>
-            <div class="info-item"><span class="info-item__label">支付方式</span><span class="info-item__value">{{ order.payType === 1 ? '支付宝' : '—' }}</span></div>
-            <div class="info-item"><span class="info-item__label">创建时间</span><span class="info-item__value">{{ order.createTime }}</span></div>
-            <div v-if="order.payTime" class="info-item"><span class="info-item__label">支付时间</span><span class="info-item__value">{{ order.payTime }}</span></div>
+            <div class="info-item"><span class="info-item__label">订单金额</span><span class="info-item__value info-item__value--gold text-gold font-bold">¥{{ order.orderPrice }}</span></div>
+            <div class="info-item"><span class="info-item__label">支付方式</span><span class="info-item__value">{{ getPayTypeText(order.payOrderType) }}</span></div>
+            <div class="info-item"><span class="info-item__label">创建时间</span><span class="info-item__value">{{ order.createOrderTime }}</span></div>
+            <div v-if="order.payOrderTime" class="info-item"><span class="info-item__label">支付时间</span><span class="info-item__value">{{ order.payOrderTime }}</span></div>
+            <div v-if="order.cancelOrderTime" class="info-item"><span class="info-item__label">取消时间</span><span class="info-item__value">{{ order.cancelOrderTime }}</span></div>
           </div>
         </div>
 
@@ -80,8 +110,14 @@ const layoutComponent = computed(() => route.meta.layout === 'account' ? Account
 
 const loading = ref(true)
 const order = ref(null)
+const ticketUsers = ref([])
 
-const getStatusText = (status) => ({ 1: '待支付', 2: '已取消', 3: '已支付', 4: '已取消' }[status] || '未知')
+const idTypeMap = { 1: '身份证', 2: '港澳台居民证', 3: '港澳通行证', 4: '台湾通行证', 5: '护照', 6: '外国人永居证' }
+const getIdTypeName = (type) => idTypeMap[type] || '证件'
+const maskIdNumber = (id) => { if (!id || id.length < 6) return id || ''; return id.slice(0, 3) + '****' + id.slice(-4) }
+const getPayTypeText = (type) => ({ 1: '支付宝', 2: '微信', 3: '银行卡' }[type] || '—')
+
+const getStatusText = (status) => ({ 1: '待支付', 2: '已取消', 3: '已支付', 4: '已退单' }[status] || '未知')
 const getStatusClass = (status) => ({ 1: 'status--warning', 2: 'status--muted', 3: 'status--success', 4: 'status--muted' }[status] || '')
 
 const handleCancel = async () => {
@@ -100,7 +136,10 @@ onMounted(async () => {
   if (!orderNumber) { loading.value = false; return }
   try {
     const res = await getOrderDetail({ orderNumber })
-    if (res.code == 0) order.value = res.data
+    if (res.code == 0) {
+      order.value = res.data
+      ticketUsers.value = (res.data?.userAndTicketUserInfoVo?.ticketUserInfoVoList) || []
+    }
   } catch (e) { console.error('Load order detail failed:', e) }
   finally { loading.value = false }
 })
@@ -255,6 +294,56 @@ onMounted(async () => {
   color: var(--color-primary);
   font-size: 13px;
   font-weight: 500;
+}
+
+.ticket-block {
+  padding: 12px 0;
+  border-bottom: 1px dashed var(--color-border);
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  &:not(:first-child) {
+    margin-top: 8px;
+  }
+}
+
+.seat-info-inline {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.user-tags {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.user-tag {
+  padding: 12px 16px;
+  background: var(--color-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &__name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-text);
+  }
+
+  &__id {
+    font-size: 12px;
+    color: var(--color-muted);
+  }
 }
 
 .detail-actions {

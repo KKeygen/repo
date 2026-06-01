@@ -150,7 +150,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
-import { getCategoryTypes, getCategoryByParent, getProgramPage } from '@/api/program'
+import { getCategoryTypes, getCategoryByParent, getProgramPage, searchPrograms } from '@/api/program'
 import ProgramCard from '@/components/ProgramCard.vue'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import AccountLayout from '@/layouts/AccountLayout.vue'
@@ -177,6 +177,7 @@ const timeType = ref(0)
 const sortType = ref(1)
 const dateStart = ref('')
 const dateEnd = ref('')
+const searchKeyword = ref('')
 
 const timeTabs = [
   { label: '全部', value: 0 },
@@ -284,34 +285,53 @@ const loadSubCategories = async (parentId) => {
   }
 }
 
+const stripHtml = (str) => (str || '').replace(/<[^>]+>/g, '')
+
 const loadPrograms = async () => {
   loading.value = true
   try {
     const cityId = appStore.currentCity?.id
-    const params = {
-      pageNumber: currentPage.value,
-      pageSize,
-      timeType: timeType.value,
-      type: sortType.value
-    }
-    if (cityId) params.areaId = Number(cityId)
-    if (timeType.value === 5) {
-      params.startDateTime = dateStart.value
-      params.endDateTime = dateEnd.value
+    const keyword = searchKeyword.value.trim()
+    let res
+
+    if (keyword) {
+      const searchParams = {
+        content: keyword,
+        pageNumber: currentPage.value,
+        pageSize,
+        timeType: timeType.value,
+        type: sortType.value
+      }
+      if (cityId) searchParams.areaId = Number(cityId)
+      res = await searchPrograms(searchParams)
+    } else {
+      const params = {
+        pageNumber: currentPage.value,
+        pageSize,
+        timeType: timeType.value,
+        type: sortType.value
+      }
+      if (cityId) params.areaId = Number(cityId)
+      if (timeType.value === 5) {
+        params.startDateTime = dateStart.value
+        params.endDateTime = dateEnd.value
+      }
+      if (activeSubCategoryId.value) {
+        params.programCategoryId = activeSubCategoryId.value
+      } else if (activeCategoryId.value) {
+        params.parentProgramCategoryId = activeCategoryId.value
+      }
+      res = await getProgramPage(params)
     }
 
-    if (activeSubCategoryId.value) {
-      params.programCategoryId = activeSubCategoryId.value
-    } else if (activeCategoryId.value) {
-      params.parentProgramCategoryId = activeCategoryId.value
-    }
-
-    const res = await getProgramPage(params)
     if (res.code == 0) {
       const pageData = res.data || {}
-      programs.value = pageData.records || pageData.list || []
-      const total = pageData.total || 0
+      const rawList = pageData.records || pageData.list || []
+      programs.value = rawList.map(p => ({ ...p, title: stripHtml(p.title) }))
+      const total = pageData.total || pageData.totalSize || 0
       totalPages.value = Math.ceil(total / pageSize)
+    } else {
+      programs.value = []
     }
   } catch (e) {
     programs.value = []
@@ -321,13 +341,15 @@ const loadPrograms = async () => {
 }
 
 onMounted(async () => {
+  searchKeyword.value = (route.query.keyword || '').toString()
+
   await loadCategories()
 
   const queryId = route.query.id
   if (queryId) {
     activeCategoryId.value = Number(queryId)
     await loadSubCategories(queryId)
-  } else if (categories.value.length > 0) {
+  } else if (!searchKeyword.value && categories.value.length > 0) {
     activeCategoryId.value = categories.value[0].id
     await loadSubCategories(categories.value[0].id)
   }
@@ -336,6 +358,13 @@ onMounted(async () => {
 })
 
 watch(() => route.query, (newQuery) => {
+  const newKeyword = (newQuery.keyword || '').toString()
+  if (newKeyword !== searchKeyword.value) {
+    searchKeyword.value = newKeyword
+    currentPage.value = 1
+    loadPrograms()
+    return
+  }
   if (newQuery.id && newQuery.id !== activeCategoryId.value) {
     activeCategoryId.value = Number(newQuery.id)
     activeSubCategoryId.value = null

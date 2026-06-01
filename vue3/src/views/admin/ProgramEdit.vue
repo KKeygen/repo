@@ -207,7 +207,7 @@ import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '@/layouts/AdminLayout.vue'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
-import { addProgram, addShowTime } from '@/api/admin'
+import { addProgram, editProgram, addShowTime } from '@/api/admin'
 import { getProgramDetail, getCategoryTypes, getCategoryByParent } from '@/api/program'
 import { getHotCities } from '@/api/area'
 import { useToast } from '@/components/Toast.vue'
@@ -365,7 +365,9 @@ async function handleSubmit() {
   }
   saving.value = true
   try {
-    const res = await addProgram({ ...form })
+    const submitApi = isEdit.value ? editProgram : addProgram
+    const submitData = isEdit.value ? { ...form, id: form.id } : { ...form }
+    const res = await submitApi(submitData)
     if (res.code == 0) {
       if (!isEdit.value) {
         const showTimeRes = await addShowTime({

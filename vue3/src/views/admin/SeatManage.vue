@@ -96,7 +96,7 @@ import { useRoute } from 'vue-router'
 import AdminLayout from '@/layouts/AdminLayout.vue'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import { getSeatInfo, searchPrograms as searchApi, getProgramPage } from '@/api/program'
-import { addSeat, getTicketCategoriesByProgram } from '@/api/admin'
+import { addSeat, batchAddSeats, getTicketCategoriesByProgram } from '@/api/admin'
 import { useToast } from '@/components/Toast.vue'
 
 const route = useRoute()
@@ -225,10 +225,12 @@ async function batchAdd() {
   if (!seatList.length) { toast.error('没有可添加的座位'); return }
   adding.value = true
   try {
-    const results = await Promise.all(seatList.map(s => addSeat(s)))
-    const allOk = results.every(r => r.code == 0)
-    if (allOk) { toast.success(`成功添加 ${seatList.length} 个座位`); preview.value = []; loadSeats() }
-    else toast.error(results.find(r => r.code != 0)?.message || '部分添加失败')
+    const res = await batchAddSeats({ seats: seatList })
+    if (res.code == 0) {
+      toast.success(`成功添加 ${seatList.length} 个座位`)
+      preview.value = []
+      loadSeats()
+    } else toast.error(res.message || '批量添加失败')
   } catch (e) { toast.error('网络错误') }
   finally { adding.value = false }
 }

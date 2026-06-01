@@ -135,7 +135,8 @@ const loadData = async () => {
 
     const cityId = appStore.currentCity?.id
     const categoryIds = categoryChips.value.map(c => c.id).filter(Boolean)
-    const params = { parentProgramCategoryIds: categoryIds }
+    const params = {}
+    if (categoryIds.length > 0) params.parentProgramCategoryIds = categoryIds
     if (cityId) params.areaId = cityId
     const homeRes = await getHomeList(params)
 

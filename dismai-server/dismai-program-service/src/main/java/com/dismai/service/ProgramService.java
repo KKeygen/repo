@@ -217,7 +217,28 @@ public class ProgramService extends ServiceImpl<ProgramMapper, Program> {
         
         return program.getId();
     }
-    
+
+    /**
+     * 编辑节目
+     * @param programAddDto 编辑节目数据的入参
+     * @return 编辑节目后的id
+     * */
+    public Long edit(ProgramAddDto programAddDto) {
+        if (programAddDto.getId() == null) {
+            throw new IllegalArgumentException("节目id不能为空");
+        }
+        Program existing = programMapper.selectById(programAddDto.getId());
+        if (existing == null) {
+            throw new IllegalArgumentException("节目不存在");
+        }
+        Program program = new Program();
+        BeanUtil.copyProperties(programAddDto, program);
+        program.setId(existing.getId());
+        program.setProgramGroupId(existing.getProgramGroupId());
+        programMapper.updateById(program);
+        return program.getId();
+    }
+
     /**
      * 搜索的功能
      * @param programSearchDto 搜索节目数据的入参
