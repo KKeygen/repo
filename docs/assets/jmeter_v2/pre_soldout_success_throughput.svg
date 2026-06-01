@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="420" viewBox="0 0 960 420">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<style>text{font-family:Inter,Arial,sans-serif;fill:#142033} .muted{fill:#5d6878} .axis{stroke:#d7dde7;stroke-width:1} .grid{stroke:#eef2f7;stroke-width:1} .blue{fill:#2f6fc9} .cyan{fill:#168aad} .green{fill:#2d8a63} .amber{fill:#c47b20} .red{fill:#be3a3a} .line{fill:none;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}</style>
+<text x="28" y="34" font-size="22" font-weight="800">售空前成功下单吞吐（按秒）</text>
+<line class="grid" x1="70" y1="70.0" x2="932" y2="70.0"/>
+<text class="muted" x="18" y="75.0" font-size="13">268</text>
+<line class="grid" x1="70" y1="143.0" x2="932" y2="143.0"/>
+<text class="muted" x="18" y="148.0" font-size="13">201</text>
+<line class="grid" x1="70" y1="216.0" x2="932" y2="216.0"/>
+<text class="muted" x="18" y="221.0" font-size="13">134</text>
+<line class="grid" x1="70" y1="289.0" x2="932" y2="289.0"/>
+<text class="muted" x="18" y="294.0" font-size="13">67</text>
+<line class="grid" x1="70" y1="362.0" x2="932" y2="362.0"/>
+<text class="muted" x="18" y="367.0" font-size="13">0</text>
+<rect class="green" x="83.4" y="270.5" width="69.0" height="91.5" rx="3"/>
+<text x="117.9" y="263.5" font-size="12" text-anchor="middle">84</text>
+<text class="muted" x="117.9" y="392" font-size="12" text-anchor="middle">0s</text>
+<rect class="green" x="179.2" y="167.0" width="69.0" height="195.0" rx="3"/>
+<text x="213.7" y="160.0" font-size="12" text-anchor="middle">179</text>
+<text class="muted" x="213.7" y="392" font-size="12" text-anchor="middle">1s</text>
+<rect class="green" x="275.0" y="97.2" width="69.0" height="264.8" rx="3"/>
+<text x="309.4" y="90.2" font-size="12" text-anchor="middle">243</text>
+<text class="muted" x="309.4" y="392" font-size="12" text-anchor="middle">2s</text>
+<rect class="green" x="370.7" y="76.5" width="69.0" height="285.5" rx="3"/>
+<text x="405.2" y="69.5" font-size="12" text-anchor="middle">262</text>
+<text class="muted" x="405.2" y="392" font-size="12" text-anchor="middle">3s</text>
+<rect class="green" x="466.5" y="70.0" width="69.0" height="292.0" rx="3"/>
+<text x="501.0" y="63.0" font-size="12" text-anchor="middle">268</text>
+<text class="muted" x="501.0" y="392" font-size="12" text-anchor="middle">4s</text>
+<rect class="green" x="562.3" y="77.6" width="69.0" height="284.4" rx="3"/>
+<text x="596.8" y="70.6" font-size="12" text-anchor="middle">261</text>
+<text class="muted" x="596.8" y="392" font-size="12" text-anchor="middle">5s</text>
+<rect class="green" x="658.1" y="190.9" width="69.0" height="171.1" rx="3"/>
+<text x="692.6" y="183.9" font-size="12" text-anchor="middle">157</text>
+<text class="muted" x="692.6" y="392" font-size="12" text-anchor="middle">6s</text>
+<rect class="green" x="753.9" y="319.5" width="69.0" height="42.5" rx="3"/>
+<text x="788.3" y="312.5" font-size="12" text-anchor="middle">39</text>
+<text class="muted" x="788.3" y="392" font-size="12" text-anchor="middle">7s</text>
+<rect class="green" x="849.6" y="354.4" width="69.0" height="7.6" rx="3"/>
+<text x="884.1" y="347.4" font-size="12" text-anchor="middle">7</text>
+<text class="muted" x="884.1" y="392" font-size="12" text-anchor="middle">8s</text>
+<line class="axis" x1="70" y1="362" x2="932" y2="362"/>
+<text class="muted" x="480.0" y="410" font-size="13" text-anchor="middle">距首个请求开始的时间（秒）</text>
+</svg>

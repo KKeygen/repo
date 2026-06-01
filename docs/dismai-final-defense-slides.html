@@ -823,10 +823,10 @@
         </div>
       </div>
       <div class="hero-panel">
-        <img src="assets/slides/hero-ticketing.png" alt="在线票务系统分布式架构插图">
+        <img src="assets/slides/architecture-detailed.png" alt="带中文说明的在线票务系统架构插图" style="object-fit:contain;">
       </div>
     </div>
-    <div class="page" style="color:#dce8f6;">01 / 18</div>
+    <div class="page" style="color:#dce8f6;">01 / 20</div>
   </section>
 
   <section class="slide">
@@ -837,10 +837,10 @@
     <div class="grid-3">
       <div class="card blue"><h3>1. 业务与挑战</h3><ul><li>票务系统的高并发特征</li><li>热点节目、热点票档、热点座位</li><li>黑产、重复提交、超卖风险</li></ul></div>
       <div class="card green"><h3>2. 系统设计</h3><ul><li>微服务职责拆分</li><li>读写路径分离</li><li>下单 V4 与锁座状态机</li></ul></div>
-      <div class="card red"><h3>3. 故障答辩</h3><ul><li>Kafka 挂了怎么办</li><li>Redis 挂了怎么办</li><li>数据库挂了怎么办</li></ul></div>
+      <div class="card red"><h3>3. 故障处理</h3><ul><li>Kafka 异常处理</li><li>Redis 异常处理</li><li>数据库异常处理</li></ul></div>
     </div>
     <div class="band"><b>展示目标</b><p>证明系统不是简单堆组件，而是围绕“不超卖、不重复下单、故障可恢复”做了明确的工程取舍。</p></div>
-    <div class="page">02 / 18</div>
+    <div class="page">02 / 20</div>
   </section>
 
   <section class="slide">
@@ -855,7 +855,7 @@
       <div class="card green"><h3>依赖不可完全可靠</h3><ul><li>Kafka 可能延迟或不可用</li><li>Redis/DB 可能故障</li></ul></div>
     </div>
     <div class="quote" style="margin-top:24px;">本项目的核心问题：如何在高并发和局部故障下，仍然守住座位状态的一致性。</div>
-    <div class="page">03 / 18</div>
+    <div class="page">03 / 20</div>
   </section>
 
   <section class="slide">
@@ -863,45 +863,10 @@
       <div><div class="kicker">Architecture</div><h1>系统总体架构</h1><p>Gateway 统一入口；Program 负责节目与库存状态；Order 负责订单事实；Redis 和 Kafka 分别承接热点状态与异步削峰。</p></div>
       <div class="tag">服务视图</div>
     </div>
-    <div class="diagram">
-      <div class="arch-map">
-        <div class="arch-lane">
-          <h3>用户与前端</h3>
-          <div class="arch-box primary">浏览器 / 移动端<small>首页、详情、选座、订单</small></div>
-          <div class="arch-box primary">Vue3 Frontend<small>静态资源由 Nginx 承载</small></div>
-          <div class="arch-arrow">→</div>
-        </div>
-        <div class="arch-lane">
-          <h3>统一入口</h3>
-          <div class="arch-box">Nginx<small>/api 反向代理</small></div>
-          <div class="arch-box hot">Gateway + Sentinel<small>路由、鉴权前置、限流</small></div>
-          <div class="arch-box">Nacos<small>服务注册发现</small></div>
-          <div class="arch-arrow">→</div>
-        </div>
-        <div class="arch-lane">
-          <h3>业务微服务</h3>
-          <div class="arch-box hot">Program Service<small>节目、票档、座位、余票、锁座</small></div>
-          <div class="arch-box">Order Service<small>订单落库、取消补偿、Kafka 消费</small></div>
-          <div class="arch-box">User Service<small>登录、注册、验证码、购票人</small></div>
-          <div class="arch-box">Pay / Admin / BaseData<small>支付、后台、基础数据</small></div>
-          <div class="arch-arrow">→</div>
-        </div>
-        <div class="arch-lane">
-          <h3>数据与中间件</h3>
-          <div class="arch-box hot">Redis / Redisson<small>座位状态、库存、锁、幂等、延迟队列</small></div>
-          <div class="arch-box queue">Kafka<small>异步建单，削峰填谷</small></div>
-          <div class="arch-box store">MySQL + ShardingSphere<small>最终事实源，分库分表</small></div>
-          <div class="arch-box store">Elasticsearch<small>节目搜索</small></div>
-        </div>
-      </div>
-      <div class="legend-row">
-        <span class="pill"><span class="dot red"></span>抢票热点状态</span>
-        <span class="pill"><span class="dot amber"></span>异步削峰</span>
-        <span class="pill"><span class="dot green"></span>最终事实源</span>
-        <span class="pill"><span class="dot"></span>入口与服务治理</span>
-      </div>
+    <div class="image-panel" style="min-height:455px; padding:8px;">
+      <img src="assets/slides/architecture-detailed.png" alt="带中文说明的系统总体架构图" style="min-height:438px; object-fit:contain;">
     </div>
-    <div class="page">04 / 18</div>
+    <div class="page">04 / 20</div>
   </section>
 
   <section class="slide">
@@ -910,14 +875,14 @@
       <div class="tag">原理映射</div>
     </div>
     <div class="table">
-      <div class="row head"><div class="cell">课程概念</div><div class="cell">项目落点</div><div class="cell">解决的问题</div><div class="cell">答辩关键词</div></div>
+      <div class="row head"><div class="cell">课程概念</div><div class="cell">项目落点</div><div class="cell">解决的问题</div><div class="cell">验证关键词</div></div>
       <div class="row"><div class="cell"><b>服务拆分</b></div><div class="cell">User / Program / Order / Pay</div><div class="cell">职责边界清晰，独立扩缩容</div><div class="cell">微服务</div></div>
       <div class="row"><div class="cell"><b>缓存与热点</b></div><div class="cell">Redis 保存余票和座位状态</div><div class="cell">避免所有请求打到数据库</div><div class="cell">热点状态</div></div>
       <div class="row"><div class="cell"><b>消息队列</b></div><div class="cell">Kafka 异步创建订单</div><div class="cell">削峰，保护数据库写入</div><div class="cell">最终一致</div></div>
       <div class="row"><div class="cell"><b>分布式锁</b></div><div class="cell">Redisson / 本地锁 / 幂等注解</div><div class="cell">避免重复更新和重复提交</div><div class="cell">互斥与幂等</div></div>
       <div class="row"><div class="cell"><b>容错恢复</b></div><div class="cell">失败回滚、延迟取消、健康检查</div><div class="cell">依赖故障时保护一致性</div><div class="cell">补偿</div></div>
     </div>
-    <div class="page">05 / 18</div>
+    <div class="page">05 / 20</div>
   </section>
 
   <section class="slide">
@@ -939,7 +904,7 @@
       <div class="card red"><h3>为什么用 Lua</h3><ul><li>读余票、扣库存、迁移座位必须原子</li><li>避免“查到有票，更新时已被抢”</li></ul></div>
       <div class="card blue"><h3>为什么用 Kafka</h3><ul><li>锁座后快速返回订单号</li><li>订单落库异步追上</li><li>缓冲数据库写入峰值</li></ul></div>
     </div>
-    <div class="page">06 / 18</div>
+    <div class="page">06 / 20</div>
   </section>
 
   <section class="slide">
@@ -969,8 +934,8 @@
         </div>
       </div>
     </div>
-    <div class="band"><b>答辩结论</b><p>防刷不是单点能力，而是入口、身份、行为、资源四层共同降低黑产流量对 Redis 和数据库的冲击。</p></div>
-    <div class="page">07 / 18</div>
+    <div class="band"><b>验证结论</b><p>防刷不是单点能力，而是入口、身份、行为、资源四层共同降低异常流量对 Redis 和数据库的冲击。</p></div>
+    <div class="page">07 / 20</div>
   </section>
 
   <section class="slide">
@@ -1017,7 +982,7 @@
         <div class="story-step"><b>6. 支付确认</b><span>订单状态变更并最终一致</span></div>
       </div>
     </div>
-    <div class="page">08 / 18</div>
+    <div class="page">08 / 20</div>
   </section>
 
   <section class="slide">
@@ -1030,23 +995,18 @@
       <div class="card green" style="min-height:330px;"><h3>系统约束</h3><ul><li>座位是否可卖以 Redis 状态为准</li><li>扣库存和锁座在同一 Lua 脚本内完成</li><li>失败时只做补偿释放，不凭空创建订单</li><li>订单异步落库，但座位抢占权先被确定</li></ul></div>
     </div>
     <div class="quote" style="margin-top:22px;">核心不变量：任意时刻，一个座位只能存在于“未售、锁定、已售”中的一个状态集合。</div>
-    <div class="page">09 / 18</div>
+    <div class="page">09 / 20</div>
   </section>
 
   <section class="slide">
     <div class="header">
-      <div><div class="kicker">Kafka Failure</div><h1>Kafka 挂了怎么办</h1><p>Kafka 是异步建单通道，不是座位一致性的唯一保障；发送失败必须回滚锁座。</p></div>
+      <div><div class="kicker">Kafka Failure</div><h1>Kafka 故障处理</h1><p>Kafka 是异步建单通道，不是座位一致性的唯一保障；发送失败必须回滚锁座。</p></div>
       <div class="tag">消息队列故障</div>
     </div>
-    <div class="media-grid reverse">
-      <div class="stack">
-        <div class="card compact red"><h3>Producer 发送失败</h3><ul><li>失败回调记录异常</li><li>回滚 Program 缓存中的锁座与余票</li><li>座位回到可售状态</li></ul></div>
-        <div class="card compact amber"><h3>Consumer 处理失败</h3><ul><li>抛 RuntimeException</li><li>交给 Kafka/Spring 消费重试</li><li>短故障可恢复</li></ul></div>
-        <div class="card compact blue"><h3>消息过期或长期不可用</h3><ul><li>过期消息回滚节目侧数据</li><li>长期不可用则下单失败</li><li>宁可少卖，不可超卖</li></ul></div>
-      </div>
-      <div class="image-panel"><img src="assets/slides/failure-recovery.png" alt="故障恢复插图"></div>
+    <div class="image-panel" style="min-height:455px; padding:8px;">
+      <img src="assets/slides/failure-recovery-detailed.png" alt="带中文说明的 Kafka 故障回滚与恢复图" style="min-height:438px; object-fit:contain;">
     </div>
-    <div class="page">10 / 18</div>
+    <div class="page">10 / 20</div>
   </section>
 
   <section class="slide">
@@ -1060,7 +1020,7 @@
       <div class="card green"><h3>恢复后策略</h3><ul><li>以数据库为事实源</li><li>重建节目、票档、座位缓存</li><li>必要时执行对账修复</li></ul></div>
     </div>
     <div class="band"><b>关键回答</b><p>Redis 故障时，读链路可以展示降级内容；写链路必须停止抢票，因为锁座状态机不可用。</p></div>
-    <div class="page">11 / 18</div>
+    <div class="page">11 / 20</div>
   </section>
 
   <section class="slide">
@@ -1074,7 +1034,7 @@
       <div class="card green"><h3>恢复与校正</h3><ul><li>以订单表为准</li><li>校正 Redis 座位和余票</li><li>重新执行缓存初始化任务</li></ul></div>
     </div>
     <div class="quote" style="margin-top:24px;">数据库故障的核心原则：短故障靠消息缓冲，长故障靠熔断止损，恢复后靠对账修正。</div>
-    <div class="page">12 / 18</div>
+    <div class="page">12 / 20</div>
   </section>
 
   <section class="slide">
@@ -1088,12 +1048,12 @@
       <div class="card green"><h3>补偿动作</h3><ul><li>Kafka 失败回滚缓存</li><li>消息过期释放座位</li><li>支付/取消加订单号维度锁</li></ul></div>
     </div>
     <div class="band"><b>一句话</b><p>先在 Redis 确定座位抢占权，再让订单系统通过 Kafka 和补偿机制追上。</p></div>
-    <div class="page">13 / 18</div>
+    <div class="page">13 / 20</div>
   </section>
 
   <section class="slide">
     <div class="header">
-      <div><div class="kicker">Evidence</div><h1>代码证据：关键能力能对应到实现</h1><p>答辩时不要只讲概念，要能指出系统里哪里实现了这些机制。</p></div>
+      <div><div class="kicker">实现证据</div><h1>代码证据：关键能力能对应到实现</h1><p>关键设计均对应到具体模块、类和补偿逻辑，便于检查与复现。</p></div>
       <div class="tag">实现落点</div>
     </div>
     <div class="evidence">
@@ -1118,12 +1078,12 @@ delay too long -> <span class="warn">cancel program cache data</span>
         <div class="card amber"><h3>防刷</h3><ul><li>Sentinel Gateway</li><li>验证码计数</li><li>布隆过滤器</li></ul></div>
       </div>
     </div>
-    <div class="page">14 / 18</div>
+    <div class="page">14 / 20</div>
   </section>
 
   <section class="slide">
     <div class="header">
-      <div><div class="kicker">Demo Readiness</div><h1>本次演示阻断修复</h1><p>修复现场演示会直接失败的问题，不把安全漏洞纳入本次范围。</p></div>
+      <div><div class="kicker">演示准备</div><h1>本次演示阻断修复</h1><p>修复会影响系统展示和构建验证的阻断问题，不把安全漏洞纳入本次范围。</p></div>
       <div class="tag">已修改</div>
     </div>
     <div class="grid-3">
@@ -1131,12 +1091,12 @@ delay too long -> <span class="warn">cancel program cache data</span>
       <div class="card green"><h3>修复方式</h3><ul><li>手机号写入 Cookie</li><li>Pinia 初始化恢复手机号</li><li>路由和登录页统一使用 userStore.isAdmin</li></ul></div>
       <div class="card amber"><h3>Dockerfile 修复</h3><ul><li>原先强依赖 package-lock.json</li><li>但 lockfile 被 .gitignore 忽略</li><li>改为 package*.json，缺 lockfile 时 npm install</li></ul></div>
     </div>
-    <div class="page">15 / 18</div>
+    <div class="page">15 / 20</div>
   </section>
 
   <section class="slide">
     <div class="header">
-      <div><div class="kicker">Verification</div><h1>验证结果</h1><p>覆盖前端构建、前端镜像、Compose 编排、后端 Java 17 Docker 构建路径。</p></div>
+      <div><div class="kicker">构建验证</div><h1>验证结果</h1><p>覆盖前端构建、前端镜像、Compose 编排、后端 Java 17 Docker 构建路径。</p></div>
       <div class="tag">已验证</div>
     </div>
     <div class="evidence">
@@ -1152,11 +1112,46 @@ Docker build path uses Java 17 and passes.
         <div class="quote">当前可演示结论：前端页面可构建，Compose 编排可解析，后端按项目 Docker 路径可完成 Java 17 构建。</div>
         <div class="grid-2" style="margin-top:18px;">
           <div class="card green"><h3>可展示</h3><ul><li>首页/节目/选座/订单</li><li>管理后台入口</li></ul></div>
-          <div class="card blue"><h3>可答辩</h3><ul><li>锁座状态机</li><li>故障处理边界</li></ul></div>
+          <div class="card blue"><h3>可说明</h3><ul><li>锁座状态机</li><li>故障处理边界</li></ul></div>
         </div>
       </div>
     </div>
-    <div class="page">16 / 18</div>
+    <div class="page">16 / 20</div>
+  </section>
+
+  <section class="slide">
+    <div class="header">
+      <div><div class="kicker">性能测试</div><h1>售空前压测结果</h1><p>只统计 1500 条真实成交请求，售空后拒绝请求不混入分位数。</p></div>
+      <div class="tag">JMeter 500 线程</div>
+    </div>
+    <div class="grid-4">
+      <div class="card green"><h3>0 超卖</h3><ul><li>1500 库存</li><li>1500 条成交响应</li><li>成交数不超过库存</li></ul></div>
+      <div class="card blue"><h3>8.736s 售空</h3><ul><li>首个成交请求开始</li><li>到最后成交完成</li><li>完成吞吐 171.7/s</li></ul></div>
+      <div class="card amber"><h3>268/s 峰值</h3><ul><li>按请求开始时间</li><li>1 秒成交峰值</li><li>库存快速耗尽</li></ul></div>
+      <div class="card red"><h3>P99 2.25s</h3><ul><li>P50 758ms</li><li>P95 1.74s</li><li>Max 2.70s</li></ul></div>
+    </div>
+    <div class="image-panel" style="margin-top:18px; min-height:270px;">
+      <img src="assets/jmeter_v2/pre_soldout_success_throughput.svg" alt="售空前成功下单吞吐图" style="min-height:250px; object-fit:contain;">
+    </div>
+    <div class="page">17 / 20</div>
+  </section>
+
+  <section class="slide">
+    <div class="header">
+      <div><div class="kicker">延迟证据</div><h1>售空前延迟分布</h1><p>旧全局 P99 被售空后 71,270 条拒绝请求污染；真实成交请求没有 3s 以上长尾。</p></div>
+      <div class="tag">报告口径修正</div>
+    </div>
+    <div class="media-grid reverse">
+      <div class="stack">
+        <div class="card compact green"><h3>核心样本</h3><ul><li>响应 195B 恰好 1500 条</li><li>对应真实成交/锁座成功</li><li>售空后 200B 请求剔除</li></ul></div>
+        <div class="card compact blue"><h3>分位数</h3><ul><li>P50 758ms</li><li>P90 1542ms</li><li>P99 2249ms</li></ul></div>
+        <div class="card compact amber"><h3>边界说明</h3><ul><li>203B 业务拒绝单独记录</li><li>JTL 未保存响应体</li><li>建议后续写入业务 code</li></ul></div>
+      </div>
+      <div class="image-panel">
+        <img src="assets/jmeter_v2/pre_soldout_latency_trend.svg" alt="售空前延迟趋势图" style="object-fit:contain;">
+      </div>
+    </div>
+    <div class="page">18 / 20</div>
   </section>
 
   <section class="slide">
@@ -1170,14 +1165,14 @@ Docker build path uses Java 17 and passes.
       <div class="card blue"><h3>数据库可靠性</h3><ul><li>主从切换</li><li>备份恢复</li><li>订单对账任务</li></ul></div>
       <div class="card green"><h3>治理能力</h3><ul><li>动态限流规则</li><li>灰度发布</li><li>链路追踪</li></ul></div>
     </div>
-    <div class="band"><b>答辩姿态</b><p>课程项目已经覆盖核心分布式机制；生产级可靠性还需要围绕消息投递、缓存高可用、数据库容灾继续增强。</p></div>
-    <div class="page">17 / 18</div>
+    <div class="band"><b>工程边界</b><p>课程项目已经覆盖核心分布式机制；生产级可靠性还需要围绕消息投递、缓存高可用、数据库容灾继续增强。</p></div>
+    <div class="page">19 / 20</div>
   </section>
 
   <section class="slide">
     <div class="header">
-      <div><div class="kicker">Q&A</div><h1>答辩速答</h1><p>每个问题都压缩成一句结论，再补一个系统实现点。</p></div>
-      <div class="tag">教授追问</div>
+      <div><div class="kicker">关键问题</div><h1>关键问题说明</h1><p>每个问题先给出工程结论，再对应到系统实现点。</p></div>
+      <div class="tag">问题清单</div>
     </div>
     <div class="table">
       <div class="row head"><div class="cell">问题</div><div class="cell">一句话回答</div><div class="cell">系统实现</div><div class="cell">底线</div></div>
@@ -1187,7 +1182,7 @@ Docker build path uses Java 17 and passes.
       <div class="row"><div class="cell"><b>Redis 挂？</b></div><div class="cell">写链路熔断，不绕过锁座状态机。</div><div class="cell">Compose 健康检查；恢复后以 DB 重建缓存。</div><div class="cell">不乱卖</div></div>
       <div class="row"><div class="cell"><b>DB 挂？</b></div><div class="cell">短故障靠 Kafka 缓冲，长故障靠熔断止损。</div><div class="cell">消费重试、订单表对账、缓存校正。</div><div class="cell">可恢复</div></div>
     </div>
-    <div class="page">18 / 18</div>
+    <div class="page">20 / 20</div>
   </section>
 </main>
 
