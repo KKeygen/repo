@@ -1,0 +1,66 @@
+{
+  "source": "docs/jmeter_result2.jtl.gz",
+  "raw_row_lengths": {
+    "13": 72929,
+    "17": 72929
+  },
+  "main_samples": 72929,
+  "response_bytes": {
+    "195": 1500,
+    "203": 159,
+    "200": 71270
+  },
+  "successful_orders": {
+    "count": 1500,
+    "duration_s": 8.736,
+    "throughput": 171.7,
+    "min_ms": 43,
+    "avg_ms": 866.4,
+    "p50_ms": 758,
+    "p75_ms": 1142,
+    "p90_ms": 1542,
+    "p95_ms": 1743,
+    "p99_ms": 2249,
+    "p999_ms": 2625,
+    "max_ms": 2697,
+    "first_start": 1780302676891,
+    "last_start": 1780302685305,
+    "last_end": 1780302685627
+  },
+  "sold_out_rejections": {
+    "count": 71270,
+    "duration_s": 373.622,
+    "throughput": 190.75,
+    "min_ms": 24,
+    "avg_ms": 2588.2,
+    "p50_ms": 2685,
+    "p75_ms": 4329,
+    "p90_ms": 5535,
+    "p95_ms": 6165,
+    "p99_ms": 7179,
+    "p999_ms": 7956,
+    "max_ms": 8383,
+    "first_start": 1780302682311,
+    "last_start": 1780303055873,
+    "last_end": 1780303055933
+  },
+  "other_business_rejections": {
+    "count": 159,
+    "duration_s": 10.405,
+    "throughput": 15.28,
+    "min_ms": 307,
+    "avg_ms": 1264.7,
+    "p50_ms": 1082,
+    "p75_ms": 1593,
+    "p90_ms": 2182,
+    "p95_ms": 2692,
+    "p99_ms": 4476,
+    "p999_ms": 5508,
+    "max_ms": 5695,
+    "first_start": 1780302678474,
+    "last_start": 1780302685252,
+    "last_end": 1780302688879
+  },
+  "success_start_window_s": 8.414,
+  "peak_success_starts_per_second": 268
+}

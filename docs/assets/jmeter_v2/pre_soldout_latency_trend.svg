@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="420" viewBox="0 0 960 420">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<style>text{font-family:Inter,Arial,sans-serif;fill:#142033} .muted{fill:#5d6878} .axis{stroke:#d7dde7;stroke-width:1} .grid{stroke:#eef2f7;stroke-width:1} .blue{fill:#2f6fc9} .cyan{fill:#168aad} .green{fill:#2d8a63} .amber{fill:#c47b20} .red{fill:#be3a3a} .line{fill:none;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}</style>
+<text x="28" y="34" font-size="22" font-weight="800">售空前延迟趋势（1秒分桶）</text>
+<line class="grid" x1="72" y1="72.0" x2="815" y2="72.0"/>
+<text class="muted" x="18" y="77.0" font-size="13">3000ms</text>
+<line class="grid" x1="72" y1="130.0" x2="815" y2="130.0"/>
+<text class="muted" x="18" y="135.0" font-size="13">2400ms</text>
+<line class="grid" x1="72" y1="188.0" x2="815" y2="188.0"/>
+<text class="muted" x="18" y="193.0" font-size="13">1800ms</text>
+<line class="grid" x1="72" y1="246.0" x2="815" y2="246.0"/>
+<text class="muted" x="18" y="251.0" font-size="13">1200ms</text>
+<line class="grid" x1="72" y1="304.0" x2="815" y2="304.0"/>
+<text class="muted" x="18" y="309.0" font-size="13">600ms</text>
+<line class="grid" x1="72" y1="362.0" x2="815" y2="362.0"/>
+<text class="muted" x="18" y="367.0" font-size="13">0ms</text>
+<polyline class="line" stroke="#2d8a63" points="72.0,272.5 164.9,317.1 257.8,303.3 350.6,281.3 443.5,277.6 536.4,246.9 629.2,275.1 722.1,287.1 815.0,332.3"/>
+<circle cx="72.0" cy="272.5" r="3.5" fill="#2d8a63"/>
+<circle cx="164.9" cy="317.1" r="3.5" fill="#2d8a63"/>
+<circle cx="257.8" cy="303.3" r="3.5" fill="#2d8a63"/>
+<circle cx="350.6" cy="281.3" r="3.5" fill="#2d8a63"/>
+<circle cx="443.5" cy="277.6" r="3.5" fill="#2d8a63"/>
+<circle cx="536.4" cy="246.9" r="3.5" fill="#2d8a63"/>
+<circle cx="629.2" cy="275.1" r="3.5" fill="#2d8a63"/>
+<circle cx="722.1" cy="287.1" r="3.5" fill="#2d8a63"/>
+<circle cx="815.0" cy="332.3" r="3.5" fill="#2d8a63"/>
+<polyline class="line" stroke="#c47b20" points="72.0,226.9 164.9,294.5 257.8,263.1 350.6,238.5 443.5,193.2 536.4,191.0 629.2,194.8 722.1,250.7 815.0,327.5"/>
+<circle cx="72.0" cy="226.9" r="3.5" fill="#c47b20"/>
+<circle cx="164.9" cy="294.5" r="3.5" fill="#c47b20"/>
+<circle cx="257.8" cy="263.1" r="3.5" fill="#c47b20"/>
+<circle cx="350.6" cy="238.5" r="3.5" fill="#c47b20"/>
+<circle cx="443.5" cy="193.2" r="3.5" fill="#c47b20"/>
+<circle cx="536.4" cy="191.0" r="3.5" fill="#c47b20"/>
+<circle cx="629.2" cy="194.8" r="3.5" fill="#c47b20"/>
+<circle cx="722.1" cy="250.7" r="3.5" fill="#c47b20"/>
+<circle cx="815.0" cy="327.5" r="3.5" fill="#c47b20"/>
+<polyline class="line" stroke="#be3a3a" points="72.0,215.8 164.9,272.8 257.8,233.0 350.6,191.6 443.5,135.1 536.4,114.3 629.2,174.5 722.1,244.3 815.0,326.3"/>
+<circle cx="72.0" cy="215.8" r="3.5" fill="#be3a3a"/>
+<circle cx="164.9" cy="272.8" r="3.5" fill="#be3a3a"/>
+<circle cx="257.8" cy="233.0" r="3.5" fill="#be3a3a"/>
+<circle cx="350.6" cy="191.6" r="3.5" fill="#be3a3a"/>
+<circle cx="443.5" cy="135.1" r="3.5" fill="#be3a3a"/>
+<circle cx="536.4" cy="114.3" r="3.5" fill="#be3a3a"/>
+<circle cx="629.2" cy="174.5" r="3.5" fill="#be3a3a"/>
+<circle cx="722.1" cy="244.3" r="3.5" fill="#be3a3a"/>
+<circle cx="815.0" cy="326.3" r="3.5" fill="#be3a3a"/>
+<rect x="840" y="84" width="16" height="16" fill="#2d8a63"/>
+<text x="865" y="98" font-size="14">P50</text>
+<rect x="840" y="112" width="16" height="16" fill="#c47b20"/>
+<text x="865" y="126" font-size="14">P90</text>
+<rect x="840" y="140" width="16" height="16" fill="#be3a3a"/>
+<text x="865" y="154" font-size="14">P99</text>
+<text class="muted" x="72.0" y="392" font-size="12" text-anchor="middle">0s</text>
+<text class="muted" x="164.9" y="392" font-size="12" text-anchor="middle">1s</text>
+<text class="muted" x="257.8" y="392" font-size="12" text-anchor="middle">2s</text>
+<text class="muted" x="350.6" y="392" font-size="12" text-anchor="middle">3s</text>
+<text class="muted" x="443.5" y="392" font-size="12" text-anchor="middle">4s</text>
+<text class="muted" x="536.4" y="392" font-size="12" text-anchor="middle">5s</text>
+<text class="muted" x="629.2" y="392" font-size="12" text-anchor="middle">6s</text>
+<text class="muted" x="722.1" y="392" font-size="12" text-anchor="middle">7s</text>
+<text class="muted" x="815.0" y="392" font-size="12" text-anchor="middle">8s</text>
+</svg>

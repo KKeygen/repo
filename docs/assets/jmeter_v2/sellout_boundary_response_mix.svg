@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="420" viewBox="0 0 960 420">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<style>text{font-family:Inter,Arial,sans-serif;fill:#142033} .muted{fill:#5d6878} .axis{stroke:#d7dde7;stroke-width:1} .grid{stroke:#eef2f7;stroke-width:1} .blue{fill:#2f6fc9} .cyan{fill:#168aad} .green{fill:#2d8a63} .amber{fill:#c47b20} .red{fill:#be3a3a} .line{fill:none;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}</style>
+<text x="28" y="34" font-size="22" font-weight="800">售空边界响应构成</text>
+<line class="grid" x1="70" y1="70.0" x2="790" y2="70.0"/>
+<text class="muted" x="18" y="75.0" font-size="13">307</text>
+<line class="grid" x1="70" y1="143.0" x2="790" y2="143.0"/>
+<text class="muted" x="18" y="148.0" font-size="13">230</text>
+<line class="grid" x1="70" y1="216.0" x2="790" y2="216.0"/>
+<text class="muted" x="18" y="221.0" font-size="13">154</text>
+<line class="grid" x1="70" y1="289.0" x2="790" y2="289.0"/>
+<text class="muted" x="18" y="294.0" font-size="13">77</text>
+<line class="grid" x1="70" y1="362.0" x2="790" y2="362.0"/>
+<text class="muted" x="18" y="367.0" font-size="13">0</text>
+<rect x="80.1" y="282.1" width="51.8" height="79.9" fill="#2d8a63" rx="2"/>
+<text class="muted" x="106.0" y="392" font-size="12" text-anchor="middle">0s</text>
+<rect x="152.1" y="191.7" width="51.8" height="170.3" fill="#2d8a63" rx="2"/>
+<rect x="152.1" y="188.9" width="51.8" height="2.9" fill="#c47b20" rx="2"/>
+<text class="muted" x="178.0" y="392" font-size="12" text-anchor="middle">1s</text>
+<rect x="224.1" y="130.9" width="51.8" height="231.1" fill="#2d8a63" rx="2"/>
+<rect x="224.1" y="118.5" width="51.8" height="12.4" fill="#c47b20" rx="2"/>
+<text class="muted" x="250.0" y="392" font-size="12" text-anchor="middle">2s</text>
+<rect x="296.1" y="112.8" width="51.8" height="249.2" fill="#2d8a63" rx="2"/>
+<rect x="296.1" y="93.8" width="51.8" height="19.0" fill="#c47b20" rx="2"/>
+<text class="muted" x="322.0" y="392" font-size="12" text-anchor="middle">3s</text>
+<rect x="368.1" y="107.1" width="51.8" height="254.9" fill="#2d8a63" rx="2"/>
+<rect x="368.1" y="85.2" width="51.8" height="21.9" fill="#c47b20" rx="2"/>
+<text class="muted" x="394.0" y="392" font-size="12" text-anchor="middle">4s</text>
+<rect x="440.1" y="113.8" width="51.8" height="248.2" fill="#2d8a63" rx="2"/>
+<rect x="440.1" y="77.6" width="51.8" height="36.1" fill="#c47b20" rx="2"/>
+<rect x="440.1" y="70.0" width="51.8" height="7.6" fill="#be3a3a" rx="2"/>
+<text class="muted" x="466.0" y="392" font-size="12" text-anchor="middle">5s</text>
+<rect x="512.1" y="212.7" width="51.8" height="149.3" fill="#2d8a63" rx="2"/>
+<rect x="512.1" y="173.7" width="51.8" height="39.0" fill="#c47b20" rx="2"/>
+<rect x="512.1" y="93.8" width="51.8" height="79.9" fill="#be3a3a" rx="2"/>
+<text class="muted" x="538.0" y="392" font-size="12" text-anchor="middle">6s</text>
+<rect x="584.1" y="324.9" width="51.8" height="37.1" fill="#2d8a63" rx="2"/>
+<rect x="584.1" y="305.9" width="51.8" height="19.0" fill="#c47b20" rx="2"/>
+<rect x="584.1" y="82.4" width="51.8" height="223.5" fill="#be3a3a" rx="2"/>
+<text class="muted" x="610.0" y="392" font-size="12" text-anchor="middle">7s</text>
+<rect x="656.1" y="355.3" width="51.8" height="6.7" fill="#2d8a63" rx="2"/>
+<rect x="656.1" y="354.4" width="51.8" height="1.0" fill="#c47b20" rx="2"/>
+<rect x="656.1" y="126.1" width="51.8" height="228.3" fill="#be3a3a" rx="2"/>
+<text class="muted" x="682.0" y="392" font-size="12" text-anchor="middle">8s</text>
+<rect x="728.1" y="281.2" width="51.8" height="80.8" fill="#be3a3a" rx="2"/>
+<text class="muted" x="754.0" y="392" font-size="12" text-anchor="middle">9s</text>
+<rect x="810" y="82" width="16" height="16" fill="#2d8a63"/>
+<text x="835" y="96" font-size="14">195B 成交成功</text>
+<rect x="810" y="110" width="16" height="16" fill="#c47b20"/>
+<text x="835" y="124" font-size="14">203B 其他拒绝</text>
+<rect x="810" y="138" width="16" height="16" fill="#be3a3a"/>
+<text x="835" y="152" font-size="14">200B 售空拒绝</text>
+</svg>
