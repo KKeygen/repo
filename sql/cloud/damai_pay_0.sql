@@ -4,7 +4,7 @@ USE dismai_pay_0;
 
 DROP TABLE IF EXISTS `d_pay_bill_0`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `d_pay_bill_0` (
   `id` bigint(20) NOT NULL COMMENT '主键id',
   `pay_number` varchar(64) DEFAULT NULL COMMENT '支付流水号',
@@ -40,7 +40,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `d_pay_bill_1`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `d_pay_bill_1` (
   `id` bigint(20) NOT NULL COMMENT '主键id',
   `pay_number` varchar(64) DEFAULT NULL COMMENT '支付流水号',
@@ -76,7 +76,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `d_refund_bill_0`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `d_refund_bill_0` (
   `id` bigint(20) NOT NULL COMMENT '主键id',
   `out_order_no` varchar(64) NOT NULL COMMENT '商户订单号',
@@ -108,7 +108,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `d_refund_bill_1`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `d_refund_bill_1` (
   `id` bigint(20) NOT NULL COMMENT '主键id',
   `out_order_no` varchar(64) NOT NULL COMMENT '商户订单号',

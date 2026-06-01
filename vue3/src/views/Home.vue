@@ -32,8 +32,8 @@
           <button
             v-for="cat in categoryChips"
             :key="cat.name"
-            class="categories__chip"
-            :class="{ 'categories__chip--active': activeCategoryId === cat.id }"
+            class="chip chip--lg"
+            :class="{ 'chip--active': activeCategoryId === cat.id }"
             @click="navigateToCategory(cat)"
           >
             {{ cat.name }}
@@ -318,32 +318,6 @@ onUnmounted(() => {
     flex-wrap: wrap;
     gap: 10px;
     justify-content: center;
-  }
-
-  &__chip {
-    padding: 8px 22px;
-    border-radius: 50px;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    color: var(--color-muted);
-    font-size: 14px;
-    font-weight: 500;
-    transition: all var(--transition);
-
-    &:hover,
-    &:focus-visible {
-      border-color: var(--color-primary);
-      color: var(--color-primary);
-      background: rgba(212, 168, 83, 0.06);
-      outline: none;
-    }
-
-    &--active {
-      background: var(--gradient-primary);
-      color: var(--color-bg);
-      border-color: transparent;
-      font-weight: 600;
-    }
   }
 }
 

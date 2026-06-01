@@ -3,7 +3,7 @@ USE dismai_base_data;
 
 DROP TABLE IF EXISTS `d_area`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `d_area` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '区域id',
   `parent_id` bigint(20) NOT NULL DEFAULT '0' COMMENT '父区域id',
@@ -16,7 +16,7 @@ CREATE TABLE `d_area` (
   PRIMARY KEY (`id`),
   KEY `parent_id` (`parent_id`),
   KEY `ctype` (`type`)
-) ENGINE=InnoDB AUTO_INCREMENT=3409 DEFAULT CHARSET=utf8 COMMENT='地区表';
+) ENGINE=InnoDB AUTO_INCREMENT=3409 DEFAULT CHARSET=utf8mb4 COMMENT='地区表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -35,7 +35,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `d_channel_data`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `d_channel_data` (
   `id` bigint(64) NOT NULL COMMENT 'id',
   `name` varchar(50) DEFAULT NULL COMMENT '名称',

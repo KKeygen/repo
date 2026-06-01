@@ -4,7 +4,7 @@ USE dismai_customize;
 
 DROP TABLE IF EXISTS `d_api_data`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `d_api_data` (
   `id` bigint(20) NOT NULL COMMENT '主键id',
   `head_version` varchar(32) DEFAULT NULL COMMENT '请求版本',
@@ -47,7 +47,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `d_depth_rule`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `d_depth_rule` (
   `id` bigint(20) NOT NULL COMMENT 'id',
   `start_time_window` varchar(64) NOT NULL COMMENT '[限制开始时间]',
@@ -81,7 +81,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `d_rule`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `d_rule` (
   `id` bigint(20) NOT NULL COMMENT 'id',
   `stat_time` int(11) NOT NULL COMMENT '统计时间',

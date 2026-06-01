@@ -13,8 +13,8 @@
           <button
             v-for="cat in categories"
             :key="cat.id"
-            class="category-tabs__item"
-            :class="{ 'category-tabs__item--active': activeCategoryId === cat.id }"
+            class="chip chip--lg"
+            :class="{ 'chip--active': activeCategoryId === cat.id }"
             @click="selectCategory(cat)"
           >
             {{ cat.name }}
@@ -24,8 +24,8 @@
         <!-- Sub Categories -->
         <div v-if="subCategories.length > 0" class="sub-categories child-stagger-3">
           <button
-            class="sub-categories__item"
-            :class="{ 'sub-categories__item--active': !activeSubCategoryId }"
+            class="chip"
+            :class="{ 'chip--active': !activeSubCategoryId }"
             @click="selectSubCategory(null)"
           >
             全部
@@ -33,54 +33,65 @@
           <button
             v-for="sub in subCategories"
             :key="sub.id"
-            class="sub-categories__item"
-            :class="{ 'sub-categories__item--active': activeSubCategoryId === sub.id }"
+            class="chip"
+            :class="{ 'chip--active': activeSubCategoryId === sub.id }"
             @click="selectSubCategory(sub)"
           >
             {{ sub.name }}
           </button>
         </div>
 
-        <!-- Filters -->
+        <!-- Filters: time + sort grouped for visual consistency -->
         <div class="filters child-stagger-4">
-          <div class="filters__city">
-            <span class="text-muted">当前城市：</span>
-            <span class="filters__city-name">{{ appStore.currentCity?.name || '全国' }}</span>
+          <div class="filters__row">
+            <div class="filters__label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
+              </svg>
+              <span>演出时间</span>
+            </div>
+            <div class="chip-group" role="tablist" aria-label="演出时间筛选">
+              <button
+                v-for="t in timeTabs"
+                :key="t.value"
+                class="chip"
+                :class="{ 'chip--active': timeType === t.value }"
+                @click="selectTime(t.value)"
+              >
+                {{ t.label }}
+              </button>
+            </div>
+            <div v-if="timeType === 5" class="filters__daterange">
+              <input type="date" v-model="dateStart" class="form-input form-input--sm" />
+              <span class="text-muted">至</span>
+              <input type="date" v-model="dateEnd" class="form-input form-input--sm" />
+              <button class="btn btn--sm btn--outline" @click="applyDateRange">确定</button>
+            </div>
           </div>
 
-          <!-- Time Filter -->
-          <div class="filters__time">
-            <button
-              v-for="t in timeTabs"
-              :key="t.value"
-              class="filters__time-btn"
-              :class="{ 'filters__time-btn--active': timeType === t.value }"
-              @click="selectTime(t.value)"
-            >
-              {{ t.label }}
-            </button>
+          <div class="filters__row">
+            <div class="filters__label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M3 6h18M6 12h12M10 18h4" />
+              </svg>
+              <span>排序方式</span>
+            </div>
+            <div class="chip-group" role="tablist" aria-label="排序方式">
+              <button
+                v-for="s in sortTabs"
+                :key="s.value"
+                class="chip"
+                :class="{ 'chip--active': sortType === s.value }"
+                @click="selectSort(s.value)"
+              >
+                {{ s.label }}
+              </button>
+            </div>
+            <div class="filters__city">
+              <span class="text-muted">当前城市：</span>
+              <span class="filters__city-name">{{ appStore.currentCity?.name || '全国' }}</span>
+            </div>
           </div>
-
-          <!-- Date Range Picker -->
-          <div v-if="timeType === 5" class="filters__daterange">
-            <input type="date" v-model="dateStart" class="form-input form-input--sm" />
-            <span class="text-muted">至</span>
-            <input type="date" v-model="dateEnd" class="form-input form-input--sm" />
-            <button class="btn btn--sm btn--outline" @click="applyDateRange">确定</button>
-          </div>
-        </div>
-
-        <!-- Sort Tabs -->
-        <div class="sort-tabs child-stagger-5">
-          <button
-            v-for="s in sortTabs"
-            :key="s.value"
-            class="sort-tabs__item"
-            :class="{ 'sort-tabs__item--active': sortType === s.value }"
-            @click="selectSort(s.value)"
-          >
-            {{ s.label }}
-          </button>
         </div>
 
         <!-- Loading -->
@@ -363,6 +374,11 @@ watch(() => route.query, (newQuery) => {
   }
 }
 
+// ============================================================
+// Local layout: tab/filters section
+// (chip visual style lives in global.scss as shared utility)
+// ============================================================
+
 .category-tabs {
   display: flex;
   flex-wrap: wrap;
@@ -370,34 +386,6 @@ watch(() => route.query, (newQuery) => {
   padding: 20px 0;
   border-bottom: 1px solid var(--color-border);
   animation: fadeInUp 0.5s ease both;
-
-  &__item {
-    padding: 9px 24px;
-    border-radius: 50px;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    font-family: var(--font-body);
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--color-muted);
-    cursor: pointer;
-    transition: all var(--transition);
-    letter-spacing: 0.5px;
-
-    &:hover {
-      border-color: var(--color-primary);
-      color: var(--color-primary);
-      background: var(--color-elevated);
-    }
-
-    &--active {
-      background: transparent;
-      color: var(--color-primary);
-      border-color: var(--color-primary);
-      font-weight: 600;
-      box-shadow: 0 0 12px rgba(212, 168, 83, 0.2);
-    }
-  }
 }
 
 .sub-categories {
@@ -406,40 +394,69 @@ watch(() => route.query, (newQuery) => {
   gap: 8px;
   padding: 18px 0;
   animation: fadeInUp 0.5s ease both;
+}
 
-  &__item {
-    padding: 6px 18px;
-    border-radius: var(--radius);
-    background: var(--color-elevated);
-    border: 1px solid transparent;
-    font-size: 13px;
-    color: var(--color-muted);
-    cursor: pointer;
-    transition: all var(--transition);
-
-    &:hover {
-      color: var(--color-primary);
-      border-color: var(--color-border);
-    }
-
-    &--active {
-      background: rgba(212, 168, 83, 0.1);
-      color: var(--color-primary);
-      font-weight: 600;
-      border-color: var(--color-primary);
-    }
-  }
+.chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
 }
 
 .filters {
-  display: flex;
-  align-items: center;
-  padding: 14px 0;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   animation: fadeInUp 0.5s ease both;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+
+  &__row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 8px 0;
+
+    & + & {
+      border-top: 1px solid var(--color-border);
+      margin-top: 4px;
+      padding-top: 14px;
+    }
+  }
+
+  &__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    min-width: 88px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text);
+    letter-spacing: 0.5px;
+
+    svg {
+      color: var(--color-primary);
+    }
+  }
+
+  &__daterange {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+
+    .form-input--sm {
+      width: 150px;
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+  }
 
   &__city {
-    font-size: 14px;
+    margin-left: auto;
+    font-size: 13px;
     font-family: var(--font-body);
   }
 
