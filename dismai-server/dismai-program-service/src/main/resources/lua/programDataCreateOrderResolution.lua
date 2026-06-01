@@ -163,5 +163,4 @@ if ARGV[3] and ARGV[3] ~= "" then
         redis.call('hset', program_id_card_hash_key, tostring(id_number), "1")
     end
 end
-
 return string.format('{"%s": %d, "%s": %s}', 'code', 0, 'purchaseSeatList', cjson.encode(purchase_seat_list))
