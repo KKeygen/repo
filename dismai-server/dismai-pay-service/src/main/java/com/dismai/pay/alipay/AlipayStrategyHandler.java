@@ -26,6 +26,9 @@ import com.dismai.pay.TradeResult;
 import com.dismai.pay.alipay.config.AlipayProperties;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -120,41 +123,50 @@ public class AlipayStrategyHandler implements PayStrategyHandler {
     }
     
     @Override
+    @Retryable(
+        retryFor = AlipayApiException.class,
+        maxAttempts = 5,
+        backoff = @Backoff(delay = 2000, multiplier = 2, maxDelay = 30000)
+    )
     public TradeResult queryTrade(String outTradeNo) {
         String successCode = "10000";
         String successMsg = "Success";
         TradeResult tradeResult = new TradeResult();
         tradeResult.setSuccess(false);
-        try {
-            //构建查询参数，将订单号放入，调用SDK查询
-            AlipayTradeQueryRequest request = new AlipayTradeQueryRequest();
-            WebUtils.setNeedCheckServerTrusted(false);
-            JSONObject bizContent = new JSONObject();
-            bizContent.put("out_trade_no", outTradeNo);
-            request.setBizContent(bizContent.toString());
-            AlipayTradeQueryResponse response = alipayClient.execute(request);
-            if (response.isSuccess()) {
-                JSONObject jsonResponse = JSON.parseObject(response.getBody());
-                JSONObject alipayTradeQueryResponse = jsonResponse.getJSONObject("alipay_trade_query_response");
-                String code = alipayTradeQueryResponse.getString("code");
-                String msg = alipayTradeQueryResponse.getString("msg");
-                //如果调用成功
-                if (successCode.equals(code) && successMsg.equals(msg)) {
-                    tradeResult.setSuccess(true);
-                    //订单编号
-                    tradeResult.setOutTradeNo(alipayTradeQueryResponse.getString("out_trade_no"));
-                    //支付金额
-                    tradeResult.setTotalAmount(new BigDecimal(alipayTradeQueryResponse.getString("total_amount")));
-                    //账单状态，需将支付的状态转换为对应的支付服务中账单状态
-                    tradeResult.setPayBillStatus(convertPayBillStatus(alipayTradeQueryResponse.getString("trade_status")));
-                    return tradeResult;
-                }
-            }else {
-                log.error("支付宝交易查询结果失败 response : {}",JSON.toJSONString(response));
+        //构建查询参数，将订单号放入，调用SDK查询
+        AlipayTradeQueryRequest request = new AlipayTradeQueryRequest();
+        WebUtils.setNeedCheckServerTrusted(false);
+        JSONObject bizContent = new JSONObject();
+        bizContent.put("out_trade_no", outTradeNo);
+        request.setBizContent(bizContent.toString());
+        AlipayTradeQueryResponse response = alipayClient.execute(request);
+        if (response.isSuccess()) {
+            JSONObject jsonResponse = JSON.parseObject(response.getBody());
+            JSONObject alipayTradeQueryResponse = jsonResponse.getJSONObject("alipay_trade_query_response");
+            String code = alipayTradeQueryResponse.getString("code");
+            String msg = alipayTradeQueryResponse.getString("msg");
+            //如果调用成功
+            if (successCode.equals(code) && successMsg.equals(msg)) {
+                tradeResult.setSuccess(true);
+                //订单编号
+                tradeResult.setOutTradeNo(alipayTradeQueryResponse.getString("out_trade_no"));
+                //支付金额
+                tradeResult.setTotalAmount(new BigDecimal(alipayTradeQueryResponse.getString("total_amount")));
+                //账单状态，需将支付的状态转换为对应的支付服务中账单状态
+                tradeResult.setPayBillStatus(convertPayBillStatus(alipayTradeQueryResponse.getString("trade_status")));
+                return tradeResult;
             }
-        }catch (Exception e) {
-            log.error("alipay trade query error",e);
+        } else {
+            log.error("支付宝交易查询结果失败 response : {}", JSON.toJSONString(response));
         }
+        return tradeResult;
+    }
+
+    @Recover
+    public TradeResult recoverQueryTrade(AlipayApiException e, String outTradeNo) {
+        log.error("alipay trade query failed after retries, outTradeNo={}", outTradeNo, e);
+        TradeResult tradeResult = new TradeResult();
+        tradeResult.setSuccess(false);
         return tradeResult;
     }
     
