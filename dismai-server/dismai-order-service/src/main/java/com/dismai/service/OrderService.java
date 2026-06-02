@@ -523,9 +523,13 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
                 orderTicketUserList.stream().collect(Collectors.groupingBy(OrderTicketUser::getOrderPrice));
         orderTicketUserMap.forEach((k,v) -> {
             OrderTicketInfoVo orderTicketInfoVo = new OrderTicketInfoVo();
-            String seatInfo = "暂无座位信息";
-            if (order.getProgramPermitChooseSeat().equals(BusinessStatus.YES.getCode())) {
-                seatInfo = v.stream().map(OrderTicketUser::getSeatInfo).collect(Collectors.joining(","));
+            String seatInfo = v.stream()
+                    .map(OrderTicketUser::getSeatInfo)
+                    .filter(Objects::nonNull)
+                    .filter(s -> !s.isEmpty())
+                    .collect(Collectors.joining(","));
+            if (seatInfo.isEmpty()) {
+                seatInfo = "暂无座位信息";
             }
             orderTicketInfoVo.setSeatInfo(seatInfo);
             orderTicketInfoVo.setPrice(v.get(0).getOrderPrice());
