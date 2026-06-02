@@ -76,12 +76,16 @@ public class ProgramShowTimeService extends ServiceImpl<ProgramShowTimeMapper, P
 
     @Transactional(rollbackFor = Exception.class)
     public Long add(ProgramShowTimeAddDto programShowTimeAddDto) {
+        Long programId = programShowTimeAddDto.getProgramId();
+        LambdaQueryWrapper<ProgramShowTime> deleteWrapper = Wrappers.lambdaQuery(ProgramShowTime.class)
+                .eq(ProgramShowTime::getProgramId, programId);
+        programShowTimeMapper.delete(deleteWrapper);
+        
         ProgramShowTime programShowTime = new ProgramShowTime();
         BeanUtil.copyProperties(programShowTimeAddDto,programShowTime);
         programShowTime.setId(uidGenerator.getUid());
         programShowTimeMapper.insert(programShowTime);
         
-        Long programId = programShowTimeAddDto.getProgramId();
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
