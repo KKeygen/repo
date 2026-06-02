@@ -118,7 +118,7 @@ const showTime = ref('')
 const tierColors = ['#6366F1', '#EC4899', '#10B981', '#F59E0B', '#3B82F6', '#8B5CF6', '#EF4444', '#14B8A6']
 
 const totalPrice = computed(() => {
-  return selectedSeats.value.reduce((sum, s) => sum + (s.price || 0), 0).toFixed(2)
+  return selectedSeats.value.reduce((sum, s) => sum + (Number(s.price) || 0), 0).toFixed(2)
 })
 
 const getSeatClass = (seat) => {
@@ -171,7 +171,8 @@ onMounted(async () => {
     if (res.code == 0) {
       const data = res.data || {}
       showTime.value = data.showTime || ''
-      const seatList = data.seatList || data.seats || []
+      const seatVoMap = data.seatVoMap || {}
+      const seatList = Object.values(seatVoMap).flat()
       const priceSet = new Map()
       const rowMap = new Map()
       seatList.forEach(seat => {

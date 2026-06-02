@@ -172,6 +172,14 @@ public class SeatService extends ServiceImpl<SeatMapper, Seat> {
         }
     }
     
+    public List<SeatVo> selectSeatResolutionAllShards(Long programId, Long ticketCategoryId, Long expireTime, TimeUnit timeUnit) {
+        List<SeatVo> aggregate = new ArrayList<>();
+        for (int shardId = 0; shardId < Seat.SHARD_COUNT; shardId++) {
+            aggregate.addAll(selectSeatResolution(programId, ticketCategoryId, expireTime, timeUnit, shardId));
+        }
+        return aggregate;
+    }
+
     public List<SeatVo> getSeatVoListByCacheResolution(Long programId,Long ticketCategoryId){
         return getSeatVoListByCacheResolution(programId, ticketCategoryId, 0);
     }
@@ -202,7 +210,7 @@ public class SeatService extends ServiceImpl<SeatMapper, Seat> {
         
         List<SeatVo> seatVos = new ArrayList<>();
         for (TicketCategoryVo ticketCategoryVo : ticketCategoryVoList) {
-            seatVos.addAll(selectSeatResolution(seatListDto.getProgramId(),ticketCategoryVo.getId(),
+            seatVos.addAll(selectSeatResolutionAllShards(seatListDto.getProgramId(),ticketCategoryVo.getId(),
                     DateUtils.countBetweenSecond(DateUtils.now(), programShowTime.getShowTime()), TimeUnit.SECONDS));
         }
         
