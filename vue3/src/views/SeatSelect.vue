@@ -171,7 +171,8 @@ onMounted(async () => {
     if (res.code == 0) {
       const data = res.data || {}
       showTime.value = data.showTime || ''
-      const seatList = data.seatList || data.seats || []
+      const seatVoMap = data.seatVoMap || {}
+      const seatList = Object.values(seatVoMap).flat()
       const priceSet = new Map()
       const rowMap = new Map()
       seatList.forEach(seat => {
