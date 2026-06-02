@@ -1,12 +1,12 @@
 package com.dismai.service.init;
 
 import com.dismai.core.RedisKeyManage;
+import com.dismai.redis.RedisCache;
 import com.dismai.redis.RedisKeyBuild;
 import com.dismai.entity.TicketCategory;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.dismai.mapper.TicketCategoryMapper;
 import com.dismai.service.ProgramService;
-import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +29,7 @@ public class ProgramTicketRemainInit extends AbstractApplicationPostConstructHan
     private TicketCategoryMapper ticketCategoryMapper;
 
     @Autowired
-    private RedissonClient redissonClient;
+    private RedisCache redisCache;
 
     @Override
     public Integer executeOrder() {
@@ -66,14 +66,13 @@ public class ProgramTicketRemainInit extends AbstractApplicationPostConstructHan
                         continue;
                     }
                     scanned++;
-                    String totalKey = RedisKeyBuild.createRedisKey(
+                    RedisKeyBuild totalKey = RedisKeyBuild.createRedisKey(
                             RedisKeyManage.PROGRAM_TICKET_TOTAL_REMAIN,
-                            programId, tc.getId()).getRelKey();
+                            programId, tc.getId());
                     try {
-                        Object current = redissonClient.getBucket(totalKey).get();
+                        Long current = redisCache.get(totalKey, Long.class);
                         if (isBroken(current)) {
-                            redissonClient.getBucket(totalKey)
-                                    .set(String.valueOf(tc.getRemainNumber()));
+                            redisCache.set(totalKey, String.valueOf(tc.getRemainNumber()));
                             repaired++;
                             log.info("ProgramTicketRemainInit: repaired programId={} ticketCategoryId={} remain={}",
                                     programId, tc.getId(), tc.getRemainNumber());
@@ -81,7 +80,7 @@ public class ProgramTicketRemainInit extends AbstractApplicationPostConstructHan
                             skipped++;
                         }
                     } catch (Exception e) {
-                        log.error("ProgramTicketRemainInit: failed to repair key={}", totalKey, e);
+                        log.error("ProgramTicketRemainInit: failed to repair key={}", totalKey.getRelKey(), e);
                         failed++;
                     }
                 }
@@ -93,19 +92,10 @@ public class ProgramTicketRemainInit extends AbstractApplicationPostConstructHan
         }
     }
 
-    private boolean isBroken(Object current) {
+    private boolean isBroken(Long current) {
         if (current == null) {
             return true;
         }
-        String s = current.toString().trim();
-        if (s.isEmpty()) {
-            return true;
-        }
-        try {
-            long v = Long.parseLong(s);
-            return v <= 0;
-        } catch (NumberFormatException e) {
-            return true;
-        }
+        return current <= 0;
     }
 }
