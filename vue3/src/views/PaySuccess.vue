@@ -81,7 +81,7 @@ const payStatusClass = computed(() => {
 })
 
 onMounted(async () => {
-  orderNumber.value = route.query.orderNumber || ''
+  orderNumber.value = route.query.out_trade_no || route.query.orderNumber || ''
   if (!orderNumber.value) return
   checking.value = true
   try {
