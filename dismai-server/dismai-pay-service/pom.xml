@@ -124,6 +124,10 @@
             <version>${alipay-sdk-java-version}</version>
         </dependency>
         <dependency>
+            <groupId>org.springframework.retry</groupId>
+            <artifactId>spring-retry</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.example</groupId>
             <artifactId>dismai-service-gray-transition-webmvc-framework</artifactId>
             <version>${revision}</version>
