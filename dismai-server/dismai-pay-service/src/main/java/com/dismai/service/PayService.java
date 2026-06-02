@@ -154,7 +154,13 @@ public class PayService {
     public TradeCheckVo tradeCheck(TradeCheckDto tradeCheckDto) {
         TradeCheckVo tradeCheckVo = new TradeCheckVo();
         PayStrategyHandler payStrategyHandler = payStrategyContext.get(tradeCheckDto.getChannel());
-        TradeResult tradeResult = payStrategyHandler.queryTrade(tradeCheckDto.getOutTradeNo());
+        TradeResult tradeResult;
+        try {
+            tradeResult = payStrategyHandler.queryTrade(tradeCheckDto.getOutTradeNo());
+        } catch (com.alipay.api.AlipayApiException e) {
+            log.error("alipay queryTrade failed after retries outTradeNo={}", tradeCheckDto.getOutTradeNo(), e);
+            return tradeCheckVo;
+        }
         BeanUtil.copyProperties(tradeResult,tradeCheckVo);
         if (!tradeResult.isSuccess()) {
             return tradeCheckVo;

@@ -1,5 +1,6 @@
 package com.dismai.pay;
 
+import com.alipay.api.AlipayApiException;
 import com.dismai.entity.PayBill;
 
 import java.math.BigDecimal;
@@ -16,14 +17,14 @@ public interface PayStrategyHandler {
      * @return 结果
      * */
     PayResult pay(String outTradeNo, BigDecimal price, String subject, String notifyUrl, String returnUrl);
-    
+
     /**
      * 验签
      * @param params 参数
      * @return 结果
      * */
     boolean signVerify(Map<String, String> params);
-    
+
     /**
      * 数据验证
      * @param params 参数
@@ -31,14 +32,15 @@ public interface PayStrategyHandler {
      * @return 结果
      * */
     boolean dataVerify(Map<String, String> params, PayBill payBill);
-    
+
     /**
      * 状态查询
      * @param outTradeNo 订单号
      * @return 结果
+     * @throws AlipayApiException 调用支付宝SDK失败时抛出，由 Spring Retry 重试
      * */
-    TradeResult queryTrade(String outTradeNo);
-    
+    TradeResult queryTrade(String outTradeNo) throws AlipayApiException;
+
     /**
      * 退款
      * @param outTradeNo 订单号
@@ -47,7 +49,7 @@ public interface PayStrategyHandler {
      * @return 结果
      * */
     RefundResult refund(String outTradeNo, BigDecimal price, String reason);
-    
+
     /**
      * 支付渠道
      * @return 结果
