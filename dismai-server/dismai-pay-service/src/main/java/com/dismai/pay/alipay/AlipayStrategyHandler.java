@@ -128,7 +128,7 @@ public class AlipayStrategyHandler implements PayStrategyHandler {
         maxAttempts = 5,
         backoff = @Backoff(delay = 2000, multiplier = 2, maxDelay = 30000)
     )
-    public TradeResult queryTrade(String outTradeNo) {
+    public TradeResult queryTrade(String outTradeNo) throws AlipayApiException {
         String successCode = "10000";
         String successMsg = "Success";
         TradeResult tradeResult = new TradeResult();
