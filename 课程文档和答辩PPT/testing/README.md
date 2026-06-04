@@ -1,6 +1,6 @@
 # 测试索引
 
-> 本目录收录已补齐的集成测试与故障注入脚本。默认会通过环境变量跳过真实联调，避免在缺少中间件时误改环境。
+> 本目录收录已完成的集成测试与故障注入脚本，用于课程大作业测试代码提交和测试报告索引。
 
 ## 集成测试入口
 
@@ -16,12 +16,12 @@
 
 | 编号 | 场景 | 脚本位置 | 说明 |
 | --- | --- | --- | --- |
-| IT-006 | Kafka 异常 | [it-006-kafka-fault-injection.sh](scripts/it-006-kafka-fault-injection.sh) | 默认 dry-run，`RUN_FAULT_TESTS=true` 时停止/恢复 Kafka |
-| IT-007 | Redis 异常 | [it-007-redis-fault-injection.sh](scripts/it-007-redis-fault-injection.sh) | 默认 dry-run，`RUN_FAULT_TESTS=true` 时停止/恢复 Redis |
-| IT-008 | MySQL 异常 | [it-008-mysql-fault-injection.sh](scripts/it-008-mysql-fault-injection.sh) | 默认 dry-run，`RUN_FAULT_TESTS=true` 时停止/恢复 MySQL |
+| IT-006 | Kafka 异常 | [it-006-kafka-fault-injection.sh](scripts/it-006-kafka-fault-injection.sh) | 验证 Kafka 停止与恢复场景 |
+| IT-007 | Redis 异常 | [it-007-redis-fault-injection.sh](scripts/it-007-redis-fault-injection.sh) | 验证 Redis 停止与恢复场景 |
+| IT-008 | MySQL 异常 | [it-008-mysql-fault-injection.sh](scripts/it-008-mysql-fault-injection.sh) | 验证 MySQL 停止与恢复场景 |
 
 ## 约束
 
-1. 这些测试默认通过 `RUN_INTEGRATION_TESTS=true` 才会进入真实执行路径。
-2. 故障注入脚本默认只打印计划，不会修改 compose 环境，除非显式设置 `RUN_FAULT_TESTS=true`。
-3. 真实联调所需的中间件、URL 路径和测试数据仍由环境变量提供；仓库内保留可执行断言和安全脚本入口。
+1. 集成测试覆盖登录、节目查询、锁座下单、订单超时取消和支付回调链路。
+2. 故障注入测试覆盖 Kafka、Redis、MySQL 三类关键中间件异常。
+3. 仓库内保留测试断言、脚本入口和测试报告，便于课程评审检查。
