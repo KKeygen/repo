@@ -79,7 +79,7 @@
           <!-- CTA Button -->
           <div class="cta-section child-stagger-5">
             <button class="cta-btn" :disabled="!selectedTicket" @click="handleBuy">
-              {{ program.permitChooseSeat === '1' ? '选座购买' : '立即购买' }}
+              {{ canChooseSeat ? '选座购买' : '立即购买' }}
             </button>
           </div>
 
@@ -162,7 +162,7 @@
               </div>
               <div class="service-item">
                 <span class="service-item__label">选座方式</span>
-                <span class="service-item__value" :class="program.permitChooseSeat === '1' ? 'text-primary' : ''">{{ program.permitChooseSeat === '1' ? '可选座' : '随机分配' }}</span>
+                <span class="service-item__value" :class="canChooseSeat ? 'text-primary' : ''">{{ canChooseSeat ? '可选座' : '随机分配' }}</span>
               </div>
             </div>
           </div>
@@ -244,6 +244,8 @@ const invoiceText = computed(() => {
   return '—'
 })
 
+const canChooseSeat = computed(() => Number(program.value?.permitChooseSeat) === 1)
+
 const selectTicket = (ticket) => {
   if (selectedTicket.value?.id === ticket.id) {
     selectedTicket.value = null
@@ -258,7 +260,7 @@ const handleBuy = () => {
     toast.error('请先选择票档')
     return
   }
-  if (program.value.permitChooseSeat === '1') {
+  if (canChooseSeat.value) {
     router.push({
       path: '/order/seatSelect',
       query: { programId: program.value.id, ticketCategoryId: selectedTicket.value.id }
