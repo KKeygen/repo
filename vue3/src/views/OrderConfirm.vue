@@ -143,6 +143,7 @@ const showAddForm = ref(false)
 const userPhone = ref('')
 const selectedSeats = ref([])
 const count = ref(1)
+const SELECTED_SEATS_KEY = 'selectedSeats'
 
 const programInfo = reactive({ id: '', title: '', showTime: '', venue: '', ticketName: '', ticketCategoryId: '', price: 0 })
 
@@ -253,8 +254,20 @@ onMounted(async () => {
   programInfo.id = programId
   programInfo.ticketCategoryId = ticketCategoryId
   if (seatSelect === '1') {
-    const stored = sessionStorage.getItem('selectedSeats')
-    if (stored) try { selectedSeats.value = JSON.parse(stored) } catch (e) { /* ignore */ }
+    const stored = sessionStorage.getItem(SELECTED_SEATS_KEY)
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored)
+        if (Array.isArray(parsed)) {
+          selectedSeats.value = parsed
+        } else if (
+          String(parsed.programId) === String(programId) &&
+          String(parsed.ticketCategoryId) === String(ticketCategoryId)
+        ) {
+          selectedSeats.value = parsed.seats || []
+        }
+      } catch (e) { /* ignore */ }
+    }
   }
   try {
     const [programRes] = await Promise.all([getProgramDetail({ id: programId }), loadTicketUsers()])

@@ -116,6 +116,7 @@ const selectedSeats = ref([])
 const priceTiers = ref([])
 const showTime = ref('')
 const tierColors = ['#6366F1', '#EC4899', '#10B981', '#F59E0B', '#3B82F6', '#8B5CF6', '#EF4444', '#14B8A6']
+const SELECTED_SEATS_KEY = 'selectedSeats'
 
 const totalPrice = computed(() => {
   return selectedSeats.value.reduce((sum, s) => sum + (s.price || 0), 0).toFixed(2)
@@ -156,7 +157,11 @@ const removeSeat = (seat) => {
 
 const confirmSelection = () => {
   if (selectedSeats.value.length === 0) return
-  sessionStorage.setItem('selectedSeats', JSON.stringify(selectedSeats.value))
+  sessionStorage.setItem(SELECTED_SEATS_KEY, JSON.stringify({
+    programId: route.query.programId,
+    ticketCategoryId: route.query.ticketCategoryId,
+    seats: selectedSeats.value
+  }))
   router.push({
     path: '/order/index',
     query: { programId: route.query.programId, ticketCategoryId: route.query.ticketCategoryId, count: selectedSeats.value.length, seatSelect: '1' }
