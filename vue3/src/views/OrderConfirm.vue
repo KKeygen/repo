@@ -183,7 +183,6 @@ const handleAddUser = async () => {
 const handleSubmit = async () => {
   if (!selectedUserId.value) { toast.error('请选择购票人'); return }
   submitting.value = true
-  const selectedUser = ticketUsers.value.find(u => u.id === selectedUserId.value)
   const params = {
     programId: programInfo.id,
     userId: userStore.userId,
@@ -218,7 +217,6 @@ const handleSubmit = async () => {
 }
 
 let pollTimer = null
-let pollTimeout = null
 const POLL_INTERVAL = 200
 const POLL_TIMEOUT = 10_000
 
@@ -228,7 +226,7 @@ const startPolling = (orderNumber) => {
     if (Date.now() - startTime >= POLL_TIMEOUT) {
       stopPolling()
       submitting.value = false
-      if (confirm('订单创建中（排队较久），是否继续等待？取消可稍后在订单列表查看。')) {
+      if (confirm('订单创建中（排队较久），是否前往订单列表查看？')) {
         router.push({ path: '/orderManagement' })
       }
       return
@@ -246,7 +244,6 @@ const startPolling = (orderNumber) => {
 
 const stopPolling = () => {
   if (pollTimer) { clearInterval(pollTimer); pollTimer = null }
-  if (pollTimeout) { clearTimeout(pollTimeout); pollTimeout = null }
   submitting.value = false
 }
 
