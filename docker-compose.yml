@@ -454,7 +454,6 @@ volumes:
   mysql-data:
   redis-data:
   nacos-data:
-  zk-data:
   kafka-data:
   es-data:
 
