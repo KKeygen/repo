@@ -16,7 +16,7 @@ public class GatewayProperty {
     @Value("${skip.check.token.paths:/**/program/order/create/v1,/**/program/order/create/v2,/**/program/order/create/v3," +
             "/**/program/order/create/v4,/**/ticket/user/add,/**/ticket/user/delete,/**/ticket/user/list,/**/user/authentication," +
             "/**/user/update,/**/user/update/email,/**/user/update/mobile,/**/user/update/password," +
-            "/**/order/cancel,/**/order/create,/**/order/pay,/**/order/select/list,/**/order/get,/**/order/cancel}")
+            "/**/order/cancel,/**/order/create,/**/order/pay,/**/order/select/list,/**/order/get}")
     private String[] checkTokenPaths;
     
     @Value("${skip.check.parmeter.paths:/**/alipay/notify}")
