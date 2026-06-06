@@ -278,7 +278,6 @@ public class RequestValidationFilter implements GlobalFilter, Ordered {
             @Override
             public HttpHeaders getHeaders() {
                 log.info("current thread getHeaders: {}",Thread.currentThread().getName());
-                long contentLength = headers.getContentLength();
                 HttpHeaders newHeaders = new HttpHeaders();
                 newHeaders.putAll(headers);
                 Map<String, String> map = requestTemporaryWrapper.getMap();
@@ -288,11 +287,8 @@ public class RequestValidationFilter implements GlobalFilter, Ordered {
                 if (CollectionUtil.isNotEmpty(headMap)) {
                     newHeaders.setAll(headMap);
                 }
-                if (contentLength > 0){
-                    newHeaders.setContentLength(contentLength);
-                }else {
-                    newHeaders.set(HttpHeaders.TRANSFER_ENCODING,"chunked");
-                }
+                newHeaders.remove(HttpHeaders.CONTENT_LENGTH);
+                newHeaders.set(HttpHeaders.TRANSFER_ENCODING,"chunked");
                 if (CollectionUtil.isNotEmpty(headMap) && StringUtil.isNotEmpty(headMap.get(TRACE_ID))) {
                     MDC.put(TRACE_ID,headMap.get(TRACE_ID));
                 }

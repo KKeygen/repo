@@ -64,34 +64,33 @@ public class PayService {
     @ServiceLock(name = COMMON_PAY,keys = {"#payDto.orderNumber"})
     @Transactional(rollbackFor = Exception.class)
     public String commonPay(PayDto payDto) {
+        String orderNumber = String.valueOf(payDto.getOrderNumber());
         LambdaQueryWrapper<PayBill> payBillLambdaQueryWrapper = 
-                Wrappers.lambdaQuery(PayBill.class).eq(PayBill::getOutOrderNo, payDto.getOrderNumber());
+                Wrappers.lambdaQuery(PayBill.class).eq(PayBill::getOutOrderNo, orderNumber);
         PayBill payBill = payBillMapper.selectOne(payBillLambdaQueryWrapper);
         if (Objects.nonNull(payBill) && !Objects.equals(payBill.getPayBillStatus(), PayBillStatus.NO_PAY.getCode())) {
             throw new DismaiFrameException(BaseCode.PAY_BILL_IS_NOT_NO_PAY);
         }
+        if (Objects.isNull(payBill)){
+            payBill = new PayBill();
+            payBill.setId(uidGenerator.getUid());
+            payBill.setOutOrderNo(orderNumber);
+            payBill.setPayChannel(payDto.getChannel());
+            payBill.setPayScene("生产");
+            payBill.setSubject(payDto.getSubject());
+            payBill.setPayAmount(payDto.getPrice());
+            payBill.setPayBillType(payDto.getPayBillType());
+            payBill.setPayBillStatus(PayBillStatus.NO_PAY.getCode());
+            payBillMapper.insert(payBill);
+        }
         PayStrategyHandler payStrategyHandler = payStrategyContext.get(payDto.getChannel());
-        PayResult pay = payStrategyHandler.pay(String.valueOf(payDto.getOrderNumber()), payDto.getPrice(), 
+        PayResult pay = payStrategyHandler.pay(orderNumber, payDto.getPrice(),
                 payDto.getSubject(),payDto.getNotifyUrl(),payDto.getReturnUrl());
         if (pay.isSuccess()) {
-            if (Objects.isNull(payBill)){
-                payBill = new PayBill();
-                payBill.setId(uidGenerator.getUid());
-                payBill.setOutOrderNo(String.valueOf(payDto.getOrderNumber()));
-                payBill.setPayChannel(payDto.getChannel());
-                payBill.setPayScene("生产");
-                payBill.setSubject(payDto.getSubject());
-                payBill.setPayAmount(payDto.getPrice());
-                payBill.setPayBillType(payDto.getPayBillType());
-                payBill.setPayBillStatus(PayBillStatus.NO_PAY.getCode());
-                payBill.setPayTime(DateUtils.now());
-                payBillMapper.insert(payBill);
-            }else {
-                PayBill updatePayBill = new PayBill();
-                updatePayBill.setId(payBill.getId());
-                updatePayBill.setPayTime(DateUtils.now());
-                payBillMapper.updateById(updatePayBill);
-            }
+            PayBill updatePayBill = new PayBill();
+            updatePayBill.setId(payBill.getId());
+            updatePayBill.setPayTime(DateUtils.now());
+            payBillMapper.updateById(updatePayBill);
         }
         return pay.getBody();
     }
@@ -142,8 +141,13 @@ public class PayService {
         PayBill updatePayBill = new PayBill();
         updatePayBill.setPayBillStatus(PayBillStatus.PAY.getCode());
         LambdaUpdateWrapper<PayBill> payBillLambdaUpdateWrapper =
-                Wrappers.lambdaUpdate(PayBill.class).eq(PayBill::getOutOrderNo, params.get("out_trade_no"));
-        payBillMapper.update(updatePayBill,payBillLambdaUpdateWrapper);
+                Wrappers.lambdaUpdate(PayBill.class)
+                        .eq(PayBill::getOutOrderNo, params.get("out_trade_no"))
+                        .eq(PayBill::getPayBillStatus, PayBillStatus.NO_PAY.getCode());
+        int updateResult = payBillMapper.update(updatePayBill,payBillLambdaUpdateWrapper);
+        if (updateResult <= 0) {
+            log.warn("账单状态更新失败或已被并发更新 notifyDto : {}", JSON.toJSONString(notifyDto));
+        }
         notifyVo.setOutTradeNo(payBill.getOutOrderNo());
         notifyVo.setPayResult(ALIPAY_NOTIFY_SUCCESS_RESULT);
         return notifyVo;
@@ -195,6 +199,7 @@ public class PayService {
     }
     
     @ServiceLock(name = "REFUND_LOCK", keys = {"#refundDto.orderNumber"})
+    @Transactional(rollbackFor = Exception.class)
     public String refund(RefundDto refundDto) {
         PayBill payBill = payBillMapper.selectOne(Wrappers.lambdaQuery(PayBill.class)
                 .eq(PayBill::getOutOrderNo, refundDto.getOrderNumber()));
@@ -221,8 +226,7 @@ public class PayService {
         return refundDto.getOrderNumber();
     }
     
-    @Transactional(rollbackFor = Exception.class)
-    public void updateRefundBill(PayBill payBill, RefundDto refundDto) {
+    private void updateRefundBill(PayBill payBill, RefundDto refundDto) {
         PayBill updatePayBill = new PayBill();
         updatePayBill.setId(payBill.getId());
         updatePayBill.setPayBillStatus(PayBillStatus.REFUND.getCode());

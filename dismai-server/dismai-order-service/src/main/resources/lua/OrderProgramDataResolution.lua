@@ -1,6 +1,15 @@
 local operate_order_status = tonumber(KEYS[1])
 local un_lock_seat_id_json_array = cjson.decode(ARGV[1])
 local add_seat_data_json_array = cjson.decode(ARGV[2])
+local total_remain_json_array = {}
+if ARGV[4] and ARGV[4] ~= "" then
+    total_remain_json_array = cjson.decode(ARGV[4])
+end
+local id_number_list = {}
+if ARGV[5] and ARGV[5] ~= "" then
+    id_number_list = cjson.decode(ARGV[5])
+end
+
 for index, un_lock_seat_id_json_object in pairs(un_lock_seat_id_json_array) do
     local program_seat_hash_key = un_lock_seat_id_json_object.programSeatLockHashKey
     local un_lock_seat_id_list = un_lock_seat_id_json_object.unLockSeatIdList
@@ -24,5 +33,14 @@ if (operate_order_status == 2) then
         local ticket_category_id = increase_data.ticketCategoryId
         local increase_count = increase_data.count
         redis.call('HINCRBY',program_ticket_remain_number_hash_key,ticket_category_id,increase_count)
+    end
+    for index,total_remain_data in ipairs(total_remain_json_array) do
+        local program_ticket_total_remain_key = total_remain_data.programTicketTotalRemainKey
+        local increase_count = total_remain_data.count
+        redis.call('INCRBY',program_ticket_total_remain_key,increase_count)
+    end
+    if KEYS[2] and KEYS[2] ~= "" and next(id_number_list) ~= nil then
+        local program_id_card_hash_key = "PROGRAM_ID_CARD:" .. tostring(KEYS[2])
+        redis.call('HDEL',program_id_card_hash_key,unpack(id_number_list))
     end
 end

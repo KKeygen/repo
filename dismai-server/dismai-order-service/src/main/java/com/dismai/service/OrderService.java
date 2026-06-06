@@ -388,7 +388,11 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
             seatMap.put(k,v.stream().map(OrderTicketUser::getSeatId).collect(Collectors.toList()));
         });
         
-        updateProgramRelatedDataResolution(programId,seatMap,orderStatus);
+        List<String> idNumberList = orderTicketUserList.stream()
+                .map(OrderTicketUser::getIdNumber)
+                .filter(StringUtil::isNotEmpty)
+                .collect(Collectors.toList());
+        updateProgramRelatedDataResolution(programId, seatMap, orderStatus, idNumberList);
     }
     
     public void checkOrderStatus(Order order){
@@ -407,6 +411,11 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
     }
     
     public void updateProgramRelatedDataResolution(Long programId,Map<Long,List<Long>> seatMap,OrderStatus orderStatus){
+        updateProgramRelatedDataResolution(programId, seatMap, orderStatus, new ArrayList<>());
+    }
+
+    public void updateProgramRelatedDataResolution(Long programId, Map<Long,List<Long>> seatMap, OrderStatus orderStatus,
+                                                   List<String> idNumberList){
         Map<Long, List<SeatVo>> seatVoMap = new HashMap<>(seatMap.size());
         seatMap.forEach((k,v) -> seatVoMap.put(k,redisCache.multiGetForHash(
                 RedisKeyBuild.createRedisKey(RedisKeyManage.PROGRAM_SEAT_LOCK_RESOLUTION_HASH, programId, k, 0),
@@ -418,6 +427,7 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
         JSONArray addSeatDatajsonArray = new JSONArray();
         List<TicketCategoryCountDto> ticketCategoryCountDtoList = new ArrayList<>(seatVoMap.size());
         JSONArray unLockSeatIdjsonArray = new JSONArray();
+        JSONArray totalRemainJsonArray = new JSONArray();
         List<Long> unLockSeatIdList = new ArrayList<>();
         seatVoMap.forEach((k,v) -> {
             JSONObject unLockSeatIdjsonObject = new JSONObject();
@@ -455,6 +465,11 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
             jsonObject.put("ticketCategoryId",String.valueOf(k));
             jsonObject.put("count",v.size());
             jsonArray.add(jsonObject);
+            JSONObject totalRemainJsonObject = new JSONObject();
+            totalRemainJsonObject.put("programTicketTotalRemainKey", RedisKeyBuild.createRedisKey(
+                    RedisKeyManage.PROGRAM_TICKET_TOTAL_REMAIN, programId, k).getRelKey());
+            totalRemainJsonObject.put("count", v.size());
+            totalRemainJsonArray.add(totalRemainJsonObject);
             TicketCategoryCountDto ticketCategoryCountDto = new TicketCategoryCountDto();
             ticketCategoryCountDto.setTicketCategoryId(k);
             ticketCategoryCountDto.setCount((long) v.size());
@@ -463,10 +478,13 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
         });
         List<String> keys = new ArrayList<>();
         keys.add(String.valueOf(orderStatus.getCode()));
-        Object[] data = new String[3];
+        keys.add(String.valueOf(programId));
+        String[] data = new String[5];
         data[0] = JSON.toJSONString(unLockSeatIdjsonArray);
         data[1] = JSON.toJSONString(addSeatDatajsonArray);
         data[2] = JSON.toJSONString(jsonArray);
+        data[3] = JSON.toJSONString(totalRemainJsonArray);
+        data[4] = JSON.toJSONString(Optional.ofNullable(idNumberList).orElse(new ArrayList<>()));
         orderProgramCacheResolutionOperate.programCacheReverseOperate(keys,data);
         if (Objects.equals(orderStatus.getCode(), OrderStatus.PAY.getCode())) {
             ProgramOperateDataDto programOperateDataDto = new ProgramOperateDataDto();
@@ -591,9 +609,15 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
         return orderNumber;
     }
     
-    @RepeatExecuteLimit(name = PROGRAM_CACHE_REVERSE_MQ,keys = {"#programId"})
+    @RepeatExecuteLimit(name = PROGRAM_CACHE_REVERSE_MQ,keys = {"#programId","#seatMap"})
     public void updateProgramRelatedDataMq(Long programId,Map<Long,List<Long>> seatMap,OrderStatus orderStatus){
-        updateProgramRelatedDataResolution(programId,seatMap,orderStatus);
+        updateProgramRelatedDataResolution(programId, seatMap, orderStatus);
+    }
+
+    @RepeatExecuteLimit(name = PROGRAM_CACHE_REVERSE_MQ,keys = {"#programId","#seatMap","#idNumberList"})
+    public void updateProgramRelatedDataMq(Long programId, Map<Long,List<Long>> seatMap, OrderStatus orderStatus,
+                                           List<String> idNumberList){
+        updateProgramRelatedDataResolution(programId, seatMap, orderStatus, idNumberList);
     }
     
     public String getCache(OrderGetDto orderGetDto) {

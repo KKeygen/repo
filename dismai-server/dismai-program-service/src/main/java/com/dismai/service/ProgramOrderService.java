@@ -18,6 +18,7 @@ import com.dismai.enums.BaseCode;
 import com.dismai.enums.OrderStatus;
 import com.dismai.enums.SellStatus;
 import com.dismai.exception.DismaiFrameException;
+import com.dismai.redis.RedisCache;
 import com.dismai.redis.RedisKeyBuild;
 import com.dismai.service.delaysend.DelayOrderCancelSend;
 import com.dismai.service.kafka.CreateOrderMqDomain;
@@ -27,14 +28,13 @@ import com.dismai.service.lua.ProgramCacheCreateOrderResolutionOperate;
 import com.dismai.service.lua.ProgramCacheResolutionOperate;
 import com.dismai.service.tool.SeatMatch;
 import com.dismai.util.DateUtils;
+import com.dismai.util.StringUtil;
 import com.dismai.vo.ProgramVo;
 import com.dismai.vo.SeatVo;
 import com.dismai.vo.TicketCategoryVo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-import com.dismai.redis.RedisCache;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -48,8 +48,6 @@ import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
-import com.dismai.redis.RedisCache;
 
 import static com.dismai.service.constant.ProgramOrderConstant.ORDER_TABLE_COUNT;
 
@@ -320,6 +318,7 @@ public class ProgramOrderService {
             throw new DismaiFrameException(BaseCode.TICKET_USER_COUNT_UNEQUAL_SEAT_COUNT);
         }
         List<OrderTicketUserCreateDto> orderTicketUserCreateDtoList = new ArrayList<>();
+        List<String> idNumberList = Optional.ofNullable(programOrderCreateDto.getIdNumberList()).orElse(new ArrayList<>());
         for (int i = 0; i < ticketUserIdList.size(); i++) {
             Long ticketUserId = ticketUserIdList.get(i);
             OrderTicketUserCreateDto orderTicketUserCreateDto = new OrderTicketUserCreateDto();
@@ -327,6 +326,9 @@ public class ProgramOrderService {
             orderTicketUserCreateDto.setProgramId(programOrderCreateDto.getProgramId());
             orderTicketUserCreateDto.setUserId(programOrderCreateDto.getUserId());
             orderTicketUserCreateDto.setTicketUserId(ticketUserId);
+            if (idNumberList.size() > i) {
+                orderTicketUserCreateDto.setIdNumber(idNumberList.get(i));
+            }
             SeatVo seatVo =
                     Optional.ofNullable(purchaseSeatList.get(i))
                             .orElseThrow(() -> new DismaiFrameException(BaseCode.SEAT_NOT_EXIST));
@@ -347,7 +349,8 @@ public class ProgramOrderService {
         ApiResponse<String> createOrderResponse = orderClient.create(orderCreateDto);
         if (!Objects.equals(createOrderResponse.getCode(), BaseCode.SUCCESS.getCode())) {
             log.error("创建订单失败 需人工处理 orderCreateDto : {}",JSON.toJSONString(orderCreateDto));
-            updateProgramCacheDataResolution(orderCreateDto.getProgramId(),purchaseSeatList,OrderStatus.CANCEL);
+            updateProgramCacheDataResolution(orderCreateDto.getProgramId(), purchaseSeatList, OrderStatus.CANCEL,
+                    getIdNumberList(orderCreateDto));
             throw new DismaiFrameException(createOrderResponse);
         }
         return createOrderResponse.getData();
@@ -367,7 +370,8 @@ public class ProgramOrderService {
         },ex -> {
             log.error("创建订单kafka发送消息失败 error",ex);
             log.error("创建订单失败 需人工处理 orderCreateDto : {}",JSON.toJSONString(orderCreateDto));
-            updateProgramCacheDataResolution(orderCreateDto.getProgramId(),purchaseSeatList,OrderStatus.CANCEL);
+            updateProgramCacheDataResolution(orderCreateDto.getProgramId(), purchaseSeatList, OrderStatus.CANCEL,
+                    getIdNumberList(orderCreateDto));
             createOrderMqDomain.DismaiFrameException = new DismaiFrameException(ex);
             latch.countDown();
         });
@@ -384,28 +388,41 @@ public class ProgramOrderService {
     }
     
     private void updateProgramCacheDataResolution(Long programId,List<SeatVo> seatVoList,OrderStatus orderStatus){
+        updateProgramCacheDataResolution(programId, seatVoList, orderStatus, new ArrayList<>());
+    }
+
+    private void updateProgramCacheDataResolution(Long programId, List<SeatVo> seatVoList, OrderStatus orderStatus,
+                                                  List<String> idNumberList){
         if (!(Objects.equals(orderStatus.getCode(), OrderStatus.NO_PAY.getCode()) ||
                 Objects.equals(orderStatus.getCode(), OrderStatus.CANCEL.getCode()))) {
             throw new DismaiFrameException(BaseCode.OPERATE_ORDER_STATUS_NOT_PERMIT);
         }
         List<String> keys = new ArrayList<>();
         keys.add("#");
+        keys.add(String.valueOf(programId));
         
-        String[] data = new String[3];
+        String[] data = new String[5];
         Map<Long, Long> ticketCategoryCountMap =
                 seatVoList.stream().collect(Collectors.groupingBy(SeatVo::getTicketCategoryId, Collectors.counting()));
         JSONArray jsonArray = new JSONArray();
+        JSONArray totalRemainJsonArray = new JSONArray();
         ticketCategoryCountMap.forEach((k,v) -> {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("programTicketRemainNumberHashKey",RedisKeyBuild.createRedisKey(
                     RedisKeyManage.PROGRAM_TICKET_REMAIN_NUMBER_HASH_RESOLUTION, programId, k, 0).getRelKey());
             jsonObject.put("ticketCategoryId",String.valueOf(k));
+            JSONObject totalRemainJsonObject = new JSONObject();
+            totalRemainJsonObject.put("programTicketTotalRemainKey", RedisKeyBuild.createRedisKey(
+                    RedisKeyManage.PROGRAM_TICKET_TOTAL_REMAIN, programId, k).getRelKey());
             if (Objects.equals(orderStatus.getCode(), OrderStatus.NO_PAY.getCode())) {
                 jsonObject.put("count","-" + v);
+                totalRemainJsonObject.put("count","-" + v);
             } else if (Objects.equals(orderStatus.getCode(), OrderStatus.CANCEL.getCode())) {
                 jsonObject.put("count",v);
+                totalRemainJsonObject.put("count",v);
             }
             jsonArray.add(jsonObject);
+            totalRemainJsonArray.add(totalRemainJsonObject);
         });
         Map<Long, List<SeatVo>> seatVoMap = 
                 seatVoList.stream().collect(Collectors.groupingBy(SeatVo::getTicketCategoryId));
@@ -445,6 +462,17 @@ public class ProgramOrderService {
         data[0] = JSON.toJSONString(jsonArray);
         data[1] = JSON.toJSONString(delSeatIdjsonArray);
         data[2] = JSON.toJSONString(addSeatDatajsonArray);
+        data[3] = JSON.toJSONString(totalRemainJsonArray);
+        data[4] = JSON.toJSONString(Optional.ofNullable(idNumberList).orElse(new ArrayList<>()));
         programCacheResolutionOperate.programCacheOperate(keys,data);
+    }
+
+    private List<String> getIdNumberList(OrderCreateDto orderCreateDto) {
+        return Optional.ofNullable(orderCreateDto.getOrderTicketUserCreateDtoList())
+                .orElse(new ArrayList<>())
+                .stream()
+                .map(OrderTicketUserCreateDto::getIdNumber)
+                .filter(StringUtil::isNotEmpty)
+                .collect(Collectors.toList());
     }
 }
