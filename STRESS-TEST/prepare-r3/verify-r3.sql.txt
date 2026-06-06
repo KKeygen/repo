@@ -1,0 +1,37 @@
+-- 260519 V4 create-order stress test Round 3 verification SQL
+-- Execute from repo root:
+-- docker exec -i dismai-mysql mysql -uroot -proot < STRESS-TEST/prepare-r3/verify-r3.sql.txt
+
+SELECT COUNT(*) AS seat_count,
+       SUM(CASE WHEN sell_status = 1 THEN 1 ELSE 0 END) AS no_sold_count
+FROM dismai_program_0.d_seat_0
+WHERE program_id = 32
+  AND ticket_category_id = 36;
+
+SELECT total_number,
+       remain_number
+FROM dismai_program_0.d_ticket_category_0
+WHERE program_id = 32
+  AND id = 36;
+
+SELECT COUNT(*) AS stress_user_count
+FROM (
+    SELECT id FROM dismai_user_0.d_user_0 WHERE id BETWEEN 3200000000000000001 AND 3200000000000010000
+    UNION ALL
+    SELECT id FROM dismai_user_0.d_user_1 WHERE id BETWEEN 3200000000000000001 AND 3200000000000010000
+    UNION ALL
+    SELECT id FROM dismai_user_1.d_user_0 WHERE id BETWEEN 3200000000000000001 AND 3200000000000010000
+    UNION ALL
+    SELECT id FROM dismai_user_1.d_user_1 WHERE id BETWEEN 3200000000000000001 AND 3200000000000010000
+) t;
+
+SELECT COUNT(*) AS stress_ticket_user_count
+FROM (
+    SELECT id FROM dismai_user_0.d_ticket_user_0 WHERE id BETWEEN 3300000000000000001 AND 3300000000000010000
+    UNION ALL
+    SELECT id FROM dismai_user_0.d_ticket_user_1 WHERE id BETWEEN 3300000000000000001 AND 3300000000000010000
+    UNION ALL
+    SELECT id FROM dismai_user_1.d_ticket_user_0 WHERE id BETWEEN 3300000000000000001 AND 3300000000000010000
+    UNION ALL
+    SELECT id FROM dismai_user_1.d_ticket_user_1 WHERE id BETWEEN 3300000000000000001 AND 3300000000000010000
+) t;

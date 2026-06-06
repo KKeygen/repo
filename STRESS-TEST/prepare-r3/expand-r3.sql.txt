@@ -1,0 +1,119 @@
+-- 260519 V4 create-order stress test Round 3 data expansion
+-- Target: programId=32, ticketCategoryId=36, total capacity=10000
+-- Execute from repo root:
+-- docker exec -i dismai-mysql mysql -uroot -proot < STRESS-TEST/prepare-r3/expand-r3.sql.txt
+--
+-- Important:
+-- 1. This file only expands MySQL test data. Do not FLUSHALL Redis while services are running.
+-- 2. After executing this SQL, run the targeted Redis cleanup command in run-r3.txt.
+-- 3. R3 uses independent userId/ticketUserId ranges:
+--    userId       3200000000000000001 - 3200000000000010000
+--    ticketUserId 3300000000000000001 - 3300000000000010000
+
+USE dismai_program_0;
+
+DROP PROCEDURE IF EXISTS prepare_create_order_v4_r3;
+
+DELIMITER //
+
+CREATE PROCEDURE prepare_create_order_v4_r3()
+BEGIN
+    DECLARE i INT DEFAULT 1;
+    DECLARE v_user_id BIGINT;
+    DECLARE v_ticket_user_id BIGINT;
+    DECLARE v_id_number VARCHAR(64);
+
+    -- Reset category 36 inventory in MySQL to 10000.
+    UPDATE dismai_program_0.d_ticket_category_0
+    SET total_number = 10000,
+        remain_number = 10000
+    WHERE program_id = 32
+      AND id = 36;
+
+    -- Restore existing seats for category 36.
+    UPDATE dismai_program_0.d_seat_0
+    SET sell_status = 1,
+        status = 1
+    WHERE program_id = 32
+      AND ticket_category_id = 36;
+
+    -- Existing category 36 has 40 seats. Add 9960 seats to reach 10000.
+    SET i = 1;
+    WHILE i <= 9960 DO
+        INSERT IGNORE INTO dismai_program_0.d_seat_0
+        (id, program_id, ticket_category_id, row_code, col_code, seat_type, price, sell_status, create_time, edit_time, status)
+        VALUES
+        (
+            3400000000000000000 + i,
+            32,
+            36,
+            2000 + FLOOR((i - 1) / 10),
+            ((i - 1) % 10) + 1,
+            1,
+            980,
+            1,
+            NOW(),
+            NOW(),
+            1
+        );
+        SET i = i + 1;
+    END WHILE;
+
+    -- Insert 10000 independent users and ticket users for high-concurrency requests.
+    SET i = 1;
+    WHILE i <= 10000 DO
+        SET v_user_id = 3200000000000000000 + i;
+        SET v_ticket_user_id = 3300000000000000000 + i;
+        SET v_id_number = CONCAT('1201011990', LPAD(i, 8, '0'));
+
+        IF MOD(i, 4) = 0 THEN
+            INSERT IGNORE INTO dismai_user_0.d_user_0
+            (id, name, rel_name, mobile, gender, password, email_status, email, rel_authentication_status, id_number, address, create_time, edit_time, status)
+            VALUES
+            (v_user_id, CONCAT('stress_r3_user_', i), CONCAT('stress_r3_rel_', i), CONCAT('stress_r3_mobile_', i), 1, 'stress_pwd', 0, NULL, 0, NULL, NULL, NOW(), NOW(), 1);
+
+            INSERT IGNORE INTO dismai_user_0.d_ticket_user_0
+            (id, user_id, rel_name, id_type, id_number, create_time, edit_time, status)
+            VALUES
+            (v_ticket_user_id, v_user_id, CONCAT('stress_r3_ticket_', i), 1, v_id_number, NOW(), NOW(), 1);
+        ELSEIF MOD(i, 4) = 2 THEN
+            INSERT IGNORE INTO dismai_user_0.d_user_1
+            (id, name, rel_name, mobile, gender, password, email_status, email, rel_authentication_status, id_number, address, create_time, edit_time, status)
+            VALUES
+            (v_user_id, CONCAT('stress_r3_user_', i), CONCAT('stress_r3_rel_', i), CONCAT('stress_r3_mobile_', i), 1, 'stress_pwd', 0, NULL, 0, NULL, NULL, NOW(), NOW(), 1);
+
+            INSERT IGNORE INTO dismai_user_0.d_ticket_user_1
+            (id, user_id, rel_name, id_type, id_number, create_time, edit_time, status)
+            VALUES
+            (v_ticket_user_id, v_user_id, CONCAT('stress_r3_ticket_', i), 1, v_id_number, NOW(), NOW(), 1);
+        ELSEIF MOD(i, 4) = 1 THEN
+            INSERT IGNORE INTO dismai_user_1.d_user_0
+            (id, name, rel_name, mobile, gender, password, email_status, email, rel_authentication_status, id_number, address, create_time, edit_time, status)
+            VALUES
+            (v_user_id, CONCAT('stress_r3_user_', i), CONCAT('stress_r3_rel_', i), CONCAT('stress_r3_mobile_', i), 1, 'stress_pwd', 0, NULL, 0, NULL, NULL, NOW(), NOW(), 1);
+
+            INSERT IGNORE INTO dismai_user_1.d_ticket_user_0
+            (id, user_id, rel_name, id_type, id_number, create_time, edit_time, status)
+            VALUES
+            (v_ticket_user_id, v_user_id, CONCAT('stress_r3_ticket_', i), 1, v_id_number, NOW(), NOW(), 1);
+        ELSE
+            INSERT IGNORE INTO dismai_user_1.d_user_1
+            (id, name, rel_name, mobile, gender, password, email_status, email, rel_authentication_status, id_number, address, create_time, edit_time, status)
+            VALUES
+            (v_user_id, CONCAT('stress_r3_user_', i), CONCAT('stress_r3_rel_', i), CONCAT('stress_r3_mobile_', i), 1, 'stress_pwd', 0, NULL, 0, NULL, NULL, NOW(), NOW(), 1);
+
+            INSERT IGNORE INTO dismai_user_1.d_ticket_user_1
+            (id, user_id, rel_name, id_type, id_number, create_time, edit_time, status)
+            VALUES
+            (v_ticket_user_id, v_user_id, CONCAT('stress_r3_ticket_', i), 1, v_id_number, NOW(), NOW(), 1);
+        END IF;
+
+        SET i = i + 1;
+    END WHILE;
+END//
+
+DELIMITER ;
+
+CALL prepare_create_order_v4_r3();
+
+DROP PROCEDURE IF EXISTS prepare_create_order_v4_r3;
